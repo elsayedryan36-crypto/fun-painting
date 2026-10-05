@@ -1,3 +1,4 @@
+import 'dart:math' as math; // ✅ NEW: needed for the uniform min() scale below
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -835,7 +836,15 @@ class ColoringCanvasState extends State<ColoringCanvas> {
   int _animationId = 0;
   Offset _lastTouchPosition = Offset.zero;
   AppPreferences appPreferences = AppPreferences();
-  final Map<int, ui.Picture> _strokePictureCache = {};
+  /// ✅ CHANGED: keyed by the Stroke instance (identity) instead of its
+  /// hashCode — a hashCode collision used to draw a different stroke's pixels.
+  final Map<Stroke, ui.Picture> _strokePictureCache = {};
+  // ----- old version (kept for reference) -----
+  // final Map<int, ui.Picture> _strokePictureCache = {};
+
+  /// ✅ NEW: bumped on every model mutation. ColoringPainter.shouldRepaint()
+  /// compares it so a repaint no longer depends on being relaid out.
+  int _revision = 0;
 
   DateTime _lastRepaintTime = DateTime.fromMillisecondsSinceEpoch(0);
   static const Duration _minRepaintInterval = Duration(milliseconds: 30);
@@ -910,7 +919,31 @@ class ColoringCanvasState extends State<ColoringCanvas> {
 
   void refresh() {
     if (mounted && !_isDisposed) {
-      setState(() {});
+      // ✅ NEW: drop rasterised pictures of strokes that no longer exist
+      // (undo / redo / clear all) before repainting.
+      _pruneStrokePictures();
+      setState(() {
+        _revision++; // ✅ NEW: tell the painter the model changed
+      });
+    }
+  }
+
+  /// ✅ NEW: keeps the stroke picture cache from growing without bound when
+  /// strokes are removed by undo, redo or "clear all".
+  void _pruneStrokePictures() {
+    if (_strokePictureCache.isEmpty) return;
+
+    final alive = <Stroke>{};
+    for (final region in widget.regions) {
+      alive.addAll(region.strokes);
+    }
+
+    final dead = _strokePictureCache.keys
+        .where((stroke) => !alive.contains(stroke))
+        .toList();
+
+    for (final stroke in dead) {
+      _safeDisposePicture(_strokePictureCache.remove(stroke));
     }
   }
 
@@ -945,6 +978,12 @@ class ColoringCanvasState extends State<ColoringCanvas> {
 
     _isDisposed = true;
 
+    // ✅ FIX: stop the pencil/eraser loop sound here too. It used to keep
+    // looping if the page was left while a brush sound was playing.
+    BrushSoundService.instance.stop();
+    // ----- old version (kept for reference) -----
+    // (nothing — dispose() did not touch the sound service)
+
     _currentStroke = null;
 
     _stampCache.forEach((key, picture) {
@@ -974,15 +1013,29 @@ class ColoringCanvasState extends State<ColoringCanvas> {
 
     if (_isDisposed) return;
 
+    // ✅ NEW: the parent (undo/redo/clear all) may have mutated the regions
+    // list without going through this state — make sure we repaint.
+    _revision++;
+
     if (widget.onClearRequested != oldWidget.onClearRequested &&
         widget.onClearRequested != null) {}
 
-    if (widget.selectedStampAsset != oldWidget.selectedStampAsset ||
-        (widget.brushMode == BrushMode.stamp &&
-            oldWidget.brushMode != BrushMode.stamp &&
-            widget.selectedStampAsset != null)) {
-      _loadStamp(widget.selectedStampAsset!);
+    // ✅ FIX: the stamp asset can be cleared back to null; the old code did
+    // `_loadStamp(widget.selectedStampAsset!)` and would crash on that null.
+    final newStampAsset = widget.selectedStampAsset;
+    if (newStampAsset != null &&
+        (newStampAsset != oldWidget.selectedStampAsset ||
+            (widget.brushMode == BrushMode.stamp &&
+                oldWidget.brushMode != BrushMode.stamp))) {
+      _loadStamp(newStampAsset);
     }
+    // ----- old version (kept for reference) -----
+    // if (widget.selectedStampAsset != oldWidget.selectedStampAsset ||
+    //     (widget.brushMode == BrushMode.stamp &&
+    //         oldWidget.brushMode != BrushMode.stamp &&
+    //         widget.selectedStampAsset != null)) {
+    //   _loadStamp(widget.selectedStampAsset!);
+    // }
   }
 
   Future<void> _loadStamp(String assetPath) async {
@@ -1031,13 +1084,31 @@ class ColoringCanvasState extends State<ColoringCanvas> {
     final bw = bounds.width <= 0 ? 1.0 : bounds.width;
     final bh = bounds.height <= 0 ? 1.0 : bounds.height;
 
-    final scaleX = size.width / bw;
-    final scaleY = size.height / bh;
+    // ✅ FIX: ONE scale for both axes, so the artwork keeps its own aspect
+    // ratio instead of being stretched to fill the canvas (circles stayed
+    // circles, and the same painting now looks the same on every screen).
+    final scale = math.min(size.width / bw, size.height / bh);
 
-    final tx = -bounds.left * scaleX;
-    final ty = -bounds.top * scaleY;
+    final drawnWidth = bw * scale;
+    final drawnHeight = bh * scale;
 
-    return {'scaleX': scaleX, 'scaleY': scaleY, 'tx': tx, 'ty': ty};
+    // Centre the drawing inside the available canvas.
+    final offsetX = (size.width - drawnWidth) / 2;
+    final offsetY = (size.height - drawnHeight) / 2;
+
+    final tx = offsetX - bounds.left * scale;
+    final ty = offsetY - bounds.top * scale;
+
+    return {'scaleX': scale, 'scaleY': scale, 'tx': tx, 'ty': ty};
+
+    // ----- old version (kept for reference) -----
+    // final scaleX = size.width / bw;
+    // final scaleY = size.height / bh;
+    //
+    // final tx = -bounds.left * scaleX;
+    // final ty = -bounds.top * scaleY;
+    //
+    // return {'scaleX': scaleX, 'scaleY': scaleY, 'tx': tx, 'ty': ty};
   }
 
   Offset _toPathSpace(Offset localPos, Size size) {
@@ -1062,8 +1133,15 @@ class ColoringCanvasState extends State<ColoringCanvas> {
     final p = _toPathSpace(details.localPosition, size);
 
     if (widget.brushMode == BrushMode.stamp && _selectedSvgPicture != null) {
-      for (int i = 0; i < widget.regions.length; i++) {
+      // ✅ FIX: walk back to front (the last drawn shape is the one the child
+      // sees) and ignore hidden geometry, which used to swallow the tap.
+      // ----- old version (kept for reference) -----
+      // for (int i = 0; i < widget.regions.length; i++) {
+      //   final region = widget.regions[i];
+      //   if (region.path.contains(p)) {
+      for (int i = widget.regions.length - 1; i >= 0; i--) {
         final region = widget.regions[i];
+        if (region.hidden) continue;
         if (region.path.contains(p)) {
           BrushSoundService.instance.playOnce(
             _currentBrushSound(),
@@ -1095,11 +1173,28 @@ class ColoringCanvasState extends State<ColoringCanvas> {
       }
     }
 
-    for (int i = 0; i < widget.regions.length; i++) {
+    // ✅ FIX: same as above — topmost shape first, hidden geometry ignored.
+    // ----- old version (kept for reference) -----
+    // for (int i = 0; i < widget.regions.length; i++) {
+    //   final region = widget.regions[i];
+    //   if (region.path.contains(p)) {
+    for (int i = widget.regions.length - 1; i >= 0; i--) {
       final region = widget.regions[i];
+      if (region.hidden) continue;
       if (region.path.contains(p)) {
         setState(() {
+          _revision++; // ✅ NEW: model changed -> repaint
+
           if (widget.brushMode == BrushMode.fill) {
+            // ✅ FIX: a region whose colour is locked by the artwork
+            // (keepcolor="true") ignores fills — it must not clear the
+            // child's stamps either, nor record an undo step.
+            if (region.keepOriginalColor) {
+              return;
+            }
+            // ----- old version (kept for reference) -----
+            // (nothing — the fill branch ran for locked regions too, wiping
+            //  their strokes and pushing a no-op FillAction)
             BrushSoundService.instance.playOnce(
               _currentBrushSound(),
               appPreferences.getKSoundVolum(),
@@ -1206,8 +1301,19 @@ class ColoringCanvasState extends State<ColoringCanvas> {
     final p = _toPathSpace(details.localPosition, size);
 
     int? foundIndex;
-    for (int i = 0; i < widget.regions.length; i++) {
-      if (widget.regions[i].path.contains(p)) {
+    // ✅ FIX: match the tap behaviour — topmost shape wins, hidden geometry
+    // is not drawable.
+    // ----- old version (kept for reference) -----
+    // for (int i = 0; i < widget.regions.length; i++) {
+    //   if (widget.regions[i].path.contains(p)) {
+    //     foundIndex = i;
+    //     break;
+    //   }
+    // }
+    for (int i = widget.regions.length - 1; i >= 0; i--) {
+      final region = widget.regions[i];
+      if (region.hidden) continue;
+      if (region.path.contains(p)) {
         foundIndex = i;
         break;
       }
@@ -1253,7 +1359,9 @@ class ColoringCanvasState extends State<ColoringCanvas> {
         final now = DateTime.now();
         if (now.difference(_lastRepaintTime) >= _minRepaintInterval) {
           _lastRepaintTime = now;
-          setState(() {});
+          setState(() {
+            _revision++; // ✅ NEW: repaint the growing stroke
+          });
         }
       }
     }
@@ -1278,7 +1386,22 @@ class ColoringCanvasState extends State<ColoringCanvas> {
 
     setState(() {
       _animations.add(animation);
+      _revision++; // ✅ NEW: repaint with the new model state
     });
+
+    // ✅ FIX: remove the confetti again after it has played. It used to stay
+    // in the Stack forever, so every tap added another live Lottie widget —
+    // unbounded memory/layout cost over a session.
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (!mounted || _isDisposed) return;
+      setState(() {
+        _animations.removeWhere((a) => a.id == animation.id);
+      });
+    });
+    // ----- old version (kept for reference) -----
+    // setState(() {
+    //   _animations.add(animation);
+    // });
   }
 
   void _handlePanEnd(DragEndDetails details) {
@@ -1295,11 +1418,19 @@ class ColoringCanvasState extends State<ColoringCanvas> {
           region.path.getBounds(),
         );
 
-        final key = _currentStroke!.hashCode;
-        if (_strokePictureCache.containsKey(key)) {
-          _safeDisposePicture(_strokePictureCache[key]);
+        // ✅ FIX: cache by the Stroke instance itself (identity), not by its
+        // hashCode, so a hash collision can no longer paint another stroke.
+        final stroke = _currentStroke!;
+        if (_strokePictureCache.containsKey(stroke)) {
+          _safeDisposePicture(_strokePictureCache[stroke]);
         }
-        _strokePictureCache[key] = picture;
+        _strokePictureCache[stroke] = picture;
+        // ----- old version (kept for reference) -----
+        // final key = _currentStroke!.hashCode;
+        // if (_strokePictureCache.containsKey(key)) {
+        //   _safeDisposePicture(_strokePictureCache[key]);
+        // }
+        // _strokePictureCache[key] = picture;
       } catch (e) {
         debugPrint('Error caching stroke picture: $e');
       }
@@ -1314,6 +1445,7 @@ class ColoringCanvasState extends State<ColoringCanvas> {
     }
     _activeRegionIndex = null;
     _currentStroke = null;
+    _revision++; // ✅ NEW: the stroke is now in the cache -> repaint
 
     _showStarAnimation();
   }
@@ -1322,8 +1454,14 @@ class ColoringCanvasState extends State<ColoringCanvas> {
     double s = 1.0;
     if (_lastCanvasSize != null) {
       final t = _computeTransform(_lastCanvasSize!);
-      // use the smaller axis so stroke width doesn't look stretched
-      s = t['scaleX']! < t['scaleY']! ? t['scaleX']! : t['scaleY']!;
+      // ✅ FIX: use the SAME factor as ColoringPainter._strokeScale
+      // ((scaleX + scaleY) / 2). The old code used min(scaleX, scaleY) here,
+      // so every stroke got visibly thicker (up to 1.5x) the moment the
+      // finger was lifted and the cached picture was used instead.
+      s = (t['scaleX']! + t['scaleY']!) / 2.0;
+      // ----- old version (kept for reference) -----
+      // // use the smaller axis so stroke width doesn't look stretched
+      // s = t['scaleX']! < t['scaleY']! ? t['scaleX']! : t['scaleY']!;
     }
 
     final painter = ColoringPainter(
@@ -1353,7 +1491,75 @@ class ColoringCanvasState extends State<ColoringCanvas> {
         widget.brushMode == BrushMode.eraser) {
       widget.onPaintingEnded?.call();
     }
+
+    // ✅ FIX: a tap in freehand/eraser mode starts a stroke on tap-down. That
+    // stroke used to stay "open" forever, so the NEXT drag was appended to it
+    // (because _handlePanStart() early-returns while _currentStroke != null):
+    // the child saw a rubber-band line from the old tap point, clipped to the
+    // old region. Close and flush it here instead.
+    final finishedStroke = _currentStroke;
+    final finishedRegion = _activeRegionIndex;
+
+    if (finishedStroke != null && finishedRegion != null) {
+      try {
+        final region = widget.regions[finishedRegion];
+        _strokePictureCache[finishedStroke] = _rasterizeStrokeToPicture(
+          finishedStroke,
+          region.path.getBounds(),
+        );
+      } catch (e) {
+        debugPrint('Error caching tap stroke picture: $e');
+      }
+
+      // Let the page store the finished dot (and record it for undo).
+      widget.onColoringAction({'type': 'strokeFinished'});
+    }
+
+    _activeRegionIndex = null;
+    _currentStroke = null;
+    // ----- old version (kept for reference) -----
+    // (nothing was reset here, which is what caused the bug above)
+
     _showStarAnimation();
+  }
+
+  /// ✅ NEW: a cancelled drag (second finger, system gesture, arena
+  /// re-resolution) used to leave the brush sound looping and _currentStroke
+  /// alive, which blocked every following stroke until the page was reopened.
+  void _handlePanCancel() {
+    _stopBrushSound();
+
+    final cancelledStroke = _currentStroke;
+    final cancelledRegion = _activeRegionIndex;
+
+    if (cancelledStroke != null && cancelledRegion != null) {
+      // Keep what the child already drew, exactly like a normal stroke end.
+      try {
+        final region = widget.regions[cancelledRegion];
+        _strokePictureCache[cancelledStroke] = _rasterizeStrokeToPicture(
+          cancelledStroke,
+          region.path.getBounds(),
+        );
+      } catch (e) {
+        debugPrint('Error caching cancelled stroke picture: $e');
+      }
+      widget.onColoringAction({'type': 'strokeFinished'});
+    }
+
+    _activeRegionIndex = null;
+    _currentStroke = null;
+    _revision++;
+    // No confetti for a cancelled gesture — just make sure we repaint.
+    if (mounted && !_isDisposed) setState(() {});
+  }
+
+  /// ✅ NEW: silence the brush when a tap is cancelled, but stay out of the
+  /// way when that "tap" is really the first 100 ms of a drag (Flutter fires
+  /// onTapDown after kPressTimeout) — the pan handlers own the sound then.
+  void _handleTapCancel() {
+    if (_currentStroke == null) {
+      _stopBrushSound();
+    }
   }
 
   @override
@@ -1367,7 +1573,9 @@ class ColoringCanvasState extends State<ColoringCanvas> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final size = Size(constraints.maxWidth, constraints.maxHeight);
-        debugPrint('Canvas size: $size');
+        // ✅ FIX: this printed on every layout (hot path, production log spam)
+        // ----- old version (kept for reference) -----
+        // debugPrint('Canvas size: $size');
         _lastCanvasSize = size;
 
         final transform = _computeTransform(size);
@@ -1386,6 +1594,10 @@ class ColoringCanvasState extends State<ColoringCanvas> {
           onTapUp: (d) {
             _handleTapUp(d, size);
           },
+          // ✅ NEW: without these two handlers a cancelled gesture left the
+          // brush sound looping and _currentStroke alive.
+          onTapCancel: _handleTapCancel,
+          onPanCancel: _handlePanCancel,
           onPanStart: (d) {
             _startBrushSound();
             _handlePanStart(d, size);
@@ -1407,10 +1619,14 @@ class ColoringCanvasState extends State<ColoringCanvas> {
                   ty: ty,
                   glitterImage: _glitterImage,
                   strokePictureCache: _strokePictureCache,
+                  revision: _revision, // ✅ NEW: drives shouldRepaint()
                 ),
               ),
               ..._animations.map((animation) {
                 return Positioned(
+                  // ✅ NEW: a stable key so removing one confetti does not
+                  // recycle another one's Lottie state.
+                  key: ValueKey(animation.id),
                   left: animation.position.dx - 45,
                   top: animation.position.dy - 45,
                   child: SizedBox(

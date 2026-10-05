@@ -12,6 +12,15 @@ List<Region> parseSvgToRegions(String svgContent) {
     final tag = node.name.local.toLowerCase();
     Path? path;
 
+    // ✅ NEW: geometry inside <defs>, <clipPath>, <mask>, <symbol>, <pattern>
+    // or <marker> is never drawn by an SVG renderer, so it must not be drawn
+    // (it used to be painted as an opaque white shape) and it must not accept
+    // taps (it used to swallow the tap before the visible shape below it).
+    // The region is still created, so saved painting indices stay valid.
+    final bool hiddenGeometry = _isInsideHiddenContainer(node);
+    // ----- old version (kept for reference) -----
+    // final bool hiddenGeometry = false;
+
     if (tag == 'path') {
       final d = node.getAttribute('d');
       if (d == null) continue;
@@ -91,6 +100,15 @@ List<Region> parseSvgToRegions(String svgContent) {
     }
 
     // --- parse colors ---
+    final bool hasFill =
+        fillAttr != null && fillAttr.trim().toLowerCase() != 'none';
+    final bool hasStroke =
+        strokeAttr != null && strokeAttr.trim().toLowerCase() != 'none';
+
+    // ✅ NEW: if the SVG paints nothing for this element (no fill AND no
+    // stroke) it must not become a white paintable region here either.
+    final bool hidden = hiddenGeometry || (!hasFill && !hasStroke);
+
     Color originalFill = const Color(0xFFFFFFFF);
     if (fillAttr != null && fillAttr.toLowerCase() != 'none') {
       try {
@@ -129,15 +147,54 @@ List<Region> parseSvgToRegions(String svgContent) {
         strokeWidth: strokeWidth,
         originalFillColor: originalFill, // ✅ always real SVG color
         keepOriginalColor: keepColor, // ✅ PASS FLAG
+        hidden: hidden, // ✅ NEW: never painted, never tappable
         initialFillColor: keepColor
             ? originalFill
             : Colors.white, // ✅ visible start color
       ),
     );
+    // ----- old version (kept for reference) -----
+    // regions.add(
+    //   Region(
+    //       id: regionId,
+    //     path: path,
+    //     strokeColor: strokeColor,
+    //     strokeWidth: strokeWidth,
+    //     originalFillColor: originalFill, // ✅ always real SVG color
+    //     keepOriginalColor: keepColor, // ✅ PASS FLAG
+    //     initialFillColor: keepColor
+    //         ? originalFill
+    //         : Colors.white, // ✅ visible start color
+    //   ),
+    // );
   }
 
   return regions;
 }
+
+/// ✅ NEW: true when [node] sits inside a container that an SVG renderer
+/// never paints directly. Those elements only exist to be referenced
+/// (`defs`, `clipPath`, `mask`, `symbol`, `pattern`, `marker`), so treating
+/// them as colouring regions adds invisible shapes that can steal taps.
+bool _isInsideHiddenContainer(XmlElement node) {
+  const hiddenTags = {
+    'defs',
+    'clippath',
+    'mask',
+    'symbol',
+    'pattern',
+    'marker',
+  };
+
+  for (XmlElement? parent = node.parentElement;
+      parent != null;
+      parent = parent.parentElement) {
+    if (hiddenTags.contains(parent.name.local.toLowerCase())) return true;
+  }
+
+  return false;
+}
+
 
 Color _parseColor(String s) {
   final str = s.trim().toLowerCase();

@@ -52,6 +52,10 @@ class _PaintingPageState extends State<PaintingPage>
   final List<ColoringAction> _redoStack = [];
   bool isSelectedToolOpen = false;
   bool isSelectedColorOpen = false;
+  /// ✅ NEW: true when the artwork could not be loaded (missing/corrupt SVG).
+  bool _loadFailed = false;
+  /// ✅ NEW: guards against a double tap on close / back popping two routes.
+  bool _isClosing = false;
   bool isWallPaper = false;
   String selectedPatternImage = PatternAssets.asset(1);
   late Box<ColoringSaveModel> paintingBox;
@@ -223,6 +227,10 @@ class _PaintingPageState extends State<PaintingPage>
 
     _closeBothPalettes();
 
+    // ✅ NEW: decide once, after the switch, whether this action is worth a
+    // full Hive write of the whole painting.
+    bool shouldSave = false;
+
     switch (type) {
       case 'stroke':
       case 'stamp':
@@ -230,6 +238,9 @@ class _PaintingPageState extends State<PaintingPage>
           actionInfo['regionIndex'] as int,
           actionInfo['stroke'] as Stroke,
         );
+        // ✅ FIX: a stroke that has only just started has no points worth
+        // saving. This used to write the entire painting to Hive on every
+        // pointer-down (and again on strokeFinished, and once more below).
         break;
 
       case 'fill':
@@ -241,9 +252,12 @@ class _PaintingPageState extends State<PaintingPage>
           newStyle: actionInfo['newStyle'] as StrokeStyle,
           previousStrokes: actionInfo['previousStrokes'] as List<Stroke>,
         );
+        shouldSave = true; // ✅ NEW
         break;
       case 'strokeFinished':
-        _savePainting();
+        shouldSave = true; // ✅ NEW
+        // ----- old version (kept for reference) -----
+        // _savePainting();
         break;
 
       case 'magic':
@@ -253,9 +267,15 @@ class _PaintingPageState extends State<PaintingPage>
           previousStyle: actionInfo['previousStyle'] as StrokeStyle,
           previousStrokes: actionInfo['previousStrokes'] as List<Stroke>,
         );
+        shouldSave = true; // ✅ NEW
         break;
     }
-    _savePainting();
+
+    if (shouldSave) {
+      _savePainting();
+    }
+    // ----- old version (kept for reference) -----
+    // _savePainting();
   }
 
   void _clearAllPaintingsAndStamps() {
@@ -273,8 +293,13 @@ class _PaintingPageState extends State<PaintingPage>
         region.strokes.clear();
       }
 
-      _actionHistory.clear();
-      _redoStack.clear();
+      // ✅ FIX: the ClearAction pushed by _saveClearAction() must survive so
+      // that clearing can be undone. Wiping the history here made ClearAction
+      // dead code and the clear button irreversible.
+      // ----- old version (kept for reference) -----
+      // _actionHistory.clear();
+      // _redoStack.clear();
+      _coloringCanvasKey.currentState?.refresh(); // ✅ NEW: prune + repaint
     });
 
     _closeBothPalettes();
@@ -666,27 +691,64 @@ class _PaintingPageState extends State<PaintingPage>
   }
 
   Future<void> _load() async {
-    final svgString = await rootBundle.loadString(widget.image);
+    // ✅ FIX: this used to run unguarded. A missing or malformed SVG threw an
+    // unhandled exception, _regions stayed empty and the page sat on a
+    // spinner forever with no explanation.
+    try {
+      final svgString = await rootBundle.loadString(widget.image);
 
-    final parsed = parseSvgToRegions(svgString);
+      final parsed = parseSvgToRegions(svgString);
 
-    //----------------------------
-    // Load saved drawing
-    //----------------------------
-    final saved = DrawingRepository.loadDrawing(widget.image);
+      //----------------------------
+      // Load saved drawing
+      //----------------------------
+      final saved = DrawingRepository.loadDrawing(widget.image);
 
-    for (final region in parsed) {
-      final colorValue = saved[region.id];
+      for (final region in parsed) {
+        final colorValue = saved[region.id];
 
-      if (colorValue != null) {
-        region.currentFillColor = Color(colorValue);
+        if (colorValue != null) {
+          region.currentFillColor = Color(colorValue);
+        }
       }
-    }
-    await _repository.loadPainting(imageId: widget.image, regions: parsed);
+      await _repository.loadPainting(imageId: widget.image, regions: parsed);
 
-    setState(() {
-      _regions = parsed;
-    });
+      // ✅ FIX: bail out if the page was closed while loading (the old code
+      // called setState on a disposed State).
+      if (!mounted) return;
+
+      setState(() {
+        _regions = parsed;
+        _loadFailed = false;
+      });
+    } catch (e, st) {
+      debugPrint('Failed to load painting "${widget.image}": $e\n$st');
+
+      if (!mounted) return;
+
+      setState(() {
+        _loadFailed = true;
+      });
+    }
+    // ----- old version (kept for reference) -----
+    // final svgString = await rootBundle.loadString(widget.image);
+    //
+    // final parsed = parseSvgToRegions(svgString);
+    //
+    // final saved = DrawingRepository.loadDrawing(widget.image);
+    //
+    // for (final region in parsed) {
+    //   final colorValue = saved[region.id];
+    //
+    //   if (colorValue != null) {
+    //     region.currentFillColor = Color(colorValue);
+    //   }
+    // }
+    // await _repository.loadPainting(imageId: widget.image, regions: parsed);
+    //
+    // setState(() {
+    //   _regions = parsed;
+    // });
   }
 
   void _saveFillAction({
@@ -900,17 +962,89 @@ class _PaintingPageState extends State<PaintingPage>
     //   return;
     // }
 
-    // Only save when user confirms Yes
-    await _saveThumbnail();
-    await InterstitialAdService.instance.maybeShowOnColoringExit();
-    if (mounted) {
-      Navigator.of(context).pop();
+    // ✅ FIX: _confirmClose() is wired to both the close button and the
+    // system back gesture, and it awaits a thumbnail capture — a quick second
+    // trigger used to run it twice and pop two routes (painting + gallery).
+    if (_isClosing) return;
+    _isClosing = true;
+
+    try {
+      // Only save when user confirms Yes
+      await _saveThumbnail();
+      await InterstitialAdService.instance.maybeShowOnColoringExit();
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+    } finally {
+      _isClosing = false;
     }
+    // ----- old version (kept for reference) -----
+    // await _saveThumbnail();
+    // await InterstitialAdService.instance.maybeShowOnColoringExit();
+    // if (mounted) {
+    //   Navigator.of(context).pop();
+    // }
   }
 
   @override
   Widget build(BuildContext context) {
     if (_regions.isEmpty) {
+      // ✅ NEW: a real error state with a retry, instead of a spinner that
+      // never resolves when the artwork fails to load.
+      if (_loadFailed) {
+        return Scaffold(
+          backgroundColor: ColorManager.lightPrimary,
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.image_not_supported_outlined,
+                    size: 64,
+                    color: Colors.orange,
+                  ),
+                  SizedBox(height: AppSizeHeight.s3),
+                  Text(
+                    'Could not open this drawing',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: FontSize.s18,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  SizedBox(height: AppSizeHeight.s2),
+                  Text(
+                    'Please check your connection or try another drawing.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: FontSize.s15,
+                      color: Colors.black54,
+                    ),
+                  ),
+                  SizedBox(height: AppSizeHeight.s3),
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _loadFailed = false;
+                      });
+                      _load();
+                    },
+                    child: const Text('Try again'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).maybePop(),
+                    child: const Text('Back'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }
+
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 

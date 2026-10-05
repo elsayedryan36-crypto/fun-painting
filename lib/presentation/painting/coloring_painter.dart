@@ -13,9 +13,14 @@ class ColoringPainter extends CustomPainter {
   final double tx;
   final double ty;
   final ui.Image? glitterImage;
-  final Map<int, ui.Picture> strokePictureCache;
+  /// ✅ CHANGED: keyed by the Stroke instance itself (identity) instead of
+  /// `stroke.hashCode`, which could collide and draw another stroke's pixels.
+  final Map<Stroke, ui.Picture> strokePictureCache;
   final double zoom;
   final Offset pan;
+  /// ✅ NEW: bumped by ColoringCanvasState whenever the model changes, so
+  /// shouldRepaint() can tell that a repaint is genuinely needed.
+  final int revision;
   ColoringPainter({
     required this.regions,
     required this.scaleX,
@@ -26,7 +31,25 @@ class ColoringPainter extends CustomPainter {
     required this.strokePictureCache,
     this.zoom = 1.0,
     this.pan = Offset.zero,
+    this.revision = 0,
   });
+
+  // ----- old version (kept for reference) -----
+  // final Map<int, ui.Picture> strokePictureCache;
+  // final double zoom;
+  // final Offset pan;
+  // ColoringPainter({
+  //   required this.regions,
+  //   required this.scaleX,
+  //   required this.scaleY,
+  //   required this.tx,
+  //   required this.ty,
+  //   this.glitterImage,
+  //   required this.strokePictureCache,
+  //   this.zoom = 1.0,
+  //   this.pan = Offset.zero,
+  // });
+
 
   // helper: a single "average" scale for stroke widths so pen/pencil/glitter
   // widths don't look stretched — use this in place of every old `scale`
@@ -105,6 +128,12 @@ class ColoringPainter extends CustomPainter {
     canvas.scale(scaleX, scaleY);
 
     for (final region in regions) {
+      // ✅ FIX: geometry the SVG never renders (defs/clipPath, or shapes with
+      // no fill and no stroke) is no longer painted as an opaque white shape.
+      // ----- old version (kept for reference) -----
+      // for (final region in regions) {
+      if (region.hidden) continue;
+
       final fillPaint = Paint()..style = PaintingStyle.fill;
       if (region.currentFillStyle case StrokeStyle.solid) {
         fillPaint.color = region.currentFillColor;
@@ -161,7 +190,9 @@ class ColoringPainter extends CustomPainter {
         canvas.clipPath(region.path);
 
         for (final stroke in region.strokes) {
-          final pic = strokePictureCache[stroke.hashCode];
+          final pic = strokePictureCache[stroke];
+          // ----- old version (kept for reference) -----
+          // final pic = strokePictureCache[stroke.hashCode];
           if (pic != null) {
             try {
               canvas.drawPicture(pic);
@@ -537,12 +568,26 @@ class ColoringPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant ColoringPainter old) =>
+      // ✅ FIX: the old predicate compared `old.regions != regions`, which is
+      // always false because the same List instance is mutated in place, so it
+      // only ever repainted when the widget was relaid out by accident.
+      old.revision != revision ||
+      old.strokePictureCache.length != strokePictureCache.length ||
       old.regions != regions ||
       old.scaleX != scaleX ||
       old.scaleY != scaleY ||
       old.tx != tx ||
       old.ty != ty ||
       old.glitterImage != glitterImage;
+  // ----- old version (kept for reference) -----
+  // @override
+  // bool shouldRepaint(covariant ColoringPainter old) =>
+  //     old.regions != regions ||
+  //     old.scaleX != scaleX ||
+  //     old.scaleY != scaleY ||
+  //     old.tx != tx ||
+  //     old.ty != ty ||
+  //     old.glitterImage != glitterImage;
 
   // void _drawStyledStroke(ui.Canvas canvas, Stroke stroke, ui.Rect regionBounds) {}
 }

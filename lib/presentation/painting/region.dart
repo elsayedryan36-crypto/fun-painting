@@ -74,6 +74,12 @@ class Region {
   Color originalFillColor;
   final bool keepColor; // NEW
   final bool keepOriginalColor; // ✅ ADD THIS
+  /// ✅ NEW: geometry that the SVG itself never renders (elements inside
+  /// `defs`/`clipPath`/`mask`/`symbol`/`pattern`/`marker`, or shapes with no
+  /// fill and no stroke). Hidden regions are still kept in the list so that
+  /// saved paintings keep their region indices, but they are never painted
+  /// and never accept taps.
+  final bool hidden;
 
   Color currentFillColor;
   StrokeStyle currentFillStyle; // NEW: fill style for region
@@ -86,6 +92,7 @@ class Region {
     required this.strokeWidth,
     this.keepColor = false, // NEW
     this.keepOriginalColor = false, // ✅ ADD
+    this.hidden = false, // ✅ NEW: never painted, never tappable
 
     required this.originalFillColor,
     Color? initialFillColor, // NEW: optional initial fill
