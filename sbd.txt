@@ -1,0 +1,5 @@
+C:\Users\SAYED\AppData\Local\Pub\Cache\hosted\pub.dev\vector_math-2.2.0\lib\src\vector_math_64\matrix4.dart:924:  @Deprecated('Use scaleByVector3, scaleByVector4, or scaleByDouble instead')
+C:\Users\SAYED\AppData\Local\Pub\Cache\hosted\pub.dev\vector_math-2.2.0\lib\src\vector_math_64\matrix4.dart:931:      scaleByDouble(x, y ?? x, z ?? x, 1.0);
+C:\Users\SAYED\AppData\Local\Pub\Cache\hosted\pub.dev\vector_math-2.2.0\lib\src\vector_math_64\matrix4.dart:938:  void scaleByDouble(double sx, double sy, double sz, double sw) {
+C:\Users\SAYED\AppData\Local\Pub\Cache\hosted\pub.dev\vector_math-2.2.0\lib\src\vector_math_64\matrix4.dart:961:  void scaleByVector3(Vector3 v3) => scaleByDouble(v3.x, v3.y, v3.z, 1.0);
+C:\Users\SAYED\AppData\Local\Pub\Cache\hosted\pub.dev\vector_math-2.2.0\lib\src\vector_math_64\matrix4.dart:967:  void scaleByVector4(Vector4 v4) => scaleByDouble(v4.x, v4.y, v4.z, v4.w);

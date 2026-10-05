@@ -1,0 +1,123 @@
+name: fun_painting
+description: "A new Flutter project."
+# The following line prevents the package from being accidentally published to
+# pub.dev using `flutter pub publish`. This is preferred for private packages.
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+
+version: 1.0.0+2
+
+environment:
+  sdk: ^3.10.0
+
+# Dependencies specify other packages that your package needs in order to work.
+# To automatically upgrade your package dependencies to the latest versions
+# consider running `flutter pub upgrade --major-versions`. Alternatively,
+# dependencies can be manually updated by changing the version numbers below to
+# the latest version available on pub.dev. To see which dependencies have newer
+# versions available, run `flutter pub outdated`.
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+  sizer: ^3.1.3
+  bloc: ^9.1.0
+  flutter_bloc: ^9.1.1
+  lottie: ^3.3.2
+  shared_preferences: ^2.5.3
+  get_it: ^9.0.5
+  rive: ^0.13.20
+  flutter_svg: ^2.2.2
+  path_drawing: ^1.0.1
+  xml: ^6.6.1
+  flutter_colorpicker: ^1.1.0
+  permission_handler: ^11.3.1
+  path_provider: ^2.0.17
+  dartz: ^0.10.1
+  image_gallery_saver_plus: ^4.0.1
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  audioplayers: ^6.7.1
+  video_player: ^2.10.0
+  google_mobile_ads: ^9.1.0
+  device_info_plus: ^10.1.0
+  smooth_page_indicator: ^3.0.0
+  package_info_plus: ^8.0.0
+  url_launcher: ^6.3.2
+  font_awesome_icon_class: ^0.0.6
+  in_app_review: ^2.0.12
+  upgrader: ^13.7.0
+  
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  # retrofit_generator: ^8.1.2
+  build_runner: ^2.4.8
+  hive_generator: ^2.0.1
+
+  flutter_launcher_icons: ^0.14.4
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/app_icon.png"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/images/app_icon.png"
+
+
+# For information on the generic Dart part of this file, see the
+# following page: https://dart.dev/tools/pub/pubspec
+
+# The following section is specific to Flutter packages.
+flutter:
+
+  uses-material-design: true
+
+  assets:
+    - assets/animation/
+    - assets/images/
+    - assets/json/
+    - assets/pattern/
+    - assets/stamp/
+    - assets/images/zoo/
+    - assets/images/dragons/
+    - assets/images/sea/
+    - assets/images/fairy/
+    - assets/images/circis/
+    - assets/images/food/
+    - assets/images/letters/
+    - assets/images/numbers/
+    - assets/images/planet/
+    - assets/images/space/
+    - assets/images/transportation/
+    - assets/sounds/
+    - assets/videos/
+
+  fonts:
+    - family: NotoKufiArabic
+      fonts:
+        - asset: assets/fonts/NotoKufiArabic-Thin.ttf
+          weight: 100
+        - asset: assets/fonts/NotoKufiArabic-ExtraLight.ttf
+          weight: 200
+        - asset: assets/fonts/NotoKufiArabic-Light.ttf
+          weight: 300
+        - asset: assets/fonts/NotoKufiArabic-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/NotoKufiArabic-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/NotoKufiArabic-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/NotoKufiArabic-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/NotoKufiArabic-ExtraBold.ttf
+          weight: 800
+        - asset: assets/fonts/NotoKufiArabic-Black.ttf
+          weight: 900
+
+    - family: IconBroken
+      fonts:
+        - asset: assets/fonts/icons.ttf
+
