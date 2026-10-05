@@ -44,20 +44,26 @@ class _GalleryPageState extends State<GalleryPage> with RouteAware {
   }
 
   Future<void> _initializeGallery() async {
-    final items = GalleryCollectionHelper.getItems(context, widget.listName);
+    // ✅ FIX: the loader was only cleared on the happy path, so any error
+    // (missing artwork, unreadable thumbnail) left the page spinning forever.
+    try {
+      final items = GalleryCollectionHelper.getItems(context, widget.listName);
 
-    await GalleryPreloader.preload(
-      imagePaths: items.map((e) => e.imagePath).toList(),
-      repository: repository,
-    );
+      await GalleryPreloader.preload(
+        imagePaths: items.map((e) => e.imagePath).toList(),
+        repository: repository,
+      );
 
-    await Future.delayed(const Duration(seconds: 1));
+      await Future.delayed(const Duration(seconds: 1));
+    } catch (e, st) {
+      debugPrint('Gallery initialisation error: $e\n$st');
+    } finally {
+      if (!mounted) return;
 
-    if (!mounted) return;
-
-    setState(() {
-      _loading = false;
-    });
+      setState(() {
+        _loading = false;
+      });
+    }
   }
 
   @override
