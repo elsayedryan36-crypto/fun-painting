@@ -23,8 +23,8 @@ import 'coloring_canvas.dart';
 import 'models/tool_type.dart';
 import 'region.dart';
 import 'svg_parser.dart';
-import 'widgets/animated_vertical_palette.dart';
 import 'widgets/color_palette_widget.dart';
+import 'widgets/kid_layout.dart';
 import 'widgets/pattern_palette_widget.dart';
 import 'widgets/stamp_palette_widget.dart';
 import 'widgets/tool_palette_widget.dart';
@@ -1057,10 +1057,21 @@ class _PaintingPageState extends State<PaintingPage>
       },
       child: Scaffold(
         backgroundColor: ColorManager.lightPrimary,
-        body: Stack(
-          fit: StackFit.expand,
-          children: [
-            RepaintBoundary(
+        // ✅ CHANGED (kid-ui): the rails are DOCKED next to the canvas instead
+        // of floating on top of it, so the drawing is never covered and every
+        // shape stays tappable. The canvas gets all the space that is left,
+        // and the screen shape decides whether the rails go down the sides
+        // (wide screens — they sit in the empty bands beside a 16:9 artwork)
+        // or into a single bottom bar (16:9 screens — no bands to use).
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            final screenW = constraints.maxWidth;
+            final screenH = constraints.maxHeight;
+
+            final railsOnSides = KidLayout.preferSideRails(screenW, screenH);
+            final railsAxis = railsOnSides ? Axis.vertical : Axis.horizontal;
+
+            final canvas = RepaintBoundary(
               key: _repaintKey,
               child: ColoringCanvas(
                 selectedWallpaperAsset: selectedPatternImage,
@@ -1076,10 +1087,7 @@ class _PaintingPageState extends State<PaintingPage>
                 onColoringAction: _handleColoringAction,
                 stampSize: _stampSize,
                 onPaintingStarted:
-                    (_mode == BrushMode.freehand || _mode == BrushMode.eraser
-                    // ||
-                    // _mode == BrushMode.stamp
-                    )
+                    (_mode == BrushMode.freehand || _mode == BrushMode.eraser)
                     ? () {
                         _hideVerticalPalette();
                         _closeBothPalettes();
@@ -1092,109 +1100,20 @@ class _PaintingPageState extends State<PaintingPage>
                     ? _handlePaintingEnded
                     : null,
               ),
-            ),
-            isSelectedColorOpen
-                ? Positioned(
-                    top: 0,
-                    right: AppSizeWidth.s15,
-                    left: AppSizeWidth.s10,
-                    child: Center(
-                      child: Container(
-                        margin: EdgeInsets.symmetric(
-                          vertical: AppSizeHeight.s2,
-                          horizontal: AppSizeHeight.s1,
-                        ),
-                        decoration: BoxDecoration(
-                          color: ColorManager.darkPrimary,
-                          border: Border(
-                            top: BorderSide(
-                              color: ColorManager.darkPrimary,
-                              width: AppSizeHeight.s0_5,
-                            ),
-                            left: BorderSide(
-                              color: ColorManager.darkPrimary,
-                              width: AppSizeHeight.s0_5,
-                            ),
-                            bottom: BorderSide(
-                              color: ColorManager.darkPrimary,
-                              width: AppSizeHeight.s0_5,
-                            ),
-                          ),
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(AppSizeWidth.s4),
-                          ),
-                        ),
-                        height: AppSizeHeight.s96,
-                        width: AppSizeWidth.s83,
-                        child: _buildPaletteForMode(),
-                      ),
-                    ),
-                  )
-                : Container(),
-            Positioned(
-              top: 0,
-              right: 0,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  isSelectedToolOpen
-                      ? ToolPaletteWidget(
-                          isToolOpen: _isSelectedToolOpen,
-                          mode: _mode,
-                          selectedColor: _selectedColor,
-                          selectedStyle: _selectedStyle,
-                          selectedTool: _selectedTool,
-                          onModeChanged: (mode) => setState(() => _mode = mode),
-                          onStyleChanged: (style) =>
-                              setState(() => _selectedStyle = style),
-                          onToolSelected: _selectTool,
-                          selectedStampAsset: _selectedStampAsset,
-                          stamps: stamps,
-                        )
-                      : Container(),
-                  AnimatedVerticalPalette(
-                    animation: _verticalPaletteAnimation,
-                    child: VerticalToolPaletteWidget(
-                      selectedImage: selectedPatternImage,
-                      isColorOpen: _isSelectedColorOpen,
-                      isToolOpen: _isSelectedToolOpen,
-                      selectedColor: _selectedColor,
-                      selectedTool: _selectedTool,
-                      selectedStampAsset: _selectedStampAsset,
-                      brushMode: _mode,
-                      stamps: stamps,
-                      onEraserSelected: () {
-                        setState(() {
-                          _mode = BrushMode.eraser;
-                        });
-                        _closeBothPalettes();
-                      },
-                      onMagicSelected: () {
-                        setState(() {
-                          _mode = BrushMode.magic;
+            );
 
-                          _selectedTool = SelectedTool(
-                            mode: BrushMode.magic,
-                            style: StrokeStyle.solid,
-                            type: ToolType.magic,
-                          );
-                        });
-
-                        _closeBothPalettes();
-                      },
-                      onClearSelected: () {
-                        _clearAllPaintingsAndStamps();
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            Positioned(
-              left: 0,
-              top: 0,
+            // ✅ CHANGED: SizeTransition instead of the old slide-and-fade
+            // overlay — when a rail hides itself while the child draws, the
+            // canvas really grows instead of leaving an empty gap.
+            final actionRail = SizeTransition(
+              axis: railsAxis,
+              // Shrink towards the screen edge the rail is anchored to.
+              alignment: railsOnSides
+                  ? Alignment.topCenter
+                  : Alignment.centerLeft,
+              sizeFactor: _leftPaletteAnimation,
               child: VerticalActionToolsWidget(
+                axis: railsAxis,
                 onUndo: _undo,
                 onSave: _saveToGallery,
                 redo: _redoAction,
@@ -1203,10 +1122,122 @@ class _PaintingPageState extends State<PaintingPage>
                   await _confirmClose();
                 },
               ),
-            ),
-          ],
+            );
+
+            final toolRail = SizeTransition(
+              axis: railsAxis,
+              alignment: railsOnSides
+                  ? Alignment.topCenter
+                  : Alignment.centerRight,
+              sizeFactor: _verticalPaletteAnimation,
+              child: VerticalToolPaletteWidget(
+                axis: railsAxis,
+                selectedImage: selectedPatternImage,
+                isColorOpen: _isSelectedColorOpen,
+                isToolOpen: _isSelectedToolOpen,
+                selectedColor: _selectedColor,
+                selectedTool: _selectedTool,
+                selectedStampAsset: _selectedStampAsset,
+                brushMode: _mode,
+                stamps: stamps,
+                onEraserSelected: () {
+                  setState(() {
+                    _mode = BrushMode.eraser;
+                  });
+                  _closeBothPalettes();
+                },
+                onMagicSelected: () {
+                  setState(() {
+                    _mode = BrushMode.magic;
+
+                    _selectedTool = SelectedTool(
+                      mode: BrushMode.magic,
+                      style: StrokeStyle.solid,
+                      type: ToolType.magic,
+                    );
+                  });
+
+                  _closeBothPalettes();
+                },
+                onClearSelected: () {
+                  _clearAllPaintingsAndStamps();
+                },
+              ),
+            );
+
+            final panel = _buildDockedPanel(railsAxis, screenW, screenH);
+
+            return SafeArea(
+              child: railsOnSides
+                  ? Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        actionRail,
+                        Expanded(child: canvas),
+                        ?panel,
+                        toolRail,
+                      ],
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(child: canvas),
+                        ?panel,
+                        Row(
+                          children: [actionRail, const Spacer(), toolRail],
+                        ),
+                      ],
+                    ),
+            );
+          },
         ),
       ),
+    );
+  }
+
+  /// ✅ NEW: the tool grid / colour / stamp / pattern panel, docked as a
+  /// sibling of the canvas so it shrinks the drawing area instead of covering
+  /// it. Returns null when no panel is open.
+  Widget? _buildDockedPanel(Axis railsAxis, double screenW, double screenH) {
+    final showToolPanel = isSelectedToolOpen;
+    final showPalette = isSelectedColorOpen;
+
+    if (!showToolPanel && !showPalette) return null;
+
+    final Widget content = showToolPanel
+        ? ToolPaletteWidget(
+            isToolOpen: _isSelectedToolOpen,
+            mode: _mode,
+            selectedColor: _selectedColor,
+            selectedStyle: _selectedStyle,
+            selectedTool: _selectedTool,
+            onModeChanged: (mode) => setState(() => _mode = mode),
+            onStyleChanged: (style) => setState(() => _selectedStyle = style),
+            onToolSelected: _selectTool,
+            selectedStampAsset: _selectedStampAsset,
+            stamps: stamps,
+          )
+        : _buildPaletteForMode();
+
+    final onSides = railsAxis == Axis.vertical;
+
+    return Container(
+      width: onSides ? KidLayout.panelWidth(screenW) : null,
+      height: onSides ? null : KidLayout.panelHeight(screenH),
+      margin: const EdgeInsets.all(4),
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: ColorManager.darkPrimary,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.20),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: content,
     );
   }
 
