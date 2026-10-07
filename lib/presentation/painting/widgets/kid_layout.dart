@@ -1,6 +1,7 @@
 import 'dart:math' as math;
-import 'dart:ui' show Rect, Size;
+import 'dart:ui' show Offset, Rect, Size;
 
+import 'package:flutter/painting.dart' show Alignment;
 import 'package:sizer/sizer.dart';
 
 /// Layout maths for the kid-friendly painting screen.
@@ -176,6 +177,131 @@ class KidLayout {
     final ty = (canvas.height - drawnHeight) / 2 - bounds.top * scaleY;
 
     return {'scaleX': scaleX, 'scaleY': scaleY, 'tx': tx, 'ty': ty};
+  }
+
+  // ---------------------------------------------------------------------------
+  // The "Coloring Book" controls (round 6): bubbles and the colour fan.
+  // ---------------------------------------------------------------------------
+
+  /// The bubble a thumb rests on at the bottom right: 22 % of the screen
+  /// height, big enough to find without looking.
+  static const double crayonBubbleH = 22;
+  static const double minCrayonBubble = 64;
+  static const double maxCrayonBubble = 120;
+
+  static double get crayonBubbleSize => _bounded(
+    pctH(crayonBubbleH),
+    minCrayonBubble,
+    math.min(maxCrayonBubble, screenH * 0.34),
+  );
+
+  /// The tool bubble above it, and the small corner bubbles (home, save).
+  static const double bubbleH = 16;
+  static const double minBubble = 50;
+
+  static double get bubbleSize =>
+      _bounded(pctH(bubbleH), minBubble, crayonBubbleSize * 0.78);
+
+  /// The undo / redo pill.
+  static const double pillH = 13;
+  static const double minPill = 44;
+
+  static double get pillHeight => _bounded(pctH(pillH), minPill, 68);
+
+  /// How far the fan reaches from the bubble, and how big its circles are.
+  static const double fanRadiusH = 42;
+  static const double minFanRadius = 118;
+  static const double maxFanRadius = 190;
+
+  static double get fanOuterRadius => _bounded(
+    pctH(fanRadiusH),
+    minFanRadius,
+    math.min(maxFanRadius, screenH * 0.52),
+  );
+
+  static double get fanInnerRadius => fanOuterRadius * 0.62;
+
+  /// ✅ FIXED: how many colours the fan shows before the "more" circle.
+  ///
+  /// It was 12, which cannot work: from a bubble in the corner the fan only has
+  /// a quarter turn of usable space, and 12 circles of 46 dp need an arc of
+  /// ~600 dp — that either runs off the screen or makes the circles overlap.
+  /// Eight families (the ones children reach for) plus "＋" for the full grid is
+  /// the honest maximum for this shape, and every one of them stays big.
+  static const int fanColorCount = 8;
+
+  /// A fan circle: at least a fingertip, never smaller than 44.
+  static const double fanDotH = 13;
+  static const double minFanDot = 44;
+
+  static double get fanDotSize => _bounded(pctH(fanDotH), minFanDot, 66);
+
+  /// Where a fan's circles start and end, in degrees, **in screen
+  /// coordinates** (0° = right, 90° = down, 270° = up).
+  ///
+  /// ✅ FIXED: it is a **quarter turn (90°) that opens into the screen**, so
+  /// every circle stays on screen. The earlier version swept up to 300° for a
+  /// bottom-right bubble, which put the last two circles past the right edge.
+  static ({double start, double end}) fanArcFor(Alignment anchor) {
+    if (anchor == Alignment.bottomRight) {
+      // Straight left (180°) round to straight up (270°).
+      return (start: 180, end: 270);
+    }
+    if (anchor == Alignment.bottomLeft) {
+      // Straight up (270°) round to straight right (360°).
+      return (start: 270, end: 360);
+    }
+    if (anchor == Alignment.topRight) {
+      // Straight down (90°) round to straight left (180°).
+      return (start: 90, end: 180);
+    }
+    // topLeft: straight right (0°) round to straight down (90°).
+    return (start: 0, end: 90);
+  }
+
+  /// The centre of the bubble that the fan is built around: [inset] dp from the
+  /// corner of [size] given by [anchor] (the bubble's own centre).
+  static Offset fanAnchor(Size size, Alignment anchor, {double? inset}) {
+    final margin = inset ?? fanMargin + crayonBubbleSize / 2;
+    final x = anchor.x < 0 ? margin : size.width - margin;
+    final y = anchor.y < 0 ? margin : size.height - margin;
+    return Offset(x, y);
+  }
+
+  /// Distance from the screen edge to the nearest edge of the corner bubbles.
+  static double get fanMargin => _bounded(pctH(2.4), 6, 22);
+
+  /// ✅ NEW: the biggest circle size that still fits [count] circles on an arc
+  /// of [radius] without them colliding — never below [minFanDot], never above
+  /// [fanDotSize].
+  ///
+  /// With the quarter-turn arcs above, the two rows of the fan carry different
+  /// numbers of circles, so they need different sizes: five circles on the
+  /// outer arc can be large, four on the shorter inner arc must be smaller.
+  static double fanDotSizeFor({
+    required int count,
+    required double radius,
+    required ({double start, double end}) arc,
+  }) {
+    if (count <= 0) return fanDotSize;
+    final sweepRad = (arc.end - arc.start).abs() * math.pi / 180.0;
+    final arcLength = radius * sweepRad;
+    final spacing = count <= 1 ? arcLength : arcLength / (count - 1);
+    return _bounded(spacing * 0.92, minFanDot, fanDotSize);
+  }
+
+  /// One circle of a fan: [index] of [count] placed on an arc of [radius]
+  /// between [arc].start and [arc].end degrees.
+  static Offset fanDotOffset({
+    required int index,
+    required int count,
+    required double radius,
+    required ({double start, double end}) arc,
+  }) {
+    final t = count <= 1 ? 0.0 : index / (count - 1);
+    final deg = arc.start + (arc.end - arc.start) * t;
+    final rad = deg * math.pi / 180.0;
+    return Offset(math.cos(rad) * radius, math.sin(rad) * radius);
   }
 
   /// All twelve artworks are 1920 x 1080, i.e. 16:9 landscape.
