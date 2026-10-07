@@ -23,6 +23,8 @@ import 'coloring_canvas.dart';
 import 'models/tool_type.dart';
 // ✅ NEW (kid-ui): the S / M / L brush presets.
 import 'models/brush_size.dart';
+// ✅ NEW (kid-ui): the kid-sized "erase everything?" dialog.
+import 'widgets/kid_dialogs.dart';
 import 'region.dart';
 import 'svg_parser.dart';
 import 'widgets/color_palette_widget.dart';
@@ -285,6 +287,14 @@ class _PaintingPageState extends State<PaintingPage>
     }
     // ----- old version (kept for reference) -----
     // _savePainting();
+  }
+
+  /// ✅ NEW (kid-ui): the clear button asks first. It used to wipe the page on
+  /// the first touch, sitting right beside the eraser.
+  Future<void> _confirmClearAll() async {
+    final confirmed = await showClearAllDialog(context);
+    if (!mounted || !confirmed) return;
+    _clearAllPaintingsAndStamps();
   }
 
   void _clearAllPaintingsAndStamps() {
@@ -1178,8 +1188,13 @@ class _PaintingPageState extends State<PaintingPage>
                   _closeBothPalettes();
                 },
                 onClearSelected: () {
-                  _clearAllPaintingsAndStamps();
+                  // ✅ CHANGED (kid-ui): confirm before erasing everything.
+                  _confirmClearAll();
                 },
+                // ----- old version (kept for reference) -----
+                // onClearSelected: () {
+                //   _clearAllPaintingsAndStamps();
+                // },
               ),
             );
 

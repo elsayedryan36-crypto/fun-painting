@@ -82,6 +82,10 @@ import 'region.dart';
 //   int _animationId = 0;
 //   Offset _lastTouchPosition = Offset.zero;
 
+/// ✅ NEW (kid-ui): what the tap currently in progress did, so tap-up can
+/// pick the right feedback.
+TapFeedback _feedback = TapFeedback.none;
+
 //   // Cache rasterized pictures of finished strokes to avoid re-drawing points
 //   // every frame. Keyed by `stroke.hashCode`.
 //   final Map<int, ui.Picture> _strokePictureCache = {};
@@ -776,11 +780,89 @@ import 'region.dart';
 //   }
 // }
 
+/// ✅ NEW (kid-ui): what the last tap actually did, so the feedback can react
+/// to it instead of celebrating every touch the same way.
+enum TapFeedback { none, fill, magic, stamp, dot, locked }
+
+/// ✅ NEW (kid-ui): how big the sparkle is for each kind of tap. A shape that
+/// just got filled deserves a bigger burst than a single dot, and a locked
+/// shape gets the small "no" ring (see [StarAnimation.locked]).
+double sparkleSizeFor(TapFeedback feedback) {
+  switch (feedback) {
+    case TapFeedback.fill:
+    case TapFeedback.magic:
+      return 130;
+    case TapFeedback.stamp:
+      return 110;
+    case TapFeedback.dot:
+      return 90;
+    case TapFeedback.locked:
+      return 64;
+    case TapFeedback.none:
+      return 0;
+  }
+}
+
 class StarAnimation {
   final int id;
   final Offset position;
 
-  StarAnimation({required this.id, required this.position});
+  /// ✅ NEW (kid-ui): the burst size — `sparkleSizeFor()` decides it.
+  final double size;
+
+  /// ✅ NEW (kid-ui): a locked ("keepcolor") shape says no with a small ring
+  /// instead of confetti.
+  final bool locked;
+
+  StarAnimation({
+    required this.id,
+    required this.position,
+    this.size = 90,
+    this.locked = false,
+  });
+
+  // ----- old version (kept for reference) -----
+  // class StarAnimation {
+  //   final int id;
+  //   final Offset position;
+  //
+  //   StarAnimation({required this.id, required this.position});
+  // }
+}
+
+/// ✅ NEW (kid-ui): the "you cannot colour this one" answer — a quick ring that
+/// grows and fades at the finger. It is drawn with a plain `CustomPaint` (no
+/// asset, no Lottie) so it can never fail to load, and it is removed from the
+/// stack 600 ms after it starts.
+class _LockedPulse extends StatelessWidget {
+  const _LockedPulse();
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0, end: 1),
+      duration: const Duration(milliseconds: 450),
+      builder: (context, t, _) => CustomPaint(painter: _LockedPulsePainter(t)),
+    );
+  }
+}
+
+class _LockedPulsePainter extends CustomPainter {
+  final double t;
+
+  _LockedPulsePainter(this.t);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 6 * (1 - t)
+      ..color = const Color(0xFFE53935).withValues(alpha: 1 - t);
+    canvas.drawCircle(size.center(Offset.zero), 12 + 18 * t, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _LockedPulsePainter old) => old.t != t;
 }
 
 enum BrushMode { fill, magic, freehand, eraser, stamp }
@@ -1167,6 +1249,9 @@ class ColoringCanvasState extends State<ColoringCanvas> {
 
           setState(() {});
 
+          // ✅ NEW (kid-ui): a stamp gets a medium burst.
+          _feedback = TapFeedback.stamp;
+
           widget.onColoringAction({
             'type': 'stamp',
             'regionIndex': i,
@@ -1196,6 +1281,9 @@ class ColoringCanvasState extends State<ColoringCanvas> {
             // (keepcolor="true") ignores fills — it must not clear the
             // child's stamps either, nor record an undo step.
             if (region.keepOriginalColor) {
+              // ✅ NEW (kid-ui): tell the child *why* nothing happened — a
+              // gentle ring at the finger, instead of the old silent no-op.
+              _feedback = TapFeedback.locked;
               return;
             }
             // ----- old version (kept for reference) -----
@@ -1213,6 +1301,9 @@ class ColoringCanvasState extends State<ColoringCanvas> {
 
             region.fill(widget.selectedColor, widget.selectedStyle);
             region.strokes.clear();
+
+            // ✅ NEW (kid-ui): a filled shape gets the big sparkle.
+            _feedback = TapFeedback.fill;
 
             widget.onColoringAction({
               'type': 'fill',
@@ -1237,6 +1328,9 @@ class ColoringCanvasState extends State<ColoringCanvas> {
             region.resetToOriginal();
             region.strokes.clear();
 
+            // ✅ NEW (kid-ui): the magic wand gets the big sparkle too.
+            _feedback = TapFeedback.magic;
+
             widget.onColoringAction({
               'type': 'magic',
               'regionIndex': i,
@@ -1247,6 +1341,9 @@ class ColoringCanvasState extends State<ColoringCanvas> {
           } else if (widget.brushMode == BrushMode.freehand ||
               widget.brushMode == BrushMode.eraser) {
             _activeRegionIndex = i;
+
+            // ✅ NEW (kid-ui): a tap that leaves a dot gets the normal burst.
+            _feedback = TapFeedback.dot;
 
             _currentStroke = Stroke(
               points: <Offset>[p],
@@ -1388,10 +1485,12 @@ class ColoringCanvasState extends State<ColoringCanvas> {
     BrushSoundService.instance.stop();
   }
 
-  void _showStarAnimation() {
+  void _showStarAnimation({double size = 90, bool locked = false}) {
     final animation = StarAnimation(
       id: _animationId++,
       position: _lastTouchPosition,
+      size: size,
+      locked: locked,
     );
 
     setState(() {
@@ -1402,7 +1501,9 @@ class ColoringCanvasState extends State<ColoringCanvas> {
     // ✅ FIX: remove the confetti again after it has played. It used to stay
     // in the Stack forever, so every tap added another live Lottie widget —
     // unbounded memory/layout cost over a session.
-    Future.delayed(const Duration(milliseconds: 1500), () {
+    // ✅ CHANGED (kid-ui): the "no" ring is short and quick; the confetti
+    // keeps its 1.5 s.
+    Future.delayed(Duration(milliseconds: locked ? 600 : 1500), () {
       if (!mounted || _isDisposed) return;
       setState(() {
         _animations.removeWhere((a) => a.id == animation.id);
@@ -1530,7 +1631,18 @@ class ColoringCanvasState extends State<ColoringCanvas> {
     // ----- old version (kept for reference) -----
     // (nothing was reset here, which is what caused the bug above)
 
-    _showStarAnimation();
+    // ✅ CHANGED (kid-ui): the same confetti used to fire for every touch —
+    // including taps that changed nothing. Now the feedback matches what the
+    // child just did: a big burst for a filled shape, the small ring for a
+    // locked one, and nothing at all for a tap that did nothing.
+    final feedback = _feedback;
+    _feedback = TapFeedback.none;
+    final size = sparkleSizeFor(feedback);
+    if (size > 0) {
+      _showStarAnimation(size: size, locked: feedback == TapFeedback.locked);
+    }
+    // ----- old version (kept for reference) -----
+    // _showStarAnimation();
   }
 
   /// ✅ NEW: a cancelled drag (second finger, system gesture, arena
@@ -1637,24 +1749,30 @@ class ColoringCanvasState extends State<ColoringCanvas> {
                   // ✅ NEW: a stable key so removing one confetti does not
                   // recycle another one's Lottie state.
                   key: ValueKey(animation.id),
-                  left: animation.position.dx - 45,
-                  top: animation.position.dy - 45,
+                  // ✅ NEW (kid-ui): the burst is centred on the finger, at
+                  // whatever size the kind of tap asked for.
+                  left: animation.position.dx - animation.size / 2,
+                  top: animation.position.dy - animation.size / 2,
                   child: SizedBox(
-                    width: 90,
-                    height: 90,
+                    width: animation.size,
+                    height: animation.size,
                     child: IgnorePointer(
-                      child: Lottie.asset(
-                        "assets/json/Confetti.json",
-                        repeat: false,
-                        onLoaded: (_) {},
-                        delegates: null,
-                        frameRate: FrameRate.max,
-                        animate: true,
-                        fit: BoxFit.contain,
-                        options: LottieOptions(enableMergePaths: true),
-                        controller: null,
-                        onWarning: (warning) {},
-                      ),
+                      // ✅ NEW (kid-ui): a locked shape answers with a ring,
+                      // not with a celebration.
+                      child: animation.locked
+                          ? const _LockedPulse()
+                          : Lottie.asset(
+                              "assets/json/Confetti.json",
+                              repeat: false,
+                              onLoaded: (_) {},
+                              delegates: null,
+                              frameRate: FrameRate.max,
+                              animate: true,
+                              fit: BoxFit.contain,
+                              options: LottieOptions(enableMergePaths: true),
+                              controller: null,
+                              onWarning: (warning) {},
+                            ),
                     ),
                   ),
                 );
