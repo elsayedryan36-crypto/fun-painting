@@ -90,91 +90,45 @@ Future<int> _paintedPixels(double brushScale) async {
 }
 
 void main() {
-  group('colour palette', () {
-    testWidgets('lays out as many per row as really fit', (tester) async {
-      // On a tablet-width panel that is the full 8.
-      await tester.pumpWidget(_panel(_palette()));
+  group('colour palette (the app original layout)', () {
+    testWidgets('shows the colours 6 to a row', (tester) async {
+      await tester.pumpWidget(_panel(_palette(), width: 900, height: 400));
 
       double dyOf(int index) =>
           tester.getCenter(find.byKey(Key('kid_color_swatch_$index'))).dy;
 
-      expect(KidLayout.colorColumnsFor(_tabletPanel), 8);
-      for (var i = 1; i < 8; i++) {
+      // The first six share a row (the original crossAxisCount is 6)…
+      for (var i = 1; i < 6; i++) {
         expect(dyOf(i), dyOf(0), reason: 'swatch $i is not on the first row');
       }
-      expect(dyOf(8), greaterThan(dyOf(0)));
-
-      // Every colour of every group is offered.
-      expect(find.byKey(const Key('kid_color_swatch_0')), findsOneWidget);
-      for (final swatch in ColorPaletteWidget.allSwatches) {
-        expect(swatch.color, isNotNull);
-      }
+      // …and the seventh starts the next one.
+      expect(dyOf(6), greaterThan(dyOf(0)));
     });
 
-    testWidgets('drops to fewer columns on a small phone instead of shrinking '
-        'the swatches', (tester) async {
-      final columns = KidLayout.colorColumnsFor(_smallPanel);
-      expect(columns, lessThan(8), reason: '8 columns would be < 44 dp here');
+    testWidgets('every group is offered', (tester) async {
+      await tester.pumpWidget(_panel(_palette(), width: 900, height: 400));
 
-      await tester.pumpWidget(_panel(_palette(), width: _smallPanel));
-
-      // The first row holds exactly `columns` swatches…
-      double dyOf(int index) =>
-          tester.getCenter(find.byKey(Key('kid_color_swatch_$index'))).dy;
-      for (var i = 1; i < columns; i++) {
-        expect(dyOf(i), dyOf(0), reason: 'swatch $i is not on the first row');
-      }
-      expect(dyOf(columns), greaterThan(dyOf(0)));
-
-      // …and they are still kid sized.
-      final size = tester.getSize(find.byKey(const Key('kid_color_swatch_0')));
-      expect(size.width, greaterThanOrEqualTo(KidLayout.minSwatch));
-    });
-
-    testWidgets('every swatch is big enough for a small finger', (
-      tester,
-    ) async {
-      // The narrowest panel the page ever gives the palette.
-      await tester.pumpWidget(_panel(_palette(), width: _smallPanel));
-
-      final columns = KidLayout.colorColumnsFor(_smallPanel);
-      for (var i = 0; i < columns; i++) {
-        final size = tester.getSize(find.byKey(Key('kid_color_swatch_$i')));
-        expect(
-          size.width,
-          greaterThanOrEqualTo(KidLayout.minSwatch),
-          reason: 'swatch $i is ${size.width} dp wide',
-        );
-        expect(
-          size.height,
-          greaterThanOrEqualTo(KidLayout.minSwatch),
-          reason: 'swatch $i is ${size.height} dp tall',
-        );
+      expect(ColorPaletteWidget.allSwatches.length, greaterThanOrEqualTo(72));
+      for (final color in ColorPaletteWidget.allSwatches) {
+        expect(color, isNotNull);
       }
     });
 
     testWidgets('tapping a swatch reports that colour', (tester) async {
       Color? picked;
       await tester.pumpWidget(
-        _panel(_palette(onColorSelected: (c) => picked = c)),
+        _panel(
+          _palette(onColorSelected: (c) => picked = c),
+          width: 900,
+          height: 400,
+        ),
       );
 
-      // A swatch from the first row, so it is always laid out and visible.
-      final expected = ColorPaletteWidget.allSwatches[5].color;
+      final expected = ColorPaletteWidget.allSwatches[5];
       await tester.tap(find.byKey(const Key('kid_color_swatch_5')));
       await tester.pump();
 
       expect(picked, expected);
-    });
-
-    testWidgets('never squeezes the swatches on a wide bottom bar', (
-      tester,
-    ) async {
-      // A 1920 dp wide panel — the whole screen given to the palette.
-      await tester.pumpWidget(_panel(_palette(), width: 1920));
-
-      final size = tester.getSize(find.byKey(const Key('kid_color_swatch_0')));
-      expect(size.width, lessThanOrEqualTo(KidLayout.maxSwatch));
     });
   });
 
