@@ -1,187 +1,232 @@
-// Tests for the kid-ui painting layout.
+// Tests for the kid-ui painting layout (round 3 — the app's own percentage
+// sizing system).
 //
-// The important claim to keep honest: docking the rails must never make the
-// colouring area smaller than the alternative, and the decision between side
-// rails and a bottom bar must follow the screen shape.
+// The claims worth keeping honest:
+//   * the layout is sized as a percentage of the screen (`.h` / `.w`, the same
+//     language the original code used), not in fixed dp;
+//   * a rail always fits the buttons it holds — it shrinks them instead of
+//     overflowing or making the child scroll;
+//   * buttons never shrink below a real touch target;
+//   * the colour grid keeps swatches at kid size on a small phone.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fun_painting/presentation/painting/widgets/kid_controls.dart';
 import 'package:fun_painting/presentation/painting/widgets/kid_layout.dart';
 
+Widget _host(Widget child, {Size size = const Size(2400, 1080)}) {
+  return MaterialApp(
+    home: MediaQuery(
+      data: MediaQueryData(size: size),
+      child: Scaffold(body: Center(child: child)),
+    ),
+  );
+}
+
 void main() {
-  group('art area maths', () {
-    test('keeps the 16:9 artwork aspect ratio', () {
-      // Fit 1920x1080 into a much wider box: height-limited.
-      expect(KidLayout.artArea(2400, 1080), closeTo(1920 * 1080, 1));
-      // Fit into a shorter box: width-limited.
-      expect(KidLayout.artArea(1920, 900), closeTo(1600 * 900, 1));
+  group('percentage sizing', () {
+    test('falls back to a small phone when Sizer has not measured yet', () {
+      // No Sizer in a widget test, so Device.height is `late` — the fallback
+      // must kick in instead of throwing.
+      expect(KidLayout.screenW, greaterThan(0));
+      expect(KidLayout.screenH, greaterThan(0));
+      expect(KidLayout.buttonSize, greaterThanOrEqualTo(KidLayout.minButton));
+      expect(KidLayout.buttonSize, lessThanOrEqualTo(KidLayout.maxButton));
     });
 
-    test('returns 0 for degenerate boxes', () {
-      expect(KidLayout.artArea(0, 100), 0);
-      expect(KidLayout.artArea(100, 0), 0);
-      expect(KidLayout.artArea(-5, 100), 0);
+    test('a button is a percentage of the screen, bounded', () {
+      final fromHeight = KidLayout.pctH(KidLayout.buttonH);
+      final fromWidth = KidLayout.pctW(KidLayout.buttonW);
+      final wanted = fromHeight < fromWidth ? fromHeight : fromWidth;
+
+      expect(
+        KidLayout.buttonSize,
+        wanted.clamp(KidLayout.minButton, KidLayout.maxButton),
+        reason: 'the button must follow the screen, like AppSizeHeight does',
+      );
     });
 
-    test('rails on the sides cost the child nothing on a wide phone', () {
-      // 20:9 phone in landscape (the app locks landscape).
-      const w = 2400.0;
-      const h = 1080.0;
-
-      expect(KidLayout.preferSideRails(w, h), isTrue);
-
-      // With side rails the artwork still gets the FULL screen height,
-      // because the rails sit in the empty bands beside a 16:9 drawing.
-      final artWithRails = KidLayout.artArea(w - 2 * KidLayout.railThickness, h);
-      expect(artWithRails, closeTo(1920 * 1080, 1));
-
-      // …and that is more than a bottom bar would leave.
-      final artWithBottomBar = KidLayout.artArea(w, h - KidLayout.railThickness);
-      expect(artWithRails, greaterThan(artWithBottomBar));
-    });
-
-    test('a 16:9 screen prefers a bottom bar (there are no side bands)', () {
-      expect(KidLayout.preferSideRails(1920, 1080), isFalse);
-      expect(KidLayout.preferSideRails(1024, 768), isFalse); // 4:3 tablet
-    });
-
-    test('23:9 and wider still prefer side rails', () {
-      expect(KidLayout.preferSideRails(2760, 1080), isTrue);
-      expect(KidLayout.preferSideRails(3120, 1080), isTrue);
-    });
-
-    test('the chosen layout is never worse than the other one', () {
-      const screens = <List<double>>[
-        [2400, 1080],
-        [2340, 1080],
-        [2160, 1080],
-        [1920, 1080],
-        [2048, 1536],
-        [1024, 768],
-        [2760, 1080],
-      ];
-
-      for (final s in screens) {
-        final w = s[0];
-        final h = s[1];
-        final side = KidLayout.artArea(w - 2 * KidLayout.railThickness, h);
-        final bottom = KidLayout.artArea(w, h - KidLayout.railThickness);
-        final chosen = KidLayout.preferSideRails(w, h) ? side : bottom;
-        final other = KidLayout.preferSideRails(w, h) ? bottom : side;
-
-        expect(
-          chosen,
-          greaterThanOrEqualTo(other),
-          reason: 'on ${w.toInt()}x${h.toInt()} the chosen layout leaves '
-              '${chosen.toInt()} px² but the other would leave '
-              '${other.toInt()} px²',
-        );
-
-        // And it must always leave a usable canvas.
-        expect(chosen, greaterThan(0));
-      }
-    });
-
-    test('panels are bounded so they cannot swallow the canvas', () {
-      expect(KidLayout.panelWidth(2400), lessThanOrEqualTo(360));
-      expect(KidLayout.panelWidth(2400), lessThan(2400 * 0.5));
-      expect(KidLayout.panelHeight(1080), lessThanOrEqualTo(230));
-      expect(KidLayout.panelHeight(1080), lessThan(1080 * 0.5));
+    test('the percentage is what drives it (no fixed 64 dp anymore)', () {
+      // With no Sizer the fallback screen is 800 x 400 (landscape phone), so
+      // the height percentage wins: 18 % of 400 = 72 dp.
+      expect(KidLayout.screenH, 400);
+      expect(KidLayout.buttonSize, 72);
+      expect(
+        KidLayout.buttonSize,
+        isNot(64),
+        reason: 'a fixed 64 dp is exactly what round 2 did and what we left',
+      );
+      // The rail is a button plus padding, like the original 22.h rail.
+      expect(KidLayout.railThickness, greaterThan(KidLayout.buttonSize));
     });
   });
 
-  group('kid controls', () {
-    testWidgets('rail buttons are big enough for small fingers', (tester) async {
+  group('a rail always fits its buttons', () {
+    test('short rail -> smaller buttons, never smaller than 48 dp', () {
+      // A 1080x340 landscape screen: rails must hold 5 buttons in 340 dp.
+      final size = KidLayout.railButtonSize(railExtent: 320, count: 5);
+      expect(size, lessThan(KidLayout.buttonSize));
+      expect(size, greaterThanOrEqualTo(KidLayout.minButton));
+
+      // A very short screen: the floor wins and the rail scrolls instead.
+      final tiny = KidLayout.railButtonSize(railExtent: 200, count: 5);
+      expect(tiny, KidLayout.minButton);
+    });
+
+    test('tall rail -> full-size buttons', () {
+      final size = KidLayout.railButtonSize(railExtent: 2000, count: 5);
+      expect(size, KidLayout.buttonSize);
+    });
+
+    test('an empty rail does not divide by zero', () {
+      expect(KidLayout.railButtonSize(railExtent: 500, count: 0), isNotNull);
+    });
+  });
+
+  group('colour grid stays kid sized', () {
+    test('eight columns only when they are big enough', () {
+      // A tablet-width panel (the full 8-column grid width).
+      expect(KidLayout.colorColumnsFor(KidLayout.swatchGridWidth), 8);
+      // A 640 dp phone gives the panel ~269 dp: eight columns would be 26 dp,
+      // six are 44 dp. Six must win.
+      final phonePanel = KidLayout.colorPanelWidth(640);
+      expect(phonePanel, lessThan(KidLayout.swatchGridWidth));
+      expect(KidLayout.colorColumnsFor(phonePanel), lessThan(8));
+      expect(KidLayout.colorColumnsFor(phonePanel), greaterThanOrEqualTo(4));
+    });
+
+    test('columns are never fewer than four', () {
+      expect(KidLayout.colorColumnsFor(120), 4);
+    });
+
+    test('the panel leaves the canvas the majority of the screen', () {
+      for (final w in [640.0, 800.0, 2400.0]) {
+        expect(KidLayout.colorPanelWidth(w), lessThan(w * 0.55));
+        expect(KidLayout.panelWidth(w), lessThan(w * 0.5));
+      }
+    });
+  });
+
+  group('rail buttons', () {
+    testWidgets('a side rail stacks its buttons and reports its geometry', (
+      tester,
+    ) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Center(
-              child: KidRailButton(
-                label: 'Brush',
+        _host(
+          KidRail(
+            axis: Axis.vertical,
+            children: [
+              KidRailButton(
+                label: 'One',
                 onTap: () {},
-                child: const Icon(Icons.brush),
+                child: const Icon(Icons.looks_one),
               ),
-            ),
+              KidRailButton(
+                label: 'Two',
+                onTap: () {},
+                child: const Icon(Icons.looks_two),
+              ),
+            ],
           ),
         ),
       );
 
-      final size = tester.getSize(find.byType(KidRailButton));
-      // 48 dp is the platform minimum; we ship 64 dp.
-      expect(size.width, greaterThanOrEqualTo(48));
-      expect(size.height, greaterThanOrEqualTo(48));
-      // The widget box is the button face plus its 2 dp margin on each side.
-      expect(size.width, greaterThanOrEqualTo(KidLayout.buttonSize));
-      expect(size.width, KidLayout.buttonSize + 4);
-    });
-
-    testWidgets('rail buttons report taps and their label', (tester) async {
-      var taps = 0;
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: KidRailButton(
-              label: 'Eraser',
-              onTap: () => taps++,
-              child: const Icon(Icons.cleaning_services),
-            ),
-          ),
-        ),
-      );
-
-      await tester.tap(find.byType(KidRailButton));
-      expect(taps, 1);
-      expect(find.bySemanticsLabel('Eraser'), findsWidgets);
-    });
-
-    testWidgets('a vertical rail stacks its buttons', (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Row(
-              children: [
-                KidRail(
-                  axis: Axis.vertical,
-                  children: [
-                    KidRailButton(onTap: () {}, child: const Icon(Icons.looks_one)),
-                    KidRailButton(onTap: () {}, child: const Icon(Icons.looks_two)),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-
-      final first = tester.getTopLeft(find.byIcon(Icons.looks_one));
-      final second = tester.getTopLeft(find.byIcon(Icons.looks_two));
+      final first = tester.getCenter(find.byIcon(Icons.looks_one));
+      final second = tester.getCenter(find.byIcon(Icons.looks_two));
       expect(second.dy, greaterThan(first.dy));
       expect(second.dx, first.dx);
     });
 
-    testWidgets('a horizontal rail places its buttons side by side',
-        (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Column(
+    testWidgets('every button is at least a 48 dp touch target', (
+      tester,
+    ) async {
+      for (final size in [const Size(320, 640), const Size(1080, 2400)]) {
+        await tester.pumpWidget(
+          _host(
+            KidRail(
+              axis: Axis.vertical,
               children: [
-                KidRail(
-                  axis: Axis.horizontal,
-                  children: [
-                    KidRailButton(onTap: () {}, child: const Icon(Icons.looks_one)),
-                    KidRailButton(onTap: () {}, child: const Icon(Icons.looks_two)),
-                  ],
+                KidRailButton(
+                  label: 'A',
+                  onTap: () {},
+                  child: const Icon(Icons.brush),
+                ),
+                KidRailButton(
+                  label: 'B',
+                  onTap: () {},
+                  child: const Icon(Icons.star),
                 ),
               ],
             ),
+            size: size,
+          ),
+        );
+
+        for (final icon in [Icons.brush, Icons.star]) {
+          final box = tester.getSize(
+            find
+                .ancestor(of: find.byIcon(icon), matching: find.byType(InkWell))
+                .first,
+          );
+          expect(
+            box.width,
+            greaterThanOrEqualTo(KidLayout.minButton),
+            reason: 'on $size the button came out ${box.width} dp wide',
+          );
+        }
+      }
+    });
+
+    testWidgets('a tap runs the action and the label is readable', (
+      tester,
+    ) async {
+      var taps = 0;
+      await tester.pumpWidget(
+        _host(
+          KidRail(
+            axis: Axis.vertical,
+            children: [
+              KidRailButton(
+                label: 'Eraser',
+                onTap: () => taps++,
+                child: const Icon(Icons.cleaning_services),
+              ),
+            ],
           ),
         ),
       );
 
-      final first = tester.getTopLeft(find.byIcon(Icons.looks_one));
-      final second = tester.getTopLeft(find.byIcon(Icons.looks_two));
+      expect(find.text('Eraser'), findsOneWidget);
+      await tester.tap(find.byIcon(Icons.cleaning_services));
+      await tester.pump();
+      expect(taps, 1);
+    });
+
+    testWidgets('a horizontal rail places its buttons side by side', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(
+          KidRail(
+            axis: Axis.horizontal,
+            children: [
+              KidRailButton(
+                label: 'One',
+                onTap: () {},
+                child: const Icon(Icons.looks_one),
+              ),
+              KidRailButton(
+                label: 'Two',
+                onTap: () {},
+                child: const Icon(Icons.looks_two),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      final first = tester.getCenter(find.byIcon(Icons.looks_one));
+      final second = tester.getCenter(find.byIcon(Icons.looks_two));
       expect(second.dx, greaterThan(first.dx));
       expect(second.dy, first.dy);
     });

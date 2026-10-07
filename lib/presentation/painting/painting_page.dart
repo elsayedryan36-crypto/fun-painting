@@ -25,6 +25,8 @@ import 'models/tool_type.dart';
 import 'models/brush_size.dart';
 // ✅ NEW (kid-ui): the kid-sized "erase everything?" dialog.
 import 'widgets/kid_dialogs.dart';
+// ✅ NEW (kid-ui round 3): one button size for both rails.
+import 'widgets/kid_controls.dart';
 import 'region.dart';
 import 'svg_parser.dart';
 import 'widgets/color_palette_widget.dart';
@@ -1087,8 +1089,14 @@ class _PaintingPageState extends State<PaintingPage>
             final screenW = constraints.maxWidth;
             final screenH = constraints.maxHeight;
 
-            final railsOnSides = KidLayout.preferSideRails(screenW, screenH);
-            final railsAxis = railsOnSides ? Axis.vertical : Axis.horizontal;
+            // ✅ CHANGED (kid-ui round 3): the rails are ALWAYS docked on the
+            // left and right, in every orientation. The old code switched to a
+            // bottom bar whenever the two cost the same, which is what put the
+            // toolbar at the bottom of the screen on a 16:9 phone.
+            // ----- old version (kept for reference) -----
+            // final railsOnSides = KidLayout.preferSideRails(screenW, screenH);
+            // final railsAxis = railsOnSides ? Axis.vertical : Axis.horizontal;
+            const railsAxis = Axis.vertical;
 
             final canvas = RepaintBoundary(
               key: _repaintKey,
@@ -1129,9 +1137,7 @@ class _PaintingPageState extends State<PaintingPage>
             final actionRail = SizeTransition(
               axis: railsAxis,
               // Shrink towards the screen edge the rail is anchored to.
-              alignment: railsOnSides
-                  ? Alignment.topCenter
-                  : Alignment.centerLeft,
+              alignment: Alignment.topCenter,
               sizeFactor: _leftPaletteAnimation,
               child: VerticalActionToolsWidget(
                 axis: railsAxis,
@@ -1139,6 +1145,12 @@ class _PaintingPageState extends State<PaintingPage>
                 onSave: _saveToGallery,
                 redo: _redoAction,
                 animation: _leftPaletteAnimation,
+                // ✅ NEW (kid-ui round 3): the clear button lives here now, next
+                // to Undo — it used to sit beside the eraser, where every child
+                // hit it by accident.
+                onClear: () {
+                  _confirmClearAll();
+                },
                 onClose: () async {
                   await _confirmClose();
                 },
@@ -1147,9 +1159,12 @@ class _PaintingPageState extends State<PaintingPage>
 
             final toolRail = SizeTransition(
               axis: railsAxis,
-              alignment: railsOnSides
-                  ? Alignment.topCenter
-                  : Alignment.centerRight,
+              // ✅ CHANGED (kid-ui round 3): always a vertical side rail.
+              alignment: Alignment.topCenter,
+              // ----- old version (kept for reference) -----
+              // alignment: railsOnSides
+              //     ? Alignment.topCenter
+              //     : Alignment.centerRight,
               sizeFactor: _verticalPaletteAnimation,
               child: VerticalToolPaletteWidget(
                 axis: railsAxis,
@@ -1187,13 +1202,11 @@ class _PaintingPageState extends State<PaintingPage>
 
                   _closeBothPalettes();
                 },
-                onClearSelected: () {
-                  // ✅ CHANGED (kid-ui): confirm before erasing everything.
-                  _confirmClearAll();
-                },
                 // ----- old version (kept for reference) -----
+                // ✅ CHANGED (kid-ui): confirm before erasing everything —
+                // the button and the confirm have since moved to the left rail.
                 // onClearSelected: () {
-                //   _clearAllPaintingsAndStamps();
+                //   _confirmClearAll();
                 // },
               ),
             );
@@ -1201,24 +1214,47 @@ class _PaintingPageState extends State<PaintingPage>
             final panel = _buildDockedPanel(railsAxis, screenW, screenH);
 
             return SafeArea(
-              child: railsOnSides
-                  ? Row(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        actionRail,
-                        Expanded(child: canvas),
-                        ?panel,
-                        toolRail,
-                      ],
-                    )
-                  : Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Expanded(child: canvas),
-                        ?panel,
-                        Row(children: [actionRail, const Spacer(), toolRail]),
-                      ],
-                    ),
+              // ✅ CHANGED (kid-ui round 3): one layout for every screen —
+              // action rail | canvas | panel | tool rail. No bottom bar.
+              //
+              // The page works out ONE button size for both rails (sized for
+              // the rail that holds the most buttons, 6) so the left and right
+              // rails always match on a short screen.
+              child: KidRailMetrics(
+                axis: Axis.vertical,
+                buttonSize: KidLayout.railButtonSize(
+                  railExtent: screenH,
+                  count: 6,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    actionRail,
+                    Expanded(child: canvas),
+                    ?panel,
+                    toolRail,
+                  ],
+                ),
+              ),
+              // ----- old version (kept for reference) -----
+              // child: railsOnSides
+              //     ? Row(
+              //         crossAxisAlignment: CrossAxisAlignment.stretch,
+              //         children: [
+              //           actionRail,
+              //           Expanded(child: canvas),
+              //           ?panel,
+              //           toolRail,
+              //         ],
+              //       )
+              //     : Column(
+              //         crossAxisAlignment: CrossAxisAlignment.stretch,
+              //         children: [
+              //           Expanded(child: canvas),
+              //           ?panel,
+              //           Row(children: [actionRail, const Spacer(), toolRail]),
+              //         ],
+              //       ),
             );
           },
         ),
@@ -1230,6 +1266,8 @@ class _PaintingPageState extends State<PaintingPage>
   /// sibling of the canvas so it shrinks the drawing area instead of covering
   /// it. Returns null when no panel is open.
   Widget? _buildDockedPanel(Axis railsAxis, double screenW, double screenH) {
+    // ✅ CHANGED (kid-ui round 3): always the side dock (the bottom-bar branch
+    // is gone), and the panel is sized by percentage (KidLayout).
     final showToolPanel = isSelectedToolOpen;
     final showPalette = isSelectedColorOpen;
 
@@ -1250,10 +1288,14 @@ class _PaintingPageState extends State<PaintingPage>
           )
         : _buildPaletteForMode();
 
-    final onSides = railsAxis == Axis.vertical;
+    // ✅ CHANGED (kid-ui round 3): the rails never move, so this is always the
+    // side dock now.
+    // ----- old version (kept for reference) -----
+    // final onSides = railsAxis == Axis.vertical;
+    // const onSides = true;
 
-    // ✅ NEW (kid-ui): the colour palette gets a panel wide enough for eight
-    // kid-sized swatches per row; the other panels keep the slimmer one.
+    // ✅ NEW (kid-ui): the colour palette gets a panel wide enough for
+    // kid-sized swatches; the other panels keep the slimmer one.
     final isColorPalette =
         showPalette &&
         _mode != BrushMode.eraser &&
@@ -1266,8 +1308,10 @@ class _PaintingPageState extends State<PaintingPage>
         : KidLayout.panelWidth(screenW);
 
     return Container(
-      width: onSides ? panelWidth : null,
-      height: onSides ? null : KidLayout.panelHeight(screenH),
+      width: panelWidth,
+      // ----- old version (kept for reference) -----
+      // width: onSides ? panelWidth : null,
+      // height: onSides ? null : KidLayout.panelHeight(screenH),
       margin: const EdgeInsets.all(4),
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(

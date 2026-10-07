@@ -10,6 +10,12 @@ import 'kid_controls.dart';
 /// The main tool rail: current colour / pattern / stamp, current tool, eraser
 /// and clear.
 ///
+/// ✅ CHANGED (kid-ui round 3): six buttons — colour, tools, eraser and the
+/// S / M / L sizes (clear has moved to the left rail, next to Undo). Every
+/// button is sized as a percentage of the screen by [KidRail] instead of a
+/// fixed 64 dp, has a bright face colour so a pre-reader can tell them apart,
+/// and carries a short word under the icon.
+///
 /// ✅ CHANGED (kid-ui): the old version sized its container as
 /// `height: 98% of screen height` and `width: 22% of screen height` — and then
 /// put 20%-of-screen-height-wide children inside it. On a wide screen the
@@ -20,7 +26,9 @@ import 'kid_controls.dart';
 class VerticalToolPaletteWidget extends StatelessWidget {
   final VoidCallback onEraserSelected;
   final VoidCallback onMagicSelected;
-  final VoidCallback onClearSelected;
+  // ✅ CHANGED (kid-ui round 3): clear moved to the action rail.
+  // ----- old version (kept for reference) -----
+  // final VoidCallback onClearSelected;
   final Color selectedColor;
   final VoidCallback isToolOpen;
   final VoidCallback isColorOpen;
@@ -48,7 +56,8 @@ class VerticalToolPaletteWidget extends StatelessWidget {
     required this.selectedImage,
     this.selectedStampAsset,
     required this.stamps,
-    required this.onClearSelected,
+    // ----- old version (kept for reference) -----
+    // required this.onClearSelected,
     required this.brushMode,
     required this.brushSize,
     required this.onBrushSizeChanged,
@@ -64,45 +73,63 @@ class VerticalToolPaletteWidget extends StatelessWidget {
         KidRailButton(
           onTap: isColorOpen,
           label: 'Colour',
+          faceColor: selectedColor,
+          // Pale colours need dark ink, dark colours need white ink.
+          inkColor: _inkOn(selectedColor),
           child: _buildPreview(),
         ),
 
-        // 2. Current tool — opens the tool grid.
+        // 2. Current tool — opens the tool grid. Amber face: the "paints"
+        // button.
         KidRailButton(
           onTap: isToolOpen,
           label: 'Tools',
+          faceColor: const Color(0xFFFFE082),
           child: _buildSelectedToolIcon(),
         ),
 
-        // 3. Eraser.
+        // 3. Eraser — pink face, and it shows when it is the active mode.
         KidRailButton(
           onTap: onEraserSelected,
           label: 'Eraser',
           selected: brushMode == BrushMode.eraser,
+          faceColor: const Color(0xFFF8BBD0),
           child: Image.asset(ImageAssets.eraser, fit: BoxFit.contain),
         ),
 
-        // 4. NEW (kid-ui): the S / M / L brush size, replacing the widths that
-        // used to be hard-coded in coloring_painter.dart (15.0 / 14.0 / 12.0 /
-        // 8.0) with a control the child can actually see and press.
-        KidBrushSizeControl(
+        // 4. The S / M / L brush sizes, replacing the widths that used to be
+        // hard-coded in coloring_painter.dart (15.0 / 14.0 / 12.0 / 8.0) with
+        // a control the child can actually see and press. Handed to the rail
+        // as three items so it sizes them like every other button.
+        ...KidBrushSizeControl.railButtons(
           selected: brushSize,
           onChanged: onBrushSizeChanged,
           previewColor: selectedColor,
-          axis: axis,
         ),
 
-        // 5. Clear everything — the page asks "erase everything?" first, and
-        // it sits last in the rail so a small finger does not hit it by
-        // accident while reaching for the eraser.
-        KidRailButton(
-          onTap: onClearSelected,
-          label: 'Clear',
-          child: SvgPicture.asset(ImageAssets.delete, fit: BoxFit.contain),
-        ),
+        // ----- old version (kept for reference) -----
+        // KidBrushSizeControl(
+        //   selected: brushSize,
+        //   onChanged: onBrushSizeChanged,
+        //   previewColor: selectedColor,
+        //   axis: axis,
+        // ),
+        //
+        // // 5. Clear everything — moved to the left rail in round 3 so a small
+        // // finger cannot hit it while reaching for the eraser.
+        // KidRailButton(
+        //   onTap: onClearSelected,
+        //   label: 'Clear',
+        //   child: SvgPicture.asset(ImageAssets.delete, fit: BoxFit.contain),
+        // ),
       ],
     );
   }
+
+  /// White ink on a dark face, dark ink on a light one, so the word under the
+  /// icon stays readable whatever colour the child picked.
+  static Color _inkOn(Color face) =>
+      face.computeLuminance() < 0.45 ? Colors.white : const Color(0xFF1A1A1A);
 
   /// Small preview of whatever the colour panel will let the child change:
   /// a colour, a wallpaper pattern, a stamp, or the magic wand.

@@ -18,15 +18,21 @@ import 'package:fun_painting/presentation/painting/widgets/color_palette_widget.
 import 'package:fun_painting/presentation/painting/widgets/kid_controls.dart';
 import 'package:fun_painting/presentation/painting/widgets/kid_layout.dart';
 
-Widget _panel(Widget child, {double width = 0, double height = 320}) {
+/// The width the page gives the colour panel on a small phone (640 dp wide).
+const double _smallPanel = 269;
+
+/// The width it gives on a tablet.
+const double _tabletPanel = KidLayout.swatchGridWidth;
+
+Widget _panel(
+  Widget child, {
+  double width = _tabletPanel,
+  double height = 320,
+}) {
   return MaterialApp(
     home: Scaffold(
       body: Center(
-        child: SizedBox(
-          width: width == 0 ? KidLayout.swatchGridWidth : width,
-          height: height,
-          child: child,
-        ),
+        child: SizedBox(width: width, height: height, child: child),
       ),
     ),
   );
@@ -85,18 +91,18 @@ Future<int> _paintedPixels(double brushScale) async {
 
 void main() {
   group('colour palette', () {
-    testWidgets('lays the swatches out 8 to a row', (tester) async {
+    testWidgets('lays out as many per row as really fit', (tester) async {
+      // On a tablet-width panel that is the full 8.
       await tester.pumpWidget(_panel(_palette()));
 
       double dyOf(int index) =>
           tester.getCenter(find.byKey(Key('kid_color_swatch_$index'))).dy;
 
-      // The first eight share a row…
-      for (var i = 1; i < KidLayout.colorColumns; i++) {
+      expect(KidLayout.colorColumnsFor(_tabletPanel), 8);
+      for (var i = 1; i < 8; i++) {
         expect(dyOf(i), dyOf(0), reason: 'swatch $i is not on the first row');
       }
-      // …and the ninth starts the next one.
-      expect(dyOf(KidLayout.colorColumns), greaterThan(dyOf(0)));
+      expect(dyOf(8), greaterThan(dyOf(0)));
 
       // Every colour of every group is offered.
       expect(find.byKey(const Key('kid_color_swatch_0')), findsOneWidget);
@@ -105,15 +111,34 @@ void main() {
       }
     });
 
+    testWidgets('drops to fewer columns on a small phone instead of shrinking '
+        'the swatches', (tester) async {
+      final columns = KidLayout.colorColumnsFor(_smallPanel);
+      expect(columns, lessThan(8), reason: '8 columns would be < 44 dp here');
+
+      await tester.pumpWidget(_panel(_palette(), width: _smallPanel));
+
+      // The first row holds exactly `columns` swatches…
+      double dyOf(int index) =>
+          tester.getCenter(find.byKey(Key('kid_color_swatch_$index'))).dy;
+      for (var i = 1; i < columns; i++) {
+        expect(dyOf(i), dyOf(0), reason: 'swatch $i is not on the first row');
+      }
+      expect(dyOf(columns), greaterThan(dyOf(0)));
+
+      // …and they are still kid sized.
+      final size = tester.getSize(find.byKey(const Key('kid_color_swatch_0')));
+      expect(size.width, greaterThanOrEqualTo(KidLayout.minSwatch));
+    });
+
     testWidgets('every swatch is big enough for a small finger', (
       tester,
     ) async {
       // The narrowest panel the page ever gives the palette.
-      await tester.pumpWidget(
-        _panel(_palette(), width: KidLayout.swatchGridWidth),
-      );
+      await tester.pumpWidget(_panel(_palette(), width: _smallPanel));
 
-      for (var i = 0; i < KidLayout.colorColumns; i++) {
+      final columns = KidLayout.colorColumnsFor(_smallPanel);
+      for (var i = 0; i < columns; i++) {
         final size = tester.getSize(find.byKey(Key('kid_color_swatch_$i')));
         expect(
           size.width,
@@ -145,7 +170,7 @@ void main() {
     testWidgets('never squeezes the swatches on a wide bottom bar', (
       tester,
     ) async {
-      // A 1920 dp wide panel (bottom-bar layout on a wide screen).
+      // A 1920 dp wide panel — the whole screen given to the palette.
       await tester.pumpWidget(_panel(_palette(), width: 1920));
 
       final size = tester.getSize(find.byKey(const Key('kid_color_swatch_0')));
@@ -202,7 +227,7 @@ void main() {
         final box = tester.getSize(
           find.byKey(Key('kid_brush_size_${size.name}')),
         );
-        expect(box.width, greaterThanOrEqualTo(KidLayout.buttonSize));
+        expect(box.width, greaterThanOrEqualTo(KidLayout.minButton));
       }
     });
   });

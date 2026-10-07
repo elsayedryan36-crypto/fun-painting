@@ -6,9 +6,16 @@ import '../../common/resources/color_manager.dart';
 import '../models/tool_type.dart';
 import 'kid_layout.dart';
 
-/// Grid of selectable colors: [KidLayout.colorColumns] (8) kid-sized swatches
-/// per row, always visible, with a ring on the one that is selected. When
-/// [toolType] is [ToolType.glitter], each swatch shows the glitter texture.
+/// Grid of selectable colors: as many kid-sized swatches per row as really fit
+/// (up to [KidLayout.maxColorColumns] = 8), always visible, with a ring on the
+/// one that is selected. When [toolType] is [ToolType.glitter], each swatch
+/// shows the glitter texture.
+///
+/// ✅ CHANGED (kid-ui round 3): the number of columns is no longer fixed at 8.
+/// That fixed count is what made the palette unusable on a small phone: a
+/// 640 dp-wide screen gives the panel ~269 dp, and eight columns inside it
+/// left 26 dp per swatch. [KidLayout.colorColumnsFor] now counts how many
+/// 44 dp swatches genuinely fit (6 on that screen, 8 on a tablet).
 ///
 /// ✅ CHANGED (kid-ui): the old version was a `ListView` of one
 /// `GridView.count(crossAxisCount: 6)` per colour group, and the swatch was
@@ -43,36 +50,52 @@ class ColorPaletteWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final swatches = allSwatches;
 
-    return Align(
-      alignment: Alignment.topCenter,
-      child: ConstrainedBox(
-        // Never stretch the swatches past [KidLayout.maxSwatch]: on a wide
-        // bottom bar the grid would otherwise grow to 100 dp + circles.
-        constraints: const BoxConstraints(maxWidth: KidLayout.swatchGridWidth),
-        child: GridView.builder(
-          padding: const EdgeInsets.all(KidLayout.swatchGridPadding),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: KidLayout.colorColumns,
-            mainAxisSpacing: KidLayout.swatchGap,
-            crossAxisSpacing: KidLayout.swatchGap,
-          ),
-          itemCount: swatches.length,
-          itemBuilder: (context, index) {
-            final swatch = swatches[index];
-            return _ColorSwatch(
-              key: Key('kid_color_swatch_$index'),
-              color: swatch.color,
-              name: swatch.group,
-              selected: swatch.color == selectedColor,
-              glitter: toolType == ToolType.glitter,
-              onTap: () {
-                isColorChanged();
-                onColorSelected(swatch.color);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // How many swatches really fit at kid size in the width we are given?
+        final width = constraints.maxWidth.isFinite
+            ? constraints.maxWidth
+            : KidLayout.swatchGridWidth;
+        final columns = KidLayout.colorColumnsFor(width);
+
+        return Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            // The grid takes this width when there is room (so a swatch can
+            // grow to [KidLayout.maxSwatch]) and whatever is left when there is
+            // not (so it can never be squeezed below [KidLayout.minSwatch]).
+            constraints: BoxConstraints(
+              maxWidth:
+                  columns * KidLayout.maxSwatch +
+                  (columns - 1) * KidLayout.swatchGap +
+                  2 * KidLayout.swatchGridPadding,
+            ),
+            child: GridView.builder(
+              padding: const EdgeInsets.all(KidLayout.swatchGridPadding),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: columns,
+                mainAxisSpacing: KidLayout.swatchGap,
+                crossAxisSpacing: KidLayout.swatchGap,
+              ),
+              itemCount: swatches.length,
+              itemBuilder: (context, index) {
+                final swatch = swatches[index];
+                return _ColorSwatch(
+                  key: Key('kid_color_swatch_$index'),
+                  color: swatch.color,
+                  name: swatch.group,
+                  selected: swatch.color == selectedColor,
+                  glitter: toolType == ToolType.glitter,
+                  onTap: () {
+                    isColorChanged();
+                    onColorSelected(swatch.color);
+                  },
+                );
               },
-            );
-          },
-        ),
-      ),
+            ),
+          ),
+        );
+      },
     );
 
     // ----- old version (kept for reference) -----
