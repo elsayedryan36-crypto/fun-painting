@@ -1,11 +1,9 @@
 import 'dart:io';
-import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hive/hive.dart';
 import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -32,31 +30,14 @@ import 'region.dart';
 import 'svg_parser.dart';
 import 'widgets/color_palette_widget.dart';
 import 'widgets/kid_layout.dart';
-
+import 'widgets/kid_color_tray.dart';
+// ✅ RESTORED: the original floating palettes animate in with this wrapper.
+import 'widgets/animated_vertical_palette.dart';
 import 'widgets/pattern_palette_widget.dart';
 import 'widgets/stamp_palette_widget.dart';
 import 'widgets/tool_palette_widget.dart';
-// SoundService (the button click) still lives with the old action rail, and
-// that file also keeps the original rails for reference.
-import 'widgets/vertical_action_tools_widget.dart' show SoundService;
-// ✅ NEW (kid-ui round 6 — Option C): the bubbles, pills and the colour fan.
-import 'widgets/kid_paint_controls.dart';
-
-/// ✅ NEW (kid-ui round 6 — Option C): what is covering the picture right now.
-/// One value, so two open panels can never fight over the screen.
-enum _KidPanel {
-  /// Nothing — the picture is clean.
-  none,
-
-  /// The colours fanning out of the crayon bubble.
-  colorFan,
-
-  /// The tools fanning out of the tool bubble.
-  toolFan,
-
-  /// The grid sheet (all colours / stamps / patterns / tools) sliding up.
-  grid,
-}
+import 'widgets/vertical_action_tools_widget.dart';
+import 'widgets/vertical_tool_palette_widget.dart';
 
 class PaintingPage extends StatefulWidget {
   const PaintingPage({super.key, required this.image});
@@ -95,18 +76,6 @@ class _PaintingPageState extends State<PaintingPage>
   String? _selectedStampAsset;
   double _stampSize = 50.0;
 
-  /// ✅ NEW (kid-ui round 6 — Option C): what is open on top of the picture.
-  /// Exactly one thing at a time, and nothing is open by default.
-  _KidPanel _panel = _KidPanel.none;
-
-  /// ✅ NEW (round 6): the colours in the fan — one representative per family,
-  /// taken from the same palette the app has always used, so the fan and the
-  /// full grid never disagree.
-  static List<Color> get _stripColors => groupedPalette
-      .map((g) => g.colors.length > 1 ? g.colors[1] : g.colors.first)
-      .take(KidLayout.fanColorCount)
-      .toList();
-
   /// ✅ NEW (kid-ui): the brush thickness the child picked — S / M / L. It is
   /// a multiplier handed to ColoringCanvas, which stamps it onto every new
   /// stroke, so it never resizes a line that is already on the page.
@@ -114,12 +83,12 @@ class _PaintingPageState extends State<PaintingPage>
   // original brush width (medium == 1.0). Make it non-final and add a control
   // to bring the S / M / L buttons back.
   final BrushSize _brushSize = BrushSize.medium;
-  // ✅ CHANGED (round 6): the rails are gone; the picture is never covered.
-  // ----- old version (kept for reference) -----
-  // late AnimationController _verticalPaletteController;
-  // bool _isVerticalPaletteVisible = true;
-  // late AnimationController _leftPaletteController;
-  // bool _isLeftPaletteVisible = true;
+  late AnimationController _verticalPaletteController;
+  late Animation<double> _verticalPaletteAnimation;
+  bool _isVerticalPaletteVisible = true;
+  late AnimationController _leftPaletteController;
+  late Animation<double> _leftPaletteAnimation;
+  bool _isLeftPaletteVisible = true;
 
   SelectedTool? _lastColoringTool;
   Color _lastColoringColor = Colors.red;
@@ -143,22 +112,32 @@ class _PaintingPageState extends State<PaintingPage>
     );
     _selectedTool = _lastColoringTool;
 
-    // ✅ CHANGED (round 6): the rails (and their slide animations) are gone —
-    // the picture is never covered by a rail any more, so nothing slides.
-    // ----- old version (kept for reference) -----
-    // _verticalPaletteController = AnimationController(...);
-    // _verticalPaletteAnimation = CurvedAnimation(...);
-    // _leftPaletteController = AnimationController(...);
-    // _leftPaletteAnimation = CurvedAnimation(...);
-    // _verticalPaletteController.forward();
-    // _leftPaletteController.forward();
+    _verticalPaletteController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _verticalPaletteAnimation = CurvedAnimation(
+      parent: _verticalPaletteController,
+      curve: Curves.easeInOut,
+    );
+
+    _leftPaletteController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _leftPaletteAnimation = CurvedAnimation(
+      parent: _leftPaletteController,
+      curve: Curves.easeInOut,
+    );
+
+    _verticalPaletteController.forward();
+    _leftPaletteController.forward();
   }
 
   @override
   void dispose() {
-    // ----- old version (kept for reference) -----
-    // _verticalPaletteController.dispose();
-    // _leftPaletteController.dispose();
+    _verticalPaletteController.dispose();
+    _leftPaletteController.dispose();
     super.dispose();
   }
 
@@ -218,32 +197,42 @@ class _PaintingPageState extends State<PaintingPage>
     await paintingBox.put(widget.image, save);
   }
 
-  /// ✅ CHANGED (round 6): there are no rails to slide away any more. When the
-  /// child starts drawing, whatever panel is open simply closes.
   void _hideVerticalPalette() {
-    if (_panel != _KidPanel.none || isSelectedColorOpen || isSelectedToolOpen) {
-      _closeBothPalettes();
+    if (_isVerticalPaletteVisible &&
+        _verticalPaletteController.status != AnimationStatus.dismissed) {
+      try {
+        setState(() {
+          _isVerticalPaletteVisible = false;
+        });
+        _verticalPaletteController.reverse();
+      } catch (e) {
+        debugPrint('Error hiding vertical palette: $e');
+      }
     }
 
-    // ----- old version (kept for reference) -----
-    // if (_isVerticalPaletteVisible && ...) { _verticalPaletteController.reverse(); }
-    // if (_isLeftPaletteVisible && ...)     { _leftPaletteController.reverse(); }
+    // Also hide left palette
+    if (_isLeftPaletteVisible &&
+        _leftPaletteController.status != AnimationStatus.dismissed) {
+      try {
+        setState(() {
+          _isLeftPaletteVisible = false;
+        });
+        _leftPaletteController.reverse();
+      } catch (e) {
+        debugPrint('Error hiding left palette: $e');
+      }
+    }
   }
 
   void _handlePaintingEnded() {
     setState(() {
       // _isPainting = false;
     });
-    // ✅ CHANGED (round 6): the bubbles never left, so there is nothing to
-    // bring back.
-    // ----- old version (kept for reference) -----
-    // _showVerticalPalette();
+    _showVerticalPalette();
   }
 
   void _closeBothPalettes() {
     setState(() {
-      // ✅ NEW (round 6): the colour / tool fans close with everything else.
-      _panel = _KidPanel.none;
       isSelectedColorOpen = false;
       isSelectedToolOpen = false;
     });
@@ -343,13 +332,32 @@ class _PaintingPageState extends State<PaintingPage>
     _savePainting();
   }
 
-  // ✅ CHANGED (round 6): nothing to slide back in — the bubbles never leave
-  // the screen, so there is no "show the rail again" step.
-  // ----- old version (kept for reference) -----
-  // void _showVerticalPalette() {
-  //   if (!_isVerticalPaletteVisible ...) { _verticalPaletteController.forward(); }
-  //   if (!_isLeftPaletteVisible && ...) { _leftPaletteController.forward(); }
-  // }
+  void _showVerticalPalette() {
+    if (!_isVerticalPaletteVisible &&
+        _verticalPaletteController.status != AnimationStatus.completed) {
+      try {
+        setState(() {
+          _isVerticalPaletteVisible = true;
+        });
+        _verticalPaletteController.forward();
+      } catch (e) {
+        debugPrint('Error showing vertical palette: $e');
+      }
+    }
+
+    // Also show left palette
+    if (!_isLeftPaletteVisible &&
+        _leftPaletteController.status != AnimationStatus.completed) {
+      try {
+        setState(() {
+          _isLeftPaletteVisible = true;
+        });
+        _leftPaletteController.forward();
+      } catch (e) {
+        debugPrint('Error showing left palette: $e');
+      }
+    }
+  }
 
   void _setDefaultStamp() {
     if (stamps.isNotEmpty) {
@@ -851,12 +859,9 @@ class _PaintingPageState extends State<PaintingPage>
     _savePainting();
   }
 
-  /// ✅ CHANGED (round 6): opened from the tool fan's "fun" circle (or from the
-  /// old rail, kept working for anything that still calls it).
   void _isSelectedToolOpen() {
     setState(() {
       isSelectedToolOpen = !isSelectedToolOpen;
-      if (isSelectedToolOpen) _panel = _KidPanel.grid;
       if (isSelectedToolOpen && (_mode == BrushMode.eraser)) {
         if (_lastColoringTool != null) {
           _selectedTool = _lastColoringTool;
@@ -873,11 +878,9 @@ class _PaintingPageState extends State<PaintingPage>
     });
   }
 
-  /// ✅ CHANGED (round 6): opened from the colour fan's "＋" circle.
   void _isSelectedColorOpen() {
     setState(() {
       isSelectedColorOpen = !isSelectedColorOpen;
-      if (isSelectedColorOpen) _panel = _KidPanel.grid;
 
       // Close tool palette when opening color palette
       if (isSelectedColorOpen) {
@@ -893,6 +896,35 @@ class _PaintingPageState extends State<PaintingPage>
         }
       }
     });
+  }
+
+  /// ✅ NEW (Option B): a colour tapped straight in the tray.
+  ///
+  /// Nothing opens or closes here — the tray is always on screen — so the
+  /// child taps a dot and the next stroke is that colour. Picking a colour
+  /// also brings the colouring tool back when the eraser was in hand, which is
+  /// exactly what opening the palette used to do.
+  void _pickColorFromTray(Color colour) {
+    setState(() {
+      _selectedColor = colour;
+      _lastColoringColor = colour;
+      if (_mode == BrushMode.eraser && _lastColoringTool != null) {
+        _selectedTool = _lastColoringTool;
+        _mode = _lastColoringTool!.mode;
+        _selectedStyle = _lastColoringTool!.style;
+      }
+    });
+    // A pick from the tray also closes the full grid if it happens to be open.
+    _closeBothPalettes();
+  }
+
+  /// ✅ NEW (Option B): the tray's eraser button — the same thing the rail's
+  /// eraser button does.
+  void _selectEraserFromTray() {
+    setState(() {
+      _mode = BrushMode.eraser;
+    });
+    _closeBothPalettes();
   }
 
   void _selectTool(SelectedTool tool) {
@@ -1080,431 +1112,247 @@ class _PaintingPageState extends State<PaintingPage>
       },
       child: Scaffold(
         backgroundColor: ColorManager.lightPrimary,
-        // ✅ NEW (kid-ui round 6 — Option C, the "Coloring Book" layout): the
-        // picture is the whole screen and the controls are two bubbles.
-        //
-        //    picture = 100 % of the screen, never covered while choosing
-        //    bottom right : crayon bubble  -> the colours fan out around it
-        //    above it     : tool bubble    -> fill / brush / eraser / fun / clear
-        //    bottom left  : undo (+ redo when there is something to redo)
-        //    top left     : home          top right : save
-        //
+        // ✅ RESTORED (round 5): the app's ORIGINAL arrangement — the canvas
+        // fills the screen and the palettes float on top of it, exactly the
+        // way the app was first built. The drawing is stretched to fill the
+        // screen (ArtFit.fill), which is what it always did.
         // ----- old version (kept for reference) -----
-        // body: Stack(fit: StackFit.expand, children: [
-        //   canvas,
-        //   Positioned colour panel (96 % x 83 %) when isSelectedColorOpen,
-        //   Positioned(top:0,right:0) Row[ToolPaletteWidget, AnimatedVertical
-        //     Palette(VerticalToolPaletteWidget)],        // the right rail
-        //   Positioned(left:0,top:0) VerticalActionToolsWidget,  // the left rail
-        // ]);
-        body: LayoutBuilder(
-          builder: (context, constraints) {
-            final size = Size(constraints.maxWidth, constraints.maxHeight);
-            final margin = KidLayout.fanMargin;
-            final crayon = KidLayout.crayonBubbleSize;
-            final bubble = KidLayout.bubbleSize;
-
-            return Stack(
-              fit: StackFit.expand,
-              children: [
-                // 1. The picture — the whole screen.
-                RepaintBoundary(
-                  key: _repaintKey,
-                  child: ColoringCanvas(
-                    selectedWallpaperAsset: selectedPatternImage,
-                    selectedStampAsset:
-                        _selectedStampAsset ??
-                        (stamps.isNotEmpty ? stamps[0] : null),
-                    regions: _regions,
-                    brushMode: _mode,
-                    key: _coloringCanvasKey,
-                    selectedColor: _selectedColor,
-                    selectedStyle: _selectedStyle,
-                    selectedWallpaper: _selectedWallpaper,
-                    onColoringAction: _handleColoringAction,
-                    stampSize: _stampSize,
-                    fit: ArtFit.fill,
-                    brushScale: _brushSize.factor,
-                    onPaintingStarted:
-                        (_mode == BrushMode.freehand ||
-                            _mode == BrushMode.eraser)
-                        ? () {
-                            // ✅ round 6: whatever is open closes as soon as a
-                            // stroke begins, so the child draws on a clear
-                            // picture.
-                            _hideVerticalPalette();
-                          }
-                        : null,
-                    onPaintingEnded:
-                        (_mode == BrushMode.freehand ||
-                            _mode == BrushMode.eraser ||
-                            _mode == BrushMode.stamp)
-                        ? _handlePaintingEnded
-                        : null,
-                  ),
-                ),
-
-                // 2. The colour fan: opens around the crayon bubble.
-                KidFan(
-                  open: _panel == _KidPanel.colorFan,
-                  anchor: Alignment.bottomRight,
-                  items: _buildColorFanItems(),
-                ),
-
-                // 3. The tool fan: opens around the tool bubble.
-                KidFan(
-                  open: _panel == _KidPanel.toolFan,
-                  anchor: Alignment.bottomRight,
-                  outerCount: 5,
-                  items: _buildToolFanItems(),
-                ),
-
-                // 4. The full grid (78 colours / stamps / patterns / tools),
-                //    as a sheet that slides up and closes on a pick.
-                ?_buildGridSheet(size),
-
-                // 5. The two bubbles a thumb rests on, bottom right.
-                Positioned(
-                  right: margin,
-                  bottom: margin,
-                  child: KidCrayonBubble(
-                    color: _selectedColor,
-                    open: _panel == _KidPanel.colorFan,
-                    onTap: () {
-                      SoundService.playClick();
-                      setState(() {
-                        _panel = _panel == _KidPanel.colorFan
-                            ? _KidPanel.none
-                            : _KidPanel.colorFan;
-                      });
-                    },
-                  ),
-                ),
-                Positioned(
-                  right: margin + (crayon - bubble) / 2,
-                  bottom: margin + crayon + KidLayout.fanMargin * 0.6,
-                  child: KidRoundBubble(
-                    key: const Key('kid_tool_bubble'),
-                    size: bubble,
-                    selected: _panel == _KidPanel.toolFan,
-                    tooltip: 'Tools',
-                    faceColor: const Color(0xFFFFE082),
-                    onTap: () {
-                      SoundService.playClick();
-                      setState(() {
-                        _panel = _panel == _KidPanel.toolFan
-                            ? _KidPanel.none
-                            : _KidPanel.toolFan;
-                      });
-                    },
-                    child: _currentToolIcon(),
-                  ),
-                ),
-
-                // 6. Undo (and redo when there is something to redo), bottom
-                //    left, where the other thumb rests.
-                Positioned(
-                  left: margin,
-                  bottom: margin,
-                  child: Row(
-                    children: [
-                      KidPill(
-                        key: const Key('kid_undo_pill'),
-                        label: 'Undo',
-                        faceColor: const Color(0xFFFFD9B0),
-                        enabled: _actionHistory.isNotEmpty,
-                        onTap: () {
-                          SoundService.playClick();
-                          _undo();
-                        },
-                        icon: Image.asset(
-                          ImageAssets.redo,
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                      SizedBox(width: KidLayout.fanMargin * 0.6),
-                      if (_redoStack.isNotEmpty)
-                        KidPill(
-                          key: const Key('kid_redo_pill'),
-                          label: 'Redo',
-                          onTap: () {
-                            SoundService.playClick();
-                            _redoAction();
-                          },
-                          icon: Transform.flip(
-                            flipX: true,
-                            child: Image.asset(
-                              ImageAssets.redo,
-                              fit: BoxFit.contain,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-
-                // 7. Home and Save, small and out of the thumbs' way.
-                Positioned(
-                  left: margin,
-                  top: margin,
-                  child: Row(
-                    children: [
-                      KidRoundBubble(
-                        key: const Key('kid_home_bubble'),
-                        size: bubble * 0.86,
-                        faceColor: const Color(0xFFDCE3E9),
-                        tooltip: 'Leave the drawing',
-                        onTap: () async {
-                          await SoundService.playClick();
-                          await _confirmClose();
-                        },
-                        child: Image.asset(
-                          ImageAssets.close,
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                      SizedBox(width: KidLayout.fanMargin * 0.6),
-                      // ✅ NEW: clear-everything lives here, far from the
-                      // eraser, and still asks "Erase everything?" first.
-                      KidRoundBubble(
-                        key: const Key('kid_clear_bubble'),
-                        size: bubble * 0.86,
-                        faceColor: const Color(0xFFFFCDD2),
-                        tooltip: 'Erase everything',
-                        onTap: () {
-                          SoundService.playClick();
-                          _confirmClearAll();
-                        },
-                        child: SvgPicture.asset(
-                          ImageAssets.delete,
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Positioned(
-                  right: margin,
-                  top: margin,
-                  child: KidRoundBubble(
-                    key: const Key('kid_save_bubble'),
-                    size: bubble * 0.86,
-                    faceColor: const Color(0xFFC8E6C9),
-                    tooltip: 'Save to the phone',
-                    onTap: () {
-                      SoundService.playClick();
-                      _saveToGallery();
-                    },
-                    child: Image.asset(ImageAssets.camera, fit: BoxFit.contain),
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  /// The icon on the tool bubble: whatever the child is painting with.
-  Widget _currentToolIcon() {
-    switch (_mode) {
-      case BrushMode.fill:
-        return SvgPicture.asset(ImageAssets.fill1, fit: BoxFit.contain);
-      case BrushMode.eraser:
-        return Image.asset(ImageAssets.eraser, fit: BoxFit.contain);
-      case BrushMode.magic:
-        return Image.asset(ImageAssets.magic, fit: BoxFit.contain);
-      case BrushMode.stamp:
-        return SvgPicture.asset(ImageAssets.stamp, fit: BoxFit.contain);
-      case BrushMode.freehand:
-        return SvgPicture.asset(ImageAssets.pencil1, fit: BoxFit.contain);
-    }
-  }
-
-  /// The colours in the fan: one big circle per colour family, in arc order,
-  /// with a "＋" that opens the full 78-colour grid.
-  List<KidFanItem> _buildColorFanItems() {
-    final items = <KidFanItem>[
-      for (final color in _stripColors)
-        KidFanItem.color(
-          color: color,
-          selected: color == _selectedColor,
-          onTap: () {
-            SoundService.playClick();
-            setState(() {
-              _selectedColor = color;
-              _lastColoringColor = color;
-              _panel = _KidPanel.none;
-            });
-          },
-        ),
-    ];
-
-    items.add(
-      KidFanItem.action(
-        label: 'More colours',
-        onTap: () {
-          SoundService.playClick();
-          // Closes the fan and opens the full grid sheet.
-          setState(() => _panel = _KidPanel.none);
-          _isSelectedColorOpen();
-        },
-        child: Icon(
-          Icons.add_rounded,
-          color: ColorManager.darkPrimary,
-          size: KidLayout.fanDotSize * 0.6,
-        ),
-      ),
-    );
-
-    return items;
-  }
-
-  /// The tools in the fan — the four a child uses plus clear.
-  List<KidFanItem> _buildToolFanItems() {
-    KidFanItem tool({
-      required BrushMode mode,
-      required StrokeStyle style,
-      required ToolType type,
-      required String label,
-      required Widget icon,
-      Color? face,
-    }) {
-      return KidFanItem.action(
-        label: label,
-        onTap: () {
-          SoundService.playClick();
-          _selectTool(SelectedTool(mode: mode, style: style, type: type));
-          setState(() => _panel = _KidPanel.none);
-        },
-        child: icon,
-      );
-    }
-
-    return [
-      tool(
-        mode: BrushMode.fill,
-        style: StrokeStyle.solid,
-        type: ToolType.fill,
-        label: 'Fill a shape',
-        icon: SvgPicture.asset(ImageAssets.fill1, fit: BoxFit.contain),
-      ),
-      tool(
-        mode: BrushMode.freehand,
-        style: StrokeStyle.solid,
-        type: ToolType.freehand,
-        label: 'Draw with a brush',
-        icon: SvgPicture.asset(ImageAssets.pencil1, fit: BoxFit.contain),
-      ),
-      // The eraser is a mode, not a tool with a type (the same way the
-      // original rail set it).
-      KidFanItem.action(
-        label: 'Eraser',
-        onTap: () {
-          SoundService.playClick();
-          setState(() {
-            _mode = BrushMode.eraser;
-            _panel = _KidPanel.none;
-          });
-        },
-        child: Image.asset(ImageAssets.eraser, fit: BoxFit.contain),
-      ),
-      KidFanItem.action(
-        label: 'More fun',
-        onTap: () {
-          SoundService.playClick();
-          // Closes the fan and opens the tool grid sheet.
-          setState(() => _panel = _KidPanel.none);
-          _isSelectedToolOpen();
-        },
-        child: const Icon(Icons.star_rounded, color: Color(0xFFF9A825)),
-      ),
-      KidFanItem.action(
-        label: 'Erase everything',
-        onTap: () {
-          SoundService.playClick();
-          _confirmClearAll();
-        },
-        child: SvgPicture.asset(ImageAssets.delete, fit: BoxFit.contain),
-      ),
-    ];
-  }
-
-  /// The grid sheet: the full colour grid, the stamps, the patterns or the
-  /// whole tool grid — whichever the child asked for with "＋" or "fun".
-  Widget? _buildGridSheet(Size size) {
-    final showSheet =
-        _panel == _KidPanel.grid && (isSelectedColorOpen || isSelectedToolOpen);
-    if (!showSheet) return null;
-
-    final content = isSelectedToolOpen
-        ? ToolPaletteWidget(
-            isToolOpen: _isSelectedToolOpen,
-            mode: _mode,
-            selectedColor: _selectedColor,
-            selectedStyle: _selectedStyle,
-            selectedTool: _selectedTool,
-            onModeChanged: (mode) => setState(() => _mode = mode),
-            onStyleChanged: (style) => setState(() => _selectedStyle = style),
-            onToolSelected: _selectTool,
-            selectedStampAsset: _selectedStampAsset,
-            stamps: stamps,
-          )
-        : _buildPaletteForMode();
-
-    return Positioned(
-      left: 0,
-      right: 0,
-      bottom: 0,
-      child: Center(
-        child: Container(
-          width: math.min(
-            KidLayout.swatchGridWidth + 2 * KidLayout.fanMargin,
-            size.width * 0.78,
-          ),
-          height: math.min(
-            size.height * 0.66,
-            size.height - KidLayout.bubbleSize - 4 * KidLayout.fanMargin,
-          ),
-          margin: EdgeInsets.all(KidLayout.fanMargin * 0.5),
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.97),
-            borderRadius: BorderRadius.circular(KidLayout.buttonRadius * 1.4),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.24),
-                blurRadius: 18,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              GestureDetector(
-                onTap: _closeBothPalettes,
-                behavior: HitTestBehavior.opaque,
-                child: Container(
-                  height: KidLayout.fanMargin * 1.8,
-                  alignment: Alignment.center,
-                  child: Container(
-                    width: KidLayout.fanMargin * 3,
-                    height: 5,
-                    decoration: BoxDecoration(
-                      color: Colors.black26,
-                      borderRadius: BorderRadius.circular(4),
+        // body: LayoutBuilder(builder: (context, constraints) {
+        //   return SafeArea(child: Row([actionRail, Expanded(canvas),
+        //     ?panel, toolRail])); })          // the round-3/4 docked layouts
+        // ✅ CHANGED (Option B, round 7): the app's own arrangement is kept —
+        // the canvas fills the picture area and the two rails float over it —
+        // and exactly ONE thing moves: the colour panel. It is no longer a
+        // panel that covers the drawing; the colours now live in a tray along
+        // the bottom of the screen (its own strip, always visible).
+        // ----- old version (kept for reference) -----
+        // Round 5 had one Stack for the whole screen, with the palette
+        // floating over the picture:
+        //   body: Stack(fit: StackFit.expand,
+        //     children: [canvas, colourPanel, rightRail, leftRail]),
+        // The Option C "Coloring Book" build() is parked in full at the
+        // bottom of this class.
+        body: Column(
+          children: [
+            // The picture: the round-5 Stack, now bounded by the tray below
+            // instead of by the bottom of the screen.
+            Expanded(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  RepaintBoundary(
+                    key: _repaintKey,
+                    child: ColoringCanvas(
+                      selectedWallpaperAsset: selectedPatternImage,
+                      selectedStampAsset:
+                          _selectedStampAsset ??
+                          (stamps.isNotEmpty ? stamps[0] : null),
+                      regions: _regions,
+                      brushMode: _mode,
+                      key: _coloringCanvasKey,
+                      selectedColor: _selectedColor,
+                      selectedStyle: _selectedStyle,
+                      selectedWallpaper: _selectedWallpaper,
+                      onColoringAction: _handleColoringAction,
+                      stampSize: _stampSize,
+                      // ✅ NEW: the painting fills the whole screen.
+                      fit: ArtFit.fill,
+                      // The S / M / L feature stays wired; medium == the original
+                      // brush width, so nothing changes unless a control is added.
+                      brushScale: _brushSize.factor,
+                      onPaintingStarted:
+                          (_mode == BrushMode.freehand ||
+                              _mode == BrushMode.eraser)
+                          ? () {
+                              _hideVerticalPalette();
+                              _closeBothPalettes();
+                            }
+                          : null,
+                      onPaintingEnded:
+                          (_mode == BrushMode.freehand ||
+                              _mode == BrushMode.eraser ||
+                              _mode == BrushMode.stamp)
+                          ? _handlePaintingEnded
+                          : null,
                     ),
                   ),
-                ),
+
+                  // The full colour grid, still floating over the drawing and
+                  // still opened from the rails and from the tray's ＋ — but it can
+                  // only ever cover the picture, never the tray below it.
+                  isSelectedColorOpen
+                      ? Positioned(
+                          top: 0,
+                          right: AppSizeWidth.s15,
+                          left: AppSizeWidth.s10,
+                          child: Center(
+                            child: Container(
+                              margin: EdgeInsets.symmetric(
+                                vertical: AppSizeHeight.s2,
+                                horizontal: AppSizeHeight.s1,
+                              ),
+                              decoration: BoxDecoration(
+                                color: ColorManager.darkPrimary,
+                                border: Border(
+                                  top: BorderSide(
+                                    color: ColorManager.darkPrimary,
+                                    width: AppSizeHeight.s0_5,
+                                  ),
+                                  left: BorderSide(
+                                    color: ColorManager.darkPrimary,
+                                    width: AppSizeHeight.s0_5,
+                                  ),
+                                  bottom: BorderSide(
+                                    color: ColorManager.darkPrimary,
+                                    width: AppSizeHeight.s0_5,
+                                  ),
+                                ),
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(AppSizeWidth.s4),
+                                ),
+                              ),
+                              // ✅ CHANGED (Option B): 96 % of the screen was
+                              // fine while the panel had the whole screen; the
+                              // tray now owns the bottom strip, so the panel is
+                              // capped at what the picture area has left.
+                              height: KidLayout.floatingPanelMaxHeight,
+                              width: AppSizeWidth.s83,
+                              child: _buildPaletteForMode(),
+                            ),
+                          ),
+                        )
+                      : Container(),
+
+                  // The right tool rail, with the tool grid beside it.
+                  // ✅ CHANGED (Option B): the tray has taken 20 % of the
+                  // height, so this rail may shrink to the area it actually
+                  // has instead of being clipped. On a screen where it already
+                  // fits, nothing is scaled at all.
+                  // ----- old version (kept for reference) -----
+                  // Positioned(...original..., child: Row(),
+                  Positioned.fill(
+                    child: Align(
+                      alignment: Alignment.topRight,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            isSelectedToolOpen
+                                ? ToolPaletteWidget(
+                                    isToolOpen: _isSelectedToolOpen,
+                                    mode: _mode,
+                                    selectedColor: _selectedColor,
+                                    selectedStyle: _selectedStyle,
+                                    selectedTool: _selectedTool,
+                                    onModeChanged: (mode) =>
+                                        setState(() => _mode = mode),
+                                    onStyleChanged: (style) =>
+                                        setState(() => _selectedStyle = style),
+                                    onToolSelected: _selectTool,
+                                    selectedStampAsset: _selectedStampAsset,
+                                    stamps: stamps,
+                                  )
+                                : Container(),
+                            AnimatedVerticalPalette(
+                              animation: _verticalPaletteAnimation,
+                              child: VerticalToolPaletteWidget(
+                                selectedImage: selectedPatternImage,
+                                isColorOpen: _isSelectedColorOpen,
+                                isToolOpen: _isSelectedToolOpen,
+                                selectedColor: _selectedColor,
+                                selectedTool: _selectedTool,
+                                selectedStampAsset: _selectedStampAsset,
+                                brushMode: _mode,
+                                stamps: stamps,
+                                onEraserSelected: () {
+                                  setState(() {
+                                    _mode = BrushMode.eraser;
+                                  });
+                                  _closeBothPalettes();
+                                },
+                                onMagicSelected: () {
+                                  setState(() {
+                                    _mode = BrushMode.magic;
+
+                                    _selectedTool = SelectedTool(
+                                      mode: BrushMode.magic,
+                                      style: StrokeStyle.solid,
+                                      type: ToolType.magic,
+                                    );
+                                  });
+
+                                  _closeBothPalettes();
+                                },
+                                // ✅ CHANGED (round 5): asks "Erase everything?" first —
+                                // the only change to this rail.
+                                onClearSelected: () {
+                                  _confirmClearAll();
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  // The left action rail: close, undo, redo, save.
+                  // ✅ CHANGED (Option B): the tray has taken 20 % of the
+                  // height, so this rail may shrink to the area it actually
+                  // has instead of being clipped. On a screen where it already
+                  // fits, nothing is scaled at all.
+                  // ----- old version (kept for reference) -----
+                  // Positioned(...original..., child: VerticalActionToolsWidget(),
+                  Positioned.fill(
+                    child: Align(
+                      alignment: Alignment.topLeft,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: VerticalActionToolsWidget(
+                          onUndo: _undo,
+                          onSave: _saveToGallery,
+                          redo: _redoAction,
+                          animation: _leftPaletteAnimation,
+                          onClose: () async {
+                            await _confirmClose();
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              Expanded(child: content),
-            ],
-          ),
+            ),
+
+            // ✅ NEW (Option B): the colour tray. It owns this strip, so
+            // the drawing is never covered while a child picks a colour.
+            KidColorTray(
+              colors: ColorPaletteWidget.allSwatches,
+              selectedColor: _selectedColor,
+              onColorSelected: _pickColorFromTray,
+              onMoreColors: _isSelectedColorOpen,
+              onTools: _isSelectedToolOpen,
+              onEraser: _selectEraserFromTray,
+              onClear: _confirmClearAll,
+              moreOpen: isSelectedColorOpen,
+              toolsOpen: isSelectedToolOpen,
+            ),
+          ],
         ),
       ),
     );
   }
+
+  // ----- the round-3 / round-4 docked layouts (kept for reference) -----
+  // Round 4 replaced this with floating bubbles; round 5 went back to the
+  // app's own original floating palettes in the build() above.
+  //
+  // Widget? _buildDockedPanel(Axis railsAxis, double screenW, double screenH) {
+  //   ... a docked panel beside the canvas (round 3) ...
+  // }
+  // Widget? _buildSheet(double screenW, double screenH) {
+  //   ... a bottom sheet holding the colour grid / stamps / tools (round 4) ...
+  // }
 
   Widget _buildPaletteForMode() {
     if (_selectedTool?.type == ToolType.wallpaper) {
@@ -1576,4 +1424,531 @@ class _PaintingPageState extends State<PaintingPage>
       toolType: _selectedTool?.type,
     );
   }
+  // ===========================================================================
+  // PARKED — Option C, "Coloring Book" (commit c9b754a; this was the live
+  // layout on main until Option B replaced it). Kept here, commented, so this
+  // one file can be switched back: un-comment this block, drop the Column and
+  // the tray from build() above, and put back three imports —
+  //   import 'dart:math' as math;
+  //   import 'package:flutter_svg/flutter_svg.dart';
+  //   import 'widgets/kid_paint_controls.dart';
+  // The fan maths it uses (fanAnchor / fanDotOffset / fanArcFor /
+  // fanDotSizeFor) is still in kid_layout.dart, and its widgets are still in
+  // widgets/kid_paint_controls.dart with their own passing tests.
+  // ===========================================================================
+
+  // --- was a top-level declaration, just above the class ---
+  // /// ✅ NEW (kid-ui round 6 — Option C): what is covering the picture right now.
+  // /// One value, so two open panels can never fight over the screen.
+  // enum _KidPanel {
+  //   /// Nothing — the picture is clean.
+  //   none,
+  //
+  //   /// The colours fanning out of the crayon bubble.
+  //   colorFan,
+  //
+  //   /// The tools fanning out of the tool bubble.
+  //   toolFan,
+  //
+  //   /// The grid sheet (all colours / stamps / patterns / tools) sliding up.
+  //   grid,
+  // }
+
+  // --- was the live build() of the page ---
+  //   Widget build(BuildContext context) {
+  //     if (_regions.isEmpty) {
+  //       // ✅ NEW: a real error state with a retry, instead of a spinner that
+  //       // never resolves when the artwork fails to load.
+  //       if (_loadFailed) {
+  //         return Scaffold(
+  //           backgroundColor: ColorManager.lightPrimary,
+  //           body: Center(
+  //             child: Padding(
+  //               padding: const EdgeInsets.all(24),
+  //               child: Column(
+  //                 mainAxisSize: MainAxisSize.min,
+  //                 children: [
+  //                   const Icon(
+  //                     Icons.image_not_supported_outlined,
+  //                     size: 64,
+  //                     color: Colors.orange,
+  //                   ),
+  //                   SizedBox(height: AppSizeHeight.s3),
+  //                   Text(
+  //                     'Could not open this drawing',
+  //                     textAlign: TextAlign.center,
+  //                     style: TextStyle(
+  //                       fontSize: FontSize.s18,
+  //                       fontWeight: FontWeight.w700,
+  //                       color: Colors.black87,
+  //                     ),
+  //                   ),
+  //                   SizedBox(height: AppSizeHeight.s2),
+  //                   Text(
+  //                     'Please check your connection or try another drawing.',
+  //                     textAlign: TextAlign.center,
+  //                     style: TextStyle(
+  //                       fontSize: FontSize.s15,
+  //                       color: Colors.black54,
+  //                     ),
+  //                   ),
+  //                   SizedBox(height: AppSizeHeight.s3),
+  //                   ElevatedButton(
+  //                     onPressed: () {
+  //                       setState(() {
+  //                         _loadFailed = false;
+  //                       });
+  //                       _load();
+  //                     },
+  //                     child: const Text('Try again'),
+  //                   ),
+  //                   TextButton(
+  //                     onPressed: () => Navigator.of(context).maybePop(),
+  //                     child: const Text('Back'),
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  //           ),
+  //         );
+  //       }
+  //
+  //       return const Scaffold(body: Center(child: CircularProgressIndicator()));
+  //     }
+  //
+  //     return PopScope(
+  //       canPop: false,
+  //       onPopInvokedWithResult: (didPop, result) async {
+  //         if (didPop) return;
+  //
+  //         await _confirmClose();
+  //       },
+  //       child: Scaffold(
+  //         backgroundColor: ColorManager.lightPrimary,
+  //         // ✅ NEW (kid-ui round 6 — Option C, the "Coloring Book" layout): the
+  //         // picture is the whole screen and the controls are two bubbles.
+  //         //
+  //         //    picture = 100 % of the screen, never covered while choosing
+  //         //    bottom right : crayon bubble  -> the colours fan out around it
+  //         //    above it     : tool bubble    -> fill / brush / eraser / fun / clear
+  //         //    bottom left  : undo (+ redo when there is something to redo)
+  //         //    top left     : home          top right : save
+  //         //
+  //         // ----- old version (kept for reference) -----
+  //         // body: Stack(fit: StackFit.expand, children: [
+  //         //   canvas,
+  //         //   Positioned colour panel (96 % x 83 %) when isSelectedColorOpen,
+  //         //   Positioned(top:0,right:0) Row[ToolPaletteWidget, AnimatedVertical
+  //         //     Palette(VerticalToolPaletteWidget)],        // the right rail
+  //         //   Positioned(left:0,top:0) VerticalActionToolsWidget,  // the left rail
+  //         // ]);
+  //         body: LayoutBuilder(
+  //           builder: (context, constraints) {
+  //             final size = Size(constraints.maxWidth, constraints.maxHeight);
+  //             final margin = KidLayout.fanMargin;
+  //             final crayon = KidLayout.crayonBubbleSize;
+  //             final bubble = KidLayout.bubbleSize;
+  //
+  //             return Stack(
+  //               fit: StackFit.expand,
+  //               children: [
+  //                 // 1. The picture — the whole screen.
+  //                 RepaintBoundary(
+  //                   key: _repaintKey,
+  //                   child: ColoringCanvas(
+  //                     selectedWallpaperAsset: selectedPatternImage,
+  //                     selectedStampAsset:
+  //                         _selectedStampAsset ??
+  //                         (stamps.isNotEmpty ? stamps[0] : null),
+  //                     regions: _regions,
+  //                     brushMode: _mode,
+  //                     key: _coloringCanvasKey,
+  //                     selectedColor: _selectedColor,
+  //                     selectedStyle: _selectedStyle,
+  //                     selectedWallpaper: _selectedWallpaper,
+  //                     onColoringAction: _handleColoringAction,
+  //                     stampSize: _stampSize,
+  //                     fit: ArtFit.fill,
+  //                     brushScale: _brushSize.factor,
+  //                     onPaintingStarted:
+  //                         (_mode == BrushMode.freehand ||
+  //                             _mode == BrushMode.eraser)
+  //                         ? () {
+  //                             // ✅ round 6: whatever is open closes as soon as a
+  //                             // stroke begins, so the child draws on a clear
+  //                             // picture.
+  //                             _hideVerticalPalette();
+  //                           }
+  //                         : null,
+  //                     onPaintingEnded:
+  //                         (_mode == BrushMode.freehand ||
+  //                             _mode == BrushMode.eraser ||
+  //                             _mode == BrushMode.stamp)
+  //                         ? _handlePaintingEnded
+  //                         : null,
+  //                   ),
+  //                 ),
+  //
+  //                 // 2. The colour fan: opens around the crayon bubble.
+  //                 KidFan(
+  //                   open: _panel == _KidPanel.colorFan,
+  //                   anchor: Alignment.bottomRight,
+  //                   items: _buildColorFanItems(),
+  //                 ),
+  //
+  //                 // 3. The tool fan: opens around the tool bubble.
+  //                 KidFan(
+  //                   open: _panel == _KidPanel.toolFan,
+  //                   anchor: Alignment.bottomRight,
+  //                   outerCount: 5,
+  //                   items: _buildToolFanItems(),
+  //                 ),
+  //
+  //                 // 4. The full grid (78 colours / stamps / patterns / tools),
+  //                 //    as a sheet that slides up and closes on a pick.
+  //                 ?_buildGridSheet(size),
+  //
+  //                 // 5. The two bubbles a thumb rests on, bottom right.
+  //                 Positioned(
+  //                   right: margin,
+  //                   bottom: margin,
+  //                   child: KidCrayonBubble(
+  //                     color: _selectedColor,
+  //                     open: _panel == _KidPanel.colorFan,
+  //                     onTap: () {
+  //                       SoundService.playClick();
+  //                       setState(() {
+  //                         _panel = _panel == _KidPanel.colorFan
+  //                             ? _KidPanel.none
+  //                             : _KidPanel.colorFan;
+  //                       });
+  //                     },
+  //                   ),
+  //                 ),
+  //                 Positioned(
+  //                   right: margin + (crayon - bubble) / 2,
+  //                   bottom: margin + crayon + KidLayout.fanMargin * 0.6,
+  //                   child: KidRoundBubble(
+  //                     key: const Key('kid_tool_bubble'),
+  //                     size: bubble,
+  //                     selected: _panel == _KidPanel.toolFan,
+  //                     tooltip: 'Tools',
+  //                     faceColor: const Color(0xFFFFE082),
+  //                     onTap: () {
+  //                       SoundService.playClick();
+  //                       setState(() {
+  //                         _panel = _panel == _KidPanel.toolFan
+  //                             ? _KidPanel.none
+  //                             : _KidPanel.toolFan;
+  //                       });
+  //                     },
+  //                     child: _currentToolIcon(),
+  //                   ),
+  //                 ),
+  //
+  //                 // 6. Undo (and redo when there is something to redo), bottom
+  //                 //    left, where the other thumb rests.
+  //                 Positioned(
+  //                   left: margin,
+  //                   bottom: margin,
+  //                   child: Row(
+  //                     children: [
+  //                       KidPill(
+  //                         key: const Key('kid_undo_pill'),
+  //                         label: 'Undo',
+  //                         faceColor: const Color(0xFFFFD9B0),
+  //                         enabled: _actionHistory.isNotEmpty,
+  //                         onTap: () {
+  //                           SoundService.playClick();
+  //                           _undo();
+  //                         },
+  //                         icon: Image.asset(
+  //                           ImageAssets.redo,
+  //                           fit: BoxFit.contain,
+  //                         ),
+  //                       ),
+  //                       SizedBox(width: KidLayout.fanMargin * 0.6),
+  //                       if (_redoStack.isNotEmpty)
+  //                         KidPill(
+  //                           key: const Key('kid_redo_pill'),
+  //                           label: 'Redo',
+  //                           onTap: () {
+  //                             SoundService.playClick();
+  //                             _redoAction();
+  //                           },
+  //                           icon: Transform.flip(
+  //                             flipX: true,
+  //                             child: Image.asset(
+  //                               ImageAssets.redo,
+  //                               fit: BoxFit.contain,
+  //                             ),
+  //                           ),
+  //                         ),
+  //                     ],
+  //                   ),
+  //                 ),
+  //
+  //                 // 7. Home and Save, small and out of the thumbs' way.
+  //                 Positioned(
+  //                   left: margin,
+  //                   top: margin,
+  //                   child: Row(
+  //                     children: [
+  //                       KidRoundBubble(
+  //                         key: const Key('kid_home_bubble'),
+  //                         size: bubble * 0.86,
+  //                         faceColor: const Color(0xFFDCE3E9),
+  //                         tooltip: 'Leave the drawing',
+  //                         onTap: () async {
+  //                           await SoundService.playClick();
+  //                           await _confirmClose();
+  //                         },
+  //                         child: Image.asset(
+  //                           ImageAssets.close,
+  //                           fit: BoxFit.contain,
+  //                         ),
+  //                       ),
+  //                       SizedBox(width: KidLayout.fanMargin * 0.6),
+  //                       // ✅ NEW: clear-everything lives here, far from the
+  //                       // eraser, and still asks "Erase everything?" first.
+  //                       KidRoundBubble(
+  //                         key: const Key('kid_clear_bubble'),
+  //                         size: bubble * 0.86,
+  //                         faceColor: const Color(0xFFFFCDD2),
+  //                         tooltip: 'Erase everything',
+  //                         onTap: () {
+  //                           SoundService.playClick();
+  //                           _confirmClearAll();
+  //                         },
+  //                         child: SvgPicture.asset(
+  //                           ImageAssets.delete,
+  //                           fit: BoxFit.contain,
+  //                         ),
+  //                       ),
+  //                     ],
+  //                   ),
+  //                 ),
+  //                 Positioned(
+  //                   right: margin,
+  //                   top: margin,
+  //                   child: KidRoundBubble(
+  //                     key: const Key('kid_save_bubble'),
+  //                     size: bubble * 0.86,
+  //                     faceColor: const Color(0xFFC8E6C9),
+  //                     tooltip: 'Save to the phone',
+  //                     onTap: () {
+  //                       SoundService.playClick();
+  //                       _saveToGallery();
+  //                     },
+  //                     child: Image.asset(ImageAssets.camera, fit: BoxFit.contain),
+  //                   ),
+  //                 ),
+  //               ],
+  //             );
+  //           },
+  //         ),
+  //       ),
+  //     );
+  //   }
+  //
+  //   /// The icon on the tool bubble: whatever the child is painting with.
+  //   Widget _currentToolIcon() {
+  //     switch (_mode) {
+  //       case BrushMode.fill:
+  //         return SvgPicture.asset(ImageAssets.fill1, fit: BoxFit.contain);
+  //       case BrushMode.eraser:
+  //         return Image.asset(ImageAssets.eraser, fit: BoxFit.contain);
+  //       case BrushMode.magic:
+  //         return Image.asset(ImageAssets.magic, fit: BoxFit.contain);
+  //       case BrushMode.stamp:
+  //         return SvgPicture.asset(ImageAssets.stamp, fit: BoxFit.contain);
+  //       case BrushMode.freehand:
+  //         return SvgPicture.asset(ImageAssets.pencil1, fit: BoxFit.contain);
+  //     }
+  //   }
+  //
+  //   /// The colours in the fan: one big circle per colour family, in arc order,
+  //   /// with a "＋" that opens the full 78-colour grid.
+  //   List<KidFanItem> _buildColorFanItems() {
+  //     final items = <KidFanItem>[
+  //       for (final color in _stripColors)
+  //         KidFanItem.color(
+  //           color: color,
+  //           selected: color == _selectedColor,
+  //           onTap: () {
+  //             SoundService.playClick();
+  //             setState(() {
+  //               _selectedColor = color;
+  //               _lastColoringColor = color;
+  //               _panel = _KidPanel.none;
+  //             });
+  //           },
+  //         ),
+  //     ];
+  //
+  //     items.add(
+  //       KidFanItem.action(
+  //         label: 'More colours',
+  //         onTap: () {
+  //           SoundService.playClick();
+  //           // Closes the fan and opens the full grid sheet.
+  //           setState(() => _panel = _KidPanel.none);
+  //           _isSelectedColorOpen();
+  //         },
+  //         child: Icon(
+  //           Icons.add_rounded,
+  //           color: ColorManager.darkPrimary,
+  //           size: KidLayout.fanDotSize * 0.6,
+  //         ),
+  //       ),
+  //     );
+  //
+  //     return items;
+  //   }
+  //
+  //   /// The tools in the fan — the four a child uses plus clear.
+  //   List<KidFanItem> _buildToolFanItems() {
+  //     KidFanItem tool({
+  //       required BrushMode mode,
+  //       required StrokeStyle style,
+  //       required ToolType type,
+  //       required String label,
+  //       required Widget icon,
+  //       Color? face,
+  //     }) {
+  //       return KidFanItem.action(
+  //         label: label,
+  //         onTap: () {
+  //           SoundService.playClick();
+  //           _selectTool(SelectedTool(mode: mode, style: style, type: type));
+  //           setState(() => _panel = _KidPanel.none);
+  //         },
+  //         child: icon,
+  //       );
+  //     }
+  //
+  //     return [
+  //       tool(
+  //         mode: BrushMode.fill,
+  //         style: StrokeStyle.solid,
+  //         type: ToolType.fill,
+  //         label: 'Fill a shape',
+  //         icon: SvgPicture.asset(ImageAssets.fill1, fit: BoxFit.contain),
+  //       ),
+  //       tool(
+  //         mode: BrushMode.freehand,
+  //         style: StrokeStyle.solid,
+  //         type: ToolType.freehand,
+  //         label: 'Draw with a brush',
+  //         icon: SvgPicture.asset(ImageAssets.pencil1, fit: BoxFit.contain),
+  //       ),
+  //       // The eraser is a mode, not a tool with a type (the same way the
+  //       // original rail set it).
+  //       KidFanItem.action(
+  //         label: 'Eraser',
+  //         onTap: () {
+  //           SoundService.playClick();
+  //           setState(() {
+  //             _mode = BrushMode.eraser;
+  //             _panel = _KidPanel.none;
+  //           });
+  //         },
+  //         child: Image.asset(ImageAssets.eraser, fit: BoxFit.contain),
+  //       ),
+  //       KidFanItem.action(
+  //         label: 'More fun',
+  //         onTap: () {
+  //           SoundService.playClick();
+  //           // Closes the fan and opens the tool grid sheet.
+  //           setState(() => _panel = _KidPanel.none);
+  //           _isSelectedToolOpen();
+  //         },
+  //         child: const Icon(Icons.star_rounded, color: Color(0xFFF9A825)),
+  //       ),
+  //       KidFanItem.action(
+  //         label: 'Erase everything',
+  //         onTap: () {
+  //           SoundService.playClick();
+  //           _confirmClearAll();
+  //         },
+  //         child: SvgPicture.asset(ImageAssets.delete, fit: BoxFit.contain),
+  //       ),
+  //     ];
+  //   }
+  //
+  //   /// The grid sheet: the full colour grid, the stamps, the patterns or the
+  //   /// whole tool grid — whichever the child asked for with "＋" or "fun".
+  //   Widget? _buildGridSheet(Size size) {
+  //     final showSheet =
+  //         _panel == _KidPanel.grid && (isSelectedColorOpen || isSelectedToolOpen);
+  //     if (!showSheet) return null;
+  //
+  //     final content = isSelectedToolOpen
+  //         ? ToolPaletteWidget(
+  //             isToolOpen: _isSelectedToolOpen,
+  //             mode: _mode,
+  //             selectedColor: _selectedColor,
+  //             selectedStyle: _selectedStyle,
+  //             selectedTool: _selectedTool,
+  //             onModeChanged: (mode) => setState(() => _mode = mode),
+  //             onStyleChanged: (style) => setState(() => _selectedStyle = style),
+  //             onToolSelected: _selectTool,
+  //             selectedStampAsset: _selectedStampAsset,
+  //             stamps: stamps,
+  //           )
+  //         : _buildPaletteForMode();
+  //
+  //     return Positioned(
+  //       left: 0,
+  //       right: 0,
+  //       bottom: 0,
+  //       child: Center(
+  //         child: Container(
+  //           width: math.min(
+  //             KidLayout.swatchGridWidth + 2 * KidLayout.fanMargin,
+  //             size.width * 0.78,
+  //           ),
+  //           height: math.min(
+  //             size.height * 0.66,
+  //             size.height - KidLayout.bubbleSize - 4 * KidLayout.fanMargin,
+  //           ),
+  //           margin: EdgeInsets.all(KidLayout.fanMargin * 0.5),
+  //           clipBehavior: Clip.antiAlias,
+  //           decoration: BoxDecoration(
+  //             color: Colors.white.withValues(alpha: 0.97),
+  //             borderRadius: BorderRadius.circular(KidLayout.buttonRadius * 1.4),
+  //             boxShadow: [
+  //               BoxShadow(
+  //                 color: Colors.black.withValues(alpha: 0.24),
+  //                 blurRadius: 18,
+  //                 offset: const Offset(0, 6),
+  //               ),
+  //             ],
+  //           ),
+  //           child: Column(
+  //             children: [
+  //               GestureDetector(
+  //                 onTap: _closeBothPalettes,
+  //                 behavior: HitTestBehavior.opaque,
+  //                 child: Container(
+  //                   height: KidLayout.fanMargin * 1.8,
+  //                   alignment: Alignment.center,
+  //                   child: Container(
+  //                     width: KidLayout.fanMargin * 3,
+  //                     height: 5,
+  //                     decoration: BoxDecoration(
+  //                       color: Colors.black26,
+  //                       borderRadius: BorderRadius.circular(4),
+  //                     ),
+  //                   ),
+  //                 ),
+  //               ),
+  //               Expanded(child: content),
+  //             ],
+  //           ),
+  //         ),
+  //       ),
+  //     );
+  //   }
+  //
 }

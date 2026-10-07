@@ -128,6 +128,65 @@ class KidLayout {
   static const int stripColors = 11;
 
   // ---------------------------------------------------------------------------
+  // Option B — the colour tray (the app's own layout + a tray at the bottom).
+  // The tray owns a strip of its own, so -- unlike the old floating panel --
+  // it can never cover the drawing. Same language as everything else: a
+  // percent of the screen, clamped to real touch targets.
+  // ---------------------------------------------------------------------------
+
+  /// The tray's strip: 20 % of the screen height. Never thinner than a button
+  /// face plus its word, never so tall that it eats the picture.
+  static const double trayH = 20;
+  static const double minTray = 64;
+  static const double maxTray = 128;
+
+  static double get trayHeight =>
+      _bounded(pctH(trayH), minTray, math.min(maxTray, screenH * 0.34));
+
+  /// A button in the tray: 12 % of the screen height, inside the 48-56 dp the
+  /// proposal asks for (and never below the 48 dp platform minimum).
+  static const double trayButtonH = 12;
+  static const double minTrayButton = 48;
+  static const double maxTrayButton = 60;
+
+  static double get trayButtonSize => _bounded(
+    pctH(trayButtonH),
+    minTrayButton,
+    math.min(maxTrayButton, trayHeight),
+  );
+
+  /// A colour dot in the tray. 44 dp minimum: a child taps the colours
+  /// directly, so they are primary targets, not decoration.
+  static const double trayDotH = 11;
+  static const double minTrayDot = 44;
+  static const double maxTrayDot = 64;
+
+  static double get trayDotSize => _bounded(
+    pctH(trayDotH),
+    minTrayDot,
+    math.min(maxTrayDot, trayHeight * 0.72),
+  );
+
+  /// Space between two dots. The dot plus this is the strip's cell width, so
+  /// the tap target is always wider than the circle the child sees.
+  static const double trayGapH = 2.4;
+
+  static double get trayGap => _bounded(pctH(trayGapH), 8, trayDotSize * 0.5);
+
+  /// Padding at the two ends of the tray, and around its dividers.
+  static double get trayPadding => _bounded(pctH(1.6), 6, 20);
+
+  /// The word under a tray button: whatever height is left under the face.
+  static double trayLabelSize(double buttonSize) =>
+      ((trayHeight - buttonSize) * 0.5).clamp(9.0, 13.0);
+
+  /// The floating colour grid keeps the original 96 %-of-screen height, but the
+  /// tray now owns the bottom strip, so it is capped by what the picture area
+  /// actually has left (and never squeezed smaller than a usable panel).
+  static double get floatingPanelMaxHeight =>
+      math.max(120, math.min(pctH(96), screenH - trayHeight - pctH(2)));
+
+  // ---------------------------------------------------------------------------
   // Fitting the artwork to the screen.
   // ---------------------------------------------------------------------------
 
