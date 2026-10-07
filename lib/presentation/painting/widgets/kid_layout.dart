@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui' show Rect, Size;
 
 import 'package:sizer/sizer.dart';
 
@@ -17,6 +18,21 @@ import 'package:sizer/sizer.dart';
 /// [buttonW] percent of the width, whichever is *smaller*), it is clamped to a
 /// sane range, and a rail that cannot fit its buttons shrinks them instead of
 /// making the child scroll.
+/// How the drawing is scaled into the canvas.
+enum ArtFit {
+  /// Stretch to the canvas on both axes: **the painting fills the whole
+  /// screen**. Everything stays visible and tappable; the trade-off is that
+  /// the artwork is stretched by the difference between its own aspect
+  /// (16:9) and the screen's. This is what the app did before round 1, and
+  /// what "the colouring area must fill the screen" asks for.
+  fill,
+
+  /// Keep the artwork's own aspect ratio and centre it. Nothing is
+  /// distorted, but on a 20:9 phone the drawing is ~20 % narrower than the
+  /// screen, leaving bands at the sides.
+  keepShape,
+}
+
 class KidLayout {
   KidLayout._();
 
@@ -76,6 +92,91 @@ class KidLayout {
   /// with one button per screen.
   static const double minButton = 48;
   static const double maxButton = 104;
+
+  // ---------------------------------------------------------------------------
+  // Floating controls (round 4: the "nothing reserved" layout).
+  // ---------------------------------------------------------------------------
+
+  /// A floating button: 14 % of the screen height, clamped to a real touch
+  /// target.
+  static const double floatButtonH = 14;
+  static const double minFloatButton = 44;
+  static const double maxFloatButton = 96;
+
+  static double get floatButtonSize => _bounded(
+    pctH(floatButtonH),
+    minFloatButton,
+    math.min(maxFloatButton, screenH * 0.30),
+  );
+
+  /// Gap between floating buttons / padding inside a floating cluster.
+  static double get floatGap => _bounded(pctH(1.2), 4, floatButtonSize * 0.30);
+
+  /// A colour dot in the always-visible bottom strip.
+  static const double colorDotH = 11;
+  static const double minColorDot = 38;
+  static const double maxColorDot = 72;
+
+  static double get colorDotSize => _bounded(
+    pctH(colorDotH),
+    minColorDot,
+    math.min(maxColorDot, screenH * 0.22),
+  );
+
+  /// How many colour dots the strip shows before the "more" button.
+  static const int stripColors = 11;
+
+  // ---------------------------------------------------------------------------
+  // Fitting the artwork to the screen.
+  // ---------------------------------------------------------------------------
+
+  /// Even in [ArtFit.fill], never stretch one axis more than this much more
+  /// than the other — beyond it the drawing stops looking like the artwork
+  /// (a 20:9 phone is 1.25, a tablet is ~1.33; portrait would be 3+).
+  static const double maxStretch = 1.6;
+
+  /// The transform that maps artwork-space into canvas-space for [fit].
+  ///
+  /// Returns the same key names the painter and the hit-testing already use:
+  /// `scaleX`, `scaleY`, `tx`, `ty`.
+  static Map<String, double> fitTransform({
+    required Rect bounds,
+    required Size canvas,
+    required ArtFit fit,
+    double maxStretchRatio = maxStretch,
+  }) {
+    final bw = bounds.width <= 0 ? 1.0 : bounds.width;
+    final bh = bounds.height <= 0 ? 1.0 : bounds.height;
+
+    var scaleX = canvas.width / bw;
+    var scaleY = canvas.height / bh;
+
+    if (fit == ArtFit.keepShape) {
+      // One scale for both axes, centred.
+      final scale = math.min(scaleX, scaleY);
+      scaleX = scale;
+      scaleY = scale;
+    } else {
+      // Fill: use both scales, but do not let one axis run away from the
+      // other (that is the "circles became ovals" extreme).
+      final ratio = scaleX > scaleY ? scaleX / scaleY : scaleY / scaleX;
+      if (ratio > maxStretchRatio) {
+        if (scaleX > scaleY) {
+          scaleX = scaleY * maxStretchRatio;
+        } else {
+          scaleY = scaleX * maxStretchRatio;
+        }
+      }
+    }
+
+    final drawnWidth = bw * scaleX;
+    final drawnHeight = bh * scaleY;
+
+    final tx = (canvas.width - drawnWidth) / 2 - bounds.left * scaleX;
+    final ty = (canvas.height - drawnHeight) / 2 - bounds.top * scaleY;
+
+    return {'scaleX': scaleX, 'scaleY': scaleY, 'tx': tx, 'ty': ty};
+  }
 
   /// All twelve artworks are 1920 x 1080, i.e. 16:9 landscape.
   static const double artAspect = 1920 / 1080;

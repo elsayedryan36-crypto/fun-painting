@@ -83,6 +83,91 @@ void main() {
     });
   });
 
+  group('the painting fills the screen', () {
+    // The artwork's own bounds are 1920 x 1080 (16:9); a phone screen is 20:9.
+    const artBounds = Rect.fromLTWH(0, 0, 1920, 1080);
+    const phone = Size(2400, 1080);
+
+    test('fill mode covers the whole canvas', () {
+      final t = KidLayout.fitTransform(
+        bounds: artBounds,
+        canvas: phone,
+        fit: ArtFit.fill,
+      );
+
+      // The drawn rectangle really is as big as the canvas on both axes.
+      final drawnW = artBounds.width * t['scaleX']!;
+      final drawnH = artBounds.height * t['scaleY']!;
+      expect(drawnW, closeTo(phone.width, 0.5));
+      expect(drawnH, closeTo(phone.height, 0.5));
+
+      // …and it is positioned at the canvas origin, not centred in a band.
+      expect(t['tx']!, closeTo(0, 0.5));
+      expect(t['ty']!, closeTo(0, 0.5));
+    });
+
+    test('fill mode still refuses to squash an extreme screen', () {
+      // Portrait-ish 1080 x 2400 would be a 3.5x stretch on one axis.
+      final t = KidLayout.fitTransform(
+        bounds: artBounds,
+        canvas: const Size(1080, 2400),
+        fit: ArtFit.fill,
+      );
+      final ratio = t['scaleX']! > t['scaleY']!
+          ? t['scaleX']! / t['scaleY']!
+          : t['scaleY']! / t['scaleX']!;
+      expect(ratio, lessThanOrEqualTo(KidLayout.maxStretch + 0.0001));
+    });
+
+    test('keep-shape mode keeps the artwork undistorted and centred', () {
+      final t = KidLayout.fitTransform(
+        bounds: artBounds,
+        canvas: phone,
+        fit: ArtFit.keepShape,
+      );
+
+      expect(t['scaleX']!, t['scaleY']!, reason: 'one scale for both axes');
+
+      final drawnW = artBounds.width * t['scaleX']!;
+      final drawnH = artBounds.height * t['scaleY']!;
+      expect(drawnH, closeTo(phone.height, 0.5));
+      expect(
+        drawnW,
+        lessThan(phone.width),
+        reason: 'this is the old letterbox',
+      );
+      expect(t['tx']!, closeTo((phone.width - drawnW) / 2, 0.5));
+    });
+
+    test('the fill default really is fill', () {
+      // A regression guard: the default must fill the screen, because that is
+      // what the app was asked to do twice.
+      expect(ArtFit.values.first, ArtFit.fill);
+      expect(ArtFit.fill.index, 0);
+    });
+  });
+
+  group('floating controls', () {
+    test('buttons stay a real touch target and grow with the screen', () {
+      expect(
+        KidLayout.floatButtonSize,
+        greaterThanOrEqualTo(KidLayout.minFloatButton),
+      );
+      expect(
+        KidLayout.floatButtonSize,
+        lessThanOrEqualTo(KidLayout.maxFloatButton),
+      );
+    });
+
+    test('colour dots are kid sized', () {
+      expect(
+        KidLayout.colorDotSize,
+        greaterThanOrEqualTo(KidLayout.minColorDot),
+      );
+      expect(KidLayout.colorDotSize, lessThanOrEqualTo(KidLayout.maxColorDot));
+    });
+  });
+
   group('colour grid stays kid sized', () {
     test('eight columns only when they are big enough', () {
       // A tablet-width panel (the full 8-column grid width).

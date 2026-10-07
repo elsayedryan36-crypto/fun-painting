@@ -1,4 +1,5 @@
-import 'dart:math' as math; // ✅ NEW: needed for the uniform min() scale below
+// ----- old version (kept for reference) -----
+// import 'dart:math' as math; // used by the old centred _computeTransform()
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -9,6 +10,8 @@ import 'package:fun_painting/presentation/common/services/sound_service.dart';
 import 'package:lottie/lottie.dart';
 
 import '../common/resources/assets_manager.dart';
+// ✅ NEW (kid-ui round 4): the shared "fill the screen" fit maths.
+import 'widgets/kid_layout.dart';
 import 'coloring_painter.dart';
 import 'region.dart';
 
@@ -882,6 +885,12 @@ class ColoringCanvas extends StatefulWidget {
   final VoidCallback? onClearRequested;
   final String? selectedWallpaperAsset;
 
+  /// ✅ NEW (kid-ui round 4): how the artwork is fitted into the canvas —
+  /// [ArtFit.fill] stretches it so the painting fills the whole
+  /// screen (the default), [ArtFit.keepShape] keeps its own aspect
+  /// ratio and centres it.
+  final ArtFit fit;
+
   /// ✅ NEW (kid-ui): the S / M / L brush preset, applied to every stroke the
   /// child draws from now on. Stamps and the saved strokes keep their own size.
   final double brushScale;
@@ -902,6 +911,7 @@ class ColoringCanvas extends StatefulWidget {
     this.onPaintingEnded,
     this.onClearRequested,
     this.brushScale = 1.0,
+    this.fit = ArtFit.fill,
   });
 
   @override
@@ -1169,25 +1179,36 @@ class ColoringCanvasState extends State<ColoringCanvas> {
 
   Map<String, double> _computeTransform(Size size) {
     final bounds = _bounds ?? Rect.fromLTWH(0, 0, 1, 1);
-    final bw = bounds.width <= 0 ? 1.0 : bounds.width;
-    final bh = bounds.height <= 0 ? 1.0 : bounds.height;
+    // ----- old version (kept for reference) -----
+    // final bw = bounds.width <= 0 ? 1.0 : bounds.width;
+    // final bh = bounds.height <= 0 ? 1.0 : bounds.height;
 
-    // ✅ FIX: ONE scale for both axes, so the artwork keeps its own aspect
-    // ratio instead of being stretched to fill the canvas (circles stayed
-    // circles, and the same painting now looks the same on every screen).
-    final scale = math.min(size.width / bw, size.height / bh);
+    // ✅ CHANGED (kid-ui round 4): the fit now comes from KidLayout (and can
+    // be unit-tested without a device). The default — [ArtFit.fill]
+    // — stretches the artwork so the colouring area really does fill the
+    // whole screen; [ArtFit.keepShape] is the distortion-free
+    // alternative, one tap away in the top bubble. Either way a stretch guard
+    // stops any device from getting an absurdly squashed drawing.
+    return KidLayout.fitTransform(
+      bounds: bounds,
+      canvas: size,
+      fit: widget.fit,
+    );
 
-    final drawnWidth = bw * scale;
-    final drawnHeight = bh * scale;
-
-    // Centre the drawing inside the available canvas.
-    final offsetX = (size.width - drawnWidth) / 2;
-    final offsetY = (size.height - drawnHeight) / 2;
-
-    final tx = offsetX - bounds.left * scale;
-    final ty = offsetY - bounds.top * scale;
-
-    return {'scaleX': scale, 'scaleY': scale, 'tx': tx, 'ty': ty};
+    // ----- old version (kept for reference) -----
+    // final scale = math.min(size.width / bw, size.height / bh);
+    //
+    // final drawnWidth = bw * scale;
+    // final drawnHeight = bh * scale;
+    //
+    // // Centre the drawing inside the available canvas.
+    // final offsetX = (size.width - drawnWidth) / 2;
+    // final offsetY = (size.height - drawnHeight) / 2;
+    //
+    // final tx = offsetX - bounds.left * scale;
+    // final ty = offsetY - bounds.top * scale;
+    //
+    // return {'scaleX': scale, 'scaleY': scale, 'tx': tx, 'ty': ty};
 
     // ----- old version (kept for reference) -----
     // final scaleX = size.width / bw;
