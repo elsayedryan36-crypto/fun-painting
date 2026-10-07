@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../common/resources/color_manager.dart';
+import '../models/brush_size.dart';
 import 'kid_layout.dart';
 
 /// A single big, rounded, kid-sized button used by both rails.
@@ -128,5 +129,61 @@ class KidRail extends StatelessWidget {
         child: content,
       ),
     );
+  }
+}
+
+/// ✅ NEW (kid-ui): the S / M / L brush-size picker.
+///
+/// Three plain buttons with a dot that grows, so a pre-reader can see which
+/// one draws a fat line without reading a word. It replaces nothing on its own
+/// — the widths used to be hard-coded in `coloring_painter.dart`, which is why
+/// the child had no size control at all before.
+class KidBrushSizeControl extends StatelessWidget {
+  final BrushSize selected;
+  final ValueChanged<BrushSize> onChanged;
+
+  /// The colour of the preview dot — the currently selected paint colour, so
+  /// the child sees colour + thickness together.
+  final Color previewColor;
+
+  /// Side rail (vertical) or bottom bar (horizontal).
+  final Axis axis;
+
+  const KidBrushSizeControl({
+    super.key,
+    required this.selected,
+    required this.onChanged,
+    required this.previewColor,
+    this.axis = Axis.vertical,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final buttons = BrushSize.values.map((size) {
+      return KidRailButton(
+        key: Key('kid_brush_size_${size.name}'),
+        onTap: () => onChanged(size),
+        selected: size == selected,
+        label: size.label,
+        child: Center(
+          child: Container(
+            width: size.dotDiameter,
+            height: size.dotDiameter,
+            decoration: BoxDecoration(
+              color: previewColor,
+              shape: BoxShape.circle,
+              // A dark rim keeps a white dot visible on the white button.
+              border: Border.all(color: Colors.black38, width: 2),
+            ),
+          ),
+        ),
+      );
+    }).toList();
+
+    final group = axis == Axis.vertical
+        ? Column(mainAxisSize: MainAxisSize.min, children: buttons)
+        : Row(mainAxisSize: MainAxisSize.min, children: buttons);
+
+    return group;
   }
 }

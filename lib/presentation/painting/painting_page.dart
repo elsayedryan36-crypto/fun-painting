@@ -21,6 +21,8 @@ import '../common/resources/font_manager.dart';
 import '../common/resources/values_manager.dart';
 import 'coloring_canvas.dart';
 import 'models/tool_type.dart';
+// ✅ NEW (kid-ui): the S / M / L brush presets.
+import 'models/brush_size.dart';
 import 'region.dart';
 import 'svg_parser.dart';
 import 'widgets/color_palette_widget.dart';
@@ -52,8 +54,10 @@ class _PaintingPageState extends State<PaintingPage>
   final List<ColoringAction> _redoStack = [];
   bool isSelectedToolOpen = false;
   bool isSelectedColorOpen = false;
+
   /// ✅ NEW: true when the artwork could not be loaded (missing/corrupt SVG).
   bool _loadFailed = false;
+
   /// ✅ NEW: guards against a double tap on close / back popping two routes.
   bool _isClosing = false;
   bool isWallPaper = false;
@@ -65,6 +69,11 @@ class _PaintingPageState extends State<PaintingPage>
   ui.Image? _selectedWallpaper;
   String? _selectedStampAsset;
   double _stampSize = 50.0;
+
+  /// ✅ NEW (kid-ui): the brush thickness the child picked — S / M / L. It is
+  /// a multiplier handed to ColoringCanvas, which stamps it onto every new
+  /// stroke, so it never resizes a line that is already on the page.
+  BrushSize _brushSize = BrushSize.medium;
   late AnimationController _verticalPaletteController;
   late Animation<double> _verticalPaletteAnimation;
   bool _isVerticalPaletteVisible = true;
@@ -1086,6 +1095,8 @@ class _PaintingPageState extends State<PaintingPage>
                 selectedWallpaper: _selectedWallpaper,
                 onColoringAction: _handleColoringAction,
                 stampSize: _stampSize,
+                // ✅ NEW (kid-ui): the current S / M / L preset for new strokes.
+                brushScale: _brushSize.factor,
                 onPaintingStarted:
                     (_mode == BrushMode.freehand || _mode == BrushMode.eraser)
                     ? () {
@@ -1140,6 +1151,13 @@ class _PaintingPageState extends State<PaintingPage>
                 selectedStampAsset: _selectedStampAsset,
                 brushMode: _mode,
                 stamps: stamps,
+                // ✅ NEW (kid-ui): S / M / L brush size buttons.
+                brushSize: _brushSize,
+                onBrushSizeChanged: (size) {
+                  setState(() {
+                    _brushSize = size;
+                  });
+                },
                 onEraserSelected: () {
                   setState(() {
                     _mode = BrushMode.eraser;
@@ -1183,9 +1201,7 @@ class _PaintingPageState extends State<PaintingPage>
                       children: [
                         Expanded(child: canvas),
                         ?panel,
-                        Row(
-                          children: [actionRail, const Spacer(), toolRail],
-                        ),
+                        Row(children: [actionRail, const Spacer(), toolRail]),
                       ],
                     ),
             );
@@ -1221,8 +1237,21 @@ class _PaintingPageState extends State<PaintingPage>
 
     final onSides = railsAxis == Axis.vertical;
 
+    // ✅ NEW (kid-ui): the colour palette gets a panel wide enough for eight
+    // kid-sized swatches per row; the other panels keep the slimmer one.
+    final isColorPalette =
+        showPalette &&
+        _mode != BrushMode.eraser &&
+        _selectedTool?.type != ToolType.wallpaper &&
+        _selectedTool?.type != ToolType.stamp;
+    // ----- old version (kept for reference) -----
+    // width: onSides ? KidLayout.panelWidth(screenW) : null,
+    final panelWidth = isColorPalette
+        ? KidLayout.colorPanelWidth(screenW)
+        : KidLayout.panelWidth(screenW);
+
     return Container(
-      width: onSides ? KidLayout.panelWidth(screenW) : null,
+      width: onSides ? panelWidth : null,
       height: onSides ? null : KidLayout.panelHeight(screenH),
       margin: const EdgeInsets.all(4),
       clipBehavior: Clip.antiAlias,

@@ -3,6 +3,7 @@ import 'package:flutter_svg/svg.dart';
 
 import '../../common/resources/assets_manager.dart';
 import '../coloring_canvas.dart';
+import '../models/brush_size.dart';
 import '../models/tool_type.dart';
 import 'kid_controls.dart';
 
@@ -29,6 +30,10 @@ class VerticalToolPaletteWidget extends StatelessWidget {
   final List<String> stamps;
   final BrushMode brushMode;
 
+  /// ✅ NEW (kid-ui): the current S / M / L brush preset and its callback.
+  final BrushSize brushSize;
+  final ValueChanged<BrushSize> onBrushSizeChanged;
+
   /// ✅ NEW: Axis.vertical = side rail, Axis.horizontal = bottom bar.
   final Axis axis;
 
@@ -45,6 +50,8 @@ class VerticalToolPaletteWidget extends StatelessWidget {
     required this.stamps,
     required this.onClearSelected,
     required this.brushMode,
+    required this.brushSize,
+    required this.onBrushSizeChanged,
     this.axis = Axis.vertical,
   });
 
@@ -75,7 +82,19 @@ class VerticalToolPaletteWidget extends StatelessWidget {
           child: Image.asset(ImageAssets.eraser, fit: BoxFit.contain),
         ),
 
-        // 4. Clear everything (confirmed by the page before it runs).
+        // 4. NEW (kid-ui): the S / M / L brush size, replacing the widths that
+        // used to be hard-coded in coloring_painter.dart (15.0 / 14.0 / 12.0 /
+        // 8.0) with a control the child can actually see and press.
+        KidBrushSizeControl(
+          selected: brushSize,
+          onChanged: onBrushSizeChanged,
+          previewColor: selectedColor,
+          axis: axis,
+        ),
+
+        // 5. Clear everything — the page asks "erase everything?" first, and
+        // it sits last in the rail so a small finger does not hit it by
+        // accident while reaching for the eraser.
         KidRailButton(
           onTap: onClearSelected,
           label: 'Clear',

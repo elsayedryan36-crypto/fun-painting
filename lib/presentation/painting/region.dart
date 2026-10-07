@@ -29,6 +29,13 @@ class Stroke {
   double stampSize;
   Size? svgSize; // ← NEW
 
+  /// ✅ NEW (kid-ui): the S / M / L brush preset this stroke was drawn with,
+  /// as a multiplier on the base width (see models/brush_size.dart). It lives
+  /// on the stroke, not on the painter, so every line keeps the thickness it
+  /// was drawn with — changing the preset only affects the next stroke, and
+  /// the cached stroke picture stays valid.
+  double brushScale;
+
   Stroke({
     required this.points,
     required this.color,
@@ -39,6 +46,7 @@ class Stroke {
     this.stampAsset,
     this.stampSize = 40,
     this.svgSize,
+    this.brushScale = 1.0,
   });
   // Add copyWith method for easier cloning
   Stroke copyWith({
@@ -51,6 +59,7 @@ class Stroke {
     ui.Picture? svgPicture,
     double? stampSize,
     Size? svgSize,
+    double? brushScale, // ✅ NEW (kid-ui): keep the S/M/L width across copies
   }) {
     return Stroke(
       points: points ?? List<Offset>.from(this.points),
@@ -62,6 +71,7 @@ class Stroke {
       stampAsset: stampAsset ?? this.stampAsset,
       stampSize: stampSize ?? this.stampSize,
       svgSize: svgSize ?? this.svgSize,
+      brushScale: brushScale ?? this.brushScale,
     );
   }
 }

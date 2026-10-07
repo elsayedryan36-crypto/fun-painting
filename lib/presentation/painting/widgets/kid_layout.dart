@@ -47,10 +47,36 @@ class KidLayout {
 
   /// Width of the docked colour / stamp / pattern panel in side-rail mode.
   /// Bounded so it never swallows the canvas.
-  static double panelWidth(double screenW) =>
-      math.min(360.0, screenW * 0.34);
+  static double panelWidth(double screenW) => math.min(360.0, screenW * 0.34);
+
+  /// ✅ NEW (kid-ui): how many colour swatches go on one row.
+  static const int colorColumns = 8;
+
+  /// Smallest / largest a colour swatch may be. 44 dp is the floor from the
+  /// UI plan — big enough for a small finger to hit without aiming.
+  static const double minSwatch = 44;
+  static const double maxSwatch = 64;
+
+  /// Padding on each side of the swatch grid.
+  static const double swatchGridPadding = 8;
+
+  /// Gap between two swatches.
+  static const double swatchGap = 6;
+
+  /// Width the swatch grid wants so that 8 columns are at least [minSwatch]
+  /// wide: 8 cells + 7 gaps + the padding on both sides. `const` so it can be
+  /// used in a const BoxConstraints.
+  static const double swatchGridWidth =
+      colorColumns * minSwatch +
+      (colorColumns - 1) * swatchGap +
+      2 * swatchGridPadding;
+
+  /// Width of the docked panel while a colour palette is inside it. Wider than
+  /// [panelWidth] because eight kid-sized swatches need the room; still capped
+  /// at 42 % of the screen so the canvas keeps the majority of the width.
+  static double colorPanelWidth(double screenW) =>
+      math.min(swatchGridWidth, screenW * 0.42);
 
   /// Height of the same panel when the rails are at the bottom.
-  static double panelHeight(double screenH) =>
-      math.min(230.0, screenH * 0.5);
+  static double panelHeight(double screenH) => math.min(230.0, screenH * 0.5);
 }

@@ -13,11 +13,13 @@ class ColoringPainter extends CustomPainter {
   final double tx;
   final double ty;
   final ui.Image? glitterImage;
+
   /// ✅ CHANGED: keyed by the Stroke instance itself (identity) instead of
   /// `stroke.hashCode`, which could collide and draw another stroke's pixels.
   final Map<Stroke, ui.Picture> strokePictureCache;
   final double zoom;
   final Offset pan;
+
   /// ✅ NEW: bumped by ColoringCanvasState whenever the model changes, so
   /// shouldRepaint() can tell that a repaint is genuinely needed.
   final int revision;
@@ -50,11 +52,16 @@ class ColoringPainter extends CustomPainter {
   //   this.pan = Offset.zero,
   // });
 
-
   // helper: a single "average" scale for stroke widths so pen/pencil/glitter
   // widths don't look stretched — use this in place of every old `scale`
   // inside stroke-width calculations below.
   double get _strokeScale => (scaleX + scaleY) / 2.0;
+
+  /// ✅ NEW (kid-ui): the S / M / L multiplier carried by the stroke itself
+  /// (see models/brush_size.dart). Strokes saved before this change — and
+  /// every stamp — default to 1.0, so they keep exactly the width they had,
+  /// and the cached stroke pictures stay valid.
+  double _strokeBrush(Stroke s) => s.brushScale <= 0 ? 1.0 : s.brushScale;
 
   // Create a smoothed path from raw points using quadratic beziers.
   Path _createSmoothedPath(List<Offset> pts) {
@@ -287,7 +294,14 @@ class ColoringPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
-      ..strokeWidth = (15.0 / (_strokeScale <= 0 ? 1.0 : _strokeScale))
+      // ✅ NEW (kid-ui): the brush preset scales the drawn width; 15.0 is the
+      // M size, multiplied by 0.6 (S) or 1.8 (L). Old strokes carry 1.0.
+      ..strokeWidth =
+          (15.0 *
+          _strokeBrush(stroke) /
+          (_strokeScale <= 0 ? 1.0 : _strokeScale))
+      // ----- old version (kept for reference) -----
+      // ..strokeWidth = (15.0 / (_strokeScale <= 0 ? 1.0 : _strokeScale))
       ..color = stroke.color;
     if (stroke.points.length < 2) {
       canvas.drawCircle(stroke.points.first, paint.strokeWidth / 2.0, paint);
@@ -313,7 +327,11 @@ class ColoringPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
-      ..strokeWidth = 15.0 / (_strokeScale <= 0 ? 1.0 : _strokeScale)
+      // ✅ NEW (kid-ui): glitter lines follow the brush preset.
+      ..strokeWidth =
+          15.0 * _strokeBrush(stroke) / (_strokeScale <= 0 ? 1.0 : _strokeScale)
+      // ----- old version (kept for reference) -----
+      // ..strokeWidth = 15.0 / (_strokeScale <= 0 ? 1.0 : _strokeScale)
       ..isAntiAlias = true;
 
     canvas.drawPath(path, basePaint);
@@ -336,7 +354,14 @@ class ColoringPainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round
         ..strokeJoin = StrokeJoin.round
-        ..strokeWidth = 15.0 / (_strokeScale <= 0 ? 1.0 : _strokeScale)
+        // ✅ NEW (kid-ui): the glitter overlay must stay the same width as the
+        // line underneath it.
+        ..strokeWidth =
+            15.0 *
+            _strokeBrush(stroke) /
+            (_strokeScale <= 0 ? 1.0 : _strokeScale)
+        // ----- old version (kept for reference) -----
+        // ..strokeWidth = 15.0 / (_strokeScale <= 0 ? 1.0 : _strokeScale)
         ..blendMode = BlendMode.overlay
         ..isAntiAlias = true;
 
@@ -363,7 +388,13 @@ class ColoringPainter extends CustomPainter {
       final paint = Paint()
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round
-        ..strokeWidth = (14.0 / (_strokeScale <= 0 ? 1.0 : _strokeScale))
+        // ✅ NEW (kid-ui): rainbow strokes follow the brush preset.
+        ..strokeWidth =
+            (14.0 *
+            _strokeBrush(stroke) /
+            (_strokeScale <= 0 ? 1.0 : _strokeScale))
+        // ----- old version (kept for reference) -----
+        // ..strokeWidth = (14.0 / (_strokeScale <= 0 ? 1.0 : _strokeScale))
         ..color = rainbow[i % rainbow.length];
       canvas.drawLine(stroke.points[i - 1], stroke.points[i], paint);
     }
@@ -373,11 +404,21 @@ class ColoringPainter extends CustomPainter {
     final textPainter = TextPainter(
       text: TextSpan(
         text: emoji,
-        style: TextStyle(fontSize: 16, color: stroke.color),
+        // ✅ NEW (kid-ui): the emoji pattern follows the brush preset.
+        style: TextStyle(
+          fontSize: 16 * _strokeBrush(stroke),
+          color: stroke.color,
+        ),
+        // ----- old version (kept for reference) -----
+        // style: TextStyle(fontSize: 16, color: stroke.color),
       ),
       textDirection: TextDirection.ltr,
     );
-    const spacing = 18.0;
+    // ✅ NEW (kid-ui): the spacing grows with the preset so a thick pattern
+    // stroke does not merge into one band.
+    final spacing = 18.0 * _strokeBrush(stroke);
+    // ----- old version (kept for reference) -----
+    // const spacing = 18.0;
     for (int i = 1; i < stroke.points.length; i++) {
       final a = stroke.points[i - 1];
       final b = stroke.points[i];
@@ -398,7 +439,12 @@ class ColoringPainter extends CustomPainter {
     if (stroke.points.length < 2) return;
 
     final baseColor = stroke.color;
-    var width = 8.0 / (_strokeScale <= 0 ? 1.0 : _strokeScale);
+    // ✅ NEW (kid-ui): the pencil's whole layered nib is built from this width,
+    // so scaling it here scales the whole pencil.
+    var width =
+        8.0 * _strokeBrush(stroke) / (_strokeScale <= 0 ? 1.0 : _strokeScale);
+    // ----- old version (kept for reference) -----
+    // var width = 8.0 / (_strokeScale <= 0 ? 1.0 : _strokeScale);
 
     // Increase overall pencil size by 1.25 as requested.
     width *= 1.25;
@@ -505,7 +551,13 @@ class ColoringPainter extends CustomPainter {
     final paint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
-      ..strokeWidth = (12.0 / (_strokeScale <= 0 ? 1.0 : _strokeScale))
+      // ✅ NEW (kid-ui): crayon follows the brush preset.
+      ..strokeWidth =
+          (12.0 *
+          _strokeBrush(stroke) /
+          (_strokeScale <= 0 ? 1.0 : _strokeScale))
+      // ----- old version (kept for reference) -----
+      // ..strokeWidth = (12.0 / (_strokeScale <= 0 ? 1.0 : _strokeScale))
       ..color = stroke.color;
     // Use a per-stroke seed so jitter is consistent for the same stroke.
     final rnd = Random(stroke.hashCode ^ stroke.points.length);
@@ -526,7 +578,13 @@ class ColoringPainter extends CustomPainter {
     final textPainter = TextPainter(
       text: TextSpan(
         text: '🌟',
-        style: TextStyle(fontSize: 40, color: stroke.color),
+        // ✅ NEW (kid-ui): sticker size follows the brush preset.
+        style: TextStyle(
+          fontSize: 40 * _strokeBrush(stroke),
+          color: stroke.color,
+        ),
+        // ----- old version (kept for reference) -----
+        // style: TextStyle(fontSize: 40, color: stroke.color),
       ),
       textDirection: TextDirection.ltr,
     );
@@ -560,7 +618,11 @@ class ColoringPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
-      ..strokeWidth = 15.0 / (_strokeScale <= 0 ? 1.0 : _strokeScale)
+      // ✅ NEW (kid-ui): wallpaper strokes follow the brush preset.
+      ..strokeWidth =
+          15.0 * _strokeBrush(stroke) / (_strokeScale <= 0 ? 1.0 : _strokeScale)
+      // ----- old version (kept for reference) -----
+      // ..strokeWidth = 15.0 / (_strokeScale <= 0 ? 1.0 : _strokeScale)
       ..isAntiAlias = true;
 
     canvas.drawPath(path, paint);

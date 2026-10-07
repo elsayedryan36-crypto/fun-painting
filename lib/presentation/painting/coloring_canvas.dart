@@ -800,6 +800,10 @@ class ColoringCanvas extends StatefulWidget {
   final VoidCallback? onClearRequested;
   final String? selectedWallpaperAsset;
 
+  /// ✅ NEW (kid-ui): the S / M / L brush preset, applied to every stroke the
+  /// child draws from now on. Stamps and the saved strokes keep their own size.
+  final double brushScale;
+
   const ColoringCanvas({
     super.key,
     required this.regions,
@@ -815,6 +819,7 @@ class ColoringCanvas extends StatefulWidget {
     this.onPaintingStarted,
     this.onPaintingEnded,
     this.onClearRequested,
+    this.brushScale = 1.0,
   });
 
   @override
@@ -836,6 +841,7 @@ class ColoringCanvasState extends State<ColoringCanvas> {
   int _animationId = 0;
   Offset _lastTouchPosition = Offset.zero;
   AppPreferences appPreferences = AppPreferences();
+
   /// ✅ CHANGED: keyed by the Stroke instance (identity) instead of its
   /// hashCode — a hashCode collision used to draw a different stroke's pixels.
   final Map<Stroke, ui.Picture> _strokePictureCache = {};
@@ -1244,6 +1250,8 @@ class ColoringCanvasState extends State<ColoringCanvas> {
 
             _currentStroke = Stroke(
               points: <Offset>[p],
+              // ✅ NEW (kid-ui): remember this stroke's S/M/L width.
+              brushScale: widget.brushScale,
               color: widget.brushMode == BrushMode.eraser
                   ? Colors.white
                   : widget.selectedColor,
@@ -1324,6 +1332,8 @@ class ColoringCanvasState extends State<ColoringCanvas> {
       if (_activeRegionIndex != null) {
         _currentStroke = Stroke(
           points: <Offset>[p],
+          // ✅ NEW (kid-ui): remember this stroke's S/M/L width.
+          brushScale: widget.brushScale,
           color: widget.brushMode == BrushMode.eraser
               ? Colors.white
               : widget.selectedColor,
