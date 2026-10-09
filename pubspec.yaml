@@ -78,6 +78,7 @@ flutter:
   assets:
     - assets/animation/
     - assets/images/
+    - assets/images/cards/
     - assets/json/
     - assets/pattern/
     - assets/stamp/

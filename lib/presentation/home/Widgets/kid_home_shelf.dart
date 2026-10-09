@@ -24,22 +24,45 @@ class WorldMeta {
   final String emoji;
   final Color color;
 
-  const WorldMeta(this.name, this.emoji, this.color);
+  /// NEW (card art round): generated sticker art for the card.
+  /// null = this world keeps the old looping video for now.
+  final String? art;
+
+  const WorldMeta(this.name, this.emoji, this.color, [this.art]);
 }
 
 /// In the SAME order buildGalleryItems() builds the worlds.
 /// The whiteboard "Free Draw" card is the LAST item there; on the
 /// shelf it becomes the FIRST one, so it has no entry here.
+/// The Free Draw hero card art.
+const String kFreeDrawArt = 'assets/images/cards/free.jpg';
+
 const List<WorldMeta> kWorldMeta = [
-  WorldMeta('Zoo', '🦁', Color(0xFF3D9142)),
-  WorldMeta('Sea', '🌊', Color(0xFF1976D2)),
-  WorldMeta('Dragons', '🐉', Color(0xFF7B1FA2)),
-  WorldMeta('Fairy', '🧚', Color(0xFFE91E63)),
-  WorldMeta('Space', '🚀', Color(0xFF303F9F)),
-  WorldMeta('Cars', '🚗', Color(0xFFF57C00)),
-  WorldMeta('Circus', '🎪', Color(0xFFE53935)),
-  WorldMeta('Food', '🍓', Color(0xFFEF6C00)),
-  WorldMeta('Flowers', '🌸', Color(0xFFEC407A)),
+  WorldMeta('Zoo', '🦁', Color(0xFF3D9142), 'assets/images/cards/zoo.jpg'),
+  WorldMeta('Sea', '🌊', Color(0xFF1976D2), 'assets/images/cards/sea.jpg'),
+  WorldMeta(
+    'Dragons',
+    '🐉',
+    Color(0xFF7B1FA2),
+    'assets/images/cards/dragons.jpg',
+  ),
+  WorldMeta('Fairy', '🧚', Color(0xFFE91E63), 'assets/images/cards/fairy.jpg'),
+  WorldMeta('Space', '🚀', Color(0xFF303F9F), 'assets/images/cards/space.jpg'),
+  WorldMeta('Cars', '🚗', Color(0xFFF57C00), 'assets/images/cards/cars.jpg'),
+  WorldMeta(
+    'Circus',
+    '🎪',
+    Color(0xFFE53935),
+    'assets/images/cards/circus.jpg',
+  ),
+  WorldMeta('Food', '🍓', Color(0xFFEF6C00), 'assets/images/cards/food.jpg'),
+  WorldMeta(
+    'Flowers',
+    '🌸',
+    Color(0xFFEC407A),
+    'assets/images/cards/flowers.jpg',
+  ),
+  // art lands in the next round — until then the video plays here:
   WorldMeta('Letters', '🔤', Color(0xFF00897B)),
   WorldMeta('Numbers', '🔢', Color(0xFF5D4037)),
 ];
@@ -207,6 +230,149 @@ class WorldCard extends StatelessWidget {
                 color: ColorManager.white,
                 fontWeight: FontWeight.w900,
                 fontSize: math.max(13, AppSizeHeight.s4),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The card picture that *breathes*: a slow Ken-Burns zoom, a floating
+/// emoji bubble and a soft gradient. Animated like a video, but at
+/// ~200 KB of art instead of ~5 MB of MP4 per world.
+///
+/// If a world has no art yet — or the art cannot be loaded on this
+/// device — the old looping video shows instead, so a card can never
+/// appear broken.
+class AnimatedWorldThumb extends StatefulWidget {
+  final String? artPath;
+  final String emoji;
+  final Widget fallback;
+
+  /// Test override: inject the picture instead of loading an asset.
+  final Widget? art;
+
+  const AnimatedWorldThumb({
+    super.key,
+    required this.artPath,
+    required this.emoji,
+    required this.fallback,
+    this.art,
+  });
+
+  @override
+  State<AnimatedWorldThumb> createState() => _AnimatedWorldThumbState();
+}
+
+class _AnimatedWorldThumbState extends State<AnimatedWorldThumb>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  bool _broken = false;
+  bool _checked = false;
+
+  bool get _useArt => widget.artPath != null && !_broken;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 6),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final path = widget.artPath;
+    if (widget.art == null && path != null && !_checked) {
+      _checked = true;
+      // If the art file is not on this device yet, show the old
+      // video instead of a grey error box.
+      precacheImage(Image.asset(path).image, context).catchError((Object e) {
+        if (mounted) setState(() => _broken = true);
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_useArt) return widget.fallback;
+
+    final art =
+        widget.art ??
+        Image.asset(
+          widget.artPath!,
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: double.infinity,
+        );
+
+    return ClipRect(
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // the picture breathes: slow zoom + drift
+          AnimatedBuilder(
+            animation: _controller,
+            child: art,
+            builder: (context, child) {
+              final t = Curves.easeInOut.transform(_controller.value);
+              return Transform.scale(
+                scale: 1.05 + 0.07 * t,
+                alignment: Alignment(0, -0.2 + 0.4 * (1 - t)),
+                child: child,
+              );
+            },
+          ),
+          // a floating emoji bubble
+          AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) {
+              final t = _controller.value;
+              return Positioned(
+                right: 6 + 4 * math.sin(t * math.pi),
+                top: 8 + 10 * (1 - t),
+                child: child!,
+              );
+            },
+            child: Container(
+              width: math.max(26, AppSizeHeight.s7),
+              height: math.max(26, AppSizeHeight.s7),
+              decoration: const BoxDecoration(
+                color: Color(0xB3FFFFFF),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(0x33142846),
+                    blurRadius: 6,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Text(
+                  widget.emoji,
+                  style: TextStyle(fontSize: math.max(13, AppSizeHeight.s4)),
+                ),
+              ),
+            ),
+          ),
+          // soft floor so the name plate always reads
+          const DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0x00000000), Color(0x33000000)],
               ),
             ),
           ),

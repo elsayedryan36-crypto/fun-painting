@@ -122,4 +122,57 @@ void main() {
       expect(size.height, greaterThanOrEqualTo(WorldCard.minTap));
     });
   });
+
+  group('the animated thumb (card art round)', () {
+    testWidgets('the picture breathes: it is bigger a moment later', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              width: 200,
+              height: 150,
+              child: AnimatedWorldThumb(
+                artPath: 'does/not/matter.jpg',
+                emoji: '🦁',
+                fallback: const SizedBox(),
+                art: Container(color: Colors.orange),
+              ),
+            ),
+          ),
+        ),
+      );
+      double scale() =>
+          (tester.widgetList<Transform>(find.byType(Transform)).first.transform
+                  as Matrix4)
+              .getMaxScaleOnAxis();
+      final s0 = scale();
+      await tester.pump(const Duration(seconds: 2));
+      final s1 = scale();
+      expect(s0, greaterThanOrEqualTo(1.0));
+      expect(s1, isNot(closeTo(s0, 0.001)));
+    });
+
+    testWidgets('a world with no art yet shows the old fallback', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              width: 200,
+              height: 150,
+              child: AnimatedWorldThumb(
+                artPath: null,
+                emoji: '🔢',
+                fallback: const SizedBox(key: Key('fallback')),
+              ),
+            ),
+          ),
+        ),
+      );
+      expect(find.byKey(const Key('fallback')), findsOneWidget);
+    });
+  });
 }

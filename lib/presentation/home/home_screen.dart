@@ -335,7 +335,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     ),
                     child: WorldCard(
                       slot: slot,
-                      thumb: CollectionWidget(videoPath: slot.item.imagePath),
+                      thumb: AnimatedWorldThumb(
+                        artPath: slot.isHero ? kFreeDrawArt : slot.meta!.art,
+                        emoji: slot.isHero ? '🖍️' : slot.meta!.emoji,
+                        fallback: CollectionWidget(
+                          videoPath: slot.item.imagePath,
+                        ),
+                      ),
+                      // OLD (the looping video was the only thumb):
+                      // thumb: CollectionWidget(videoPath: slot.item.imagePath),
                       onTap: slot.item.onTap,
                     ),
                   ),
