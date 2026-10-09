@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:fun_painting/data/services/review_service.dart';
 import 'package:fun_painting/presentation/common/widgets/rate_wedgit_home.dart';
 // OLD-build imports (the commented build below still mentions them):
-// import 'package:lottie/lottie.dart';
+import 'package:lottie/lottie.dart'; // NEW (Lottie round): cards play real Lottie scenes
 import 'package:upgrader/upgrader.dart';
 
 import 'package:fun_painting/presentation/home/Widgets/jungle.dart';
@@ -216,6 +216,22 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   // Shelf pieces (fantastic home)
   // ============================================================
 
+  /// NEW (Lottie round): a card's picture is a real Lottie scene —
+  /// clean background fixed, vector animals alive on top. Worlds that
+  /// do not have their Lottie yet fall back to the animated still
+  /// (which itself falls back to the old video).
+  Widget _cardThumb(ShelfSlot slot) {
+    final lottiePath = slot.isHero ? null : slot.meta!.lottie;
+    if (lottiePath != null) {
+      return Lottie.asset(lottiePath, fit: BoxFit.cover);
+    }
+    return AnimatedWorldThumb(
+      artPath: slot.isHero ? kFreeDrawArt : slot.meta!.art,
+      emoji: slot.isHero ? '🖍️' : slot.meta!.emoji,
+      fallback: CollectionWidget(videoPath: slot.item.imagePath),
+    );
+  }
+
   static const int _cardsPerPage = 3;
 
   Widget _buildMascotBanner() {
@@ -335,14 +351,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     ),
                     child: WorldCard(
                       slot: slot,
-                      thumb: AnimatedWorldThumb(
-                        artPath: slot.isHero ? kFreeDrawArt : slot.meta!.art,
-                        emoji: slot.isHero ? '🖍️' : slot.meta!.emoji,
-                        fallback: CollectionWidget(
-                          videoPath: slot.item.imagePath,
-                        ),
-                      ),
-                      // OLD (the looping video was the only thumb):
+                      thumb: _cardThumb(slot),
+                      // OLD (animated still, and before it the video):
+                      // thumb: AnimatedWorldThumb(
+                      //   artPath: slot.isHero ? kFreeDrawArt : slot.meta!.art,
+                      //   emoji: slot.isHero ? '🖍️' : slot.meta!.emoji,
+                      //   fallback: CollectionWidget(
+                      //     videoPath: slot.item.imagePath,
+                      //   ),
+                      // ),
                       // thumb: CollectionWidget(videoPath: slot.item.imagePath),
                       onTap: slot.item.onTap,
                     ),

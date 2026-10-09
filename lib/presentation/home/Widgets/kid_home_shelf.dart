@@ -28,7 +28,12 @@ class WorldMeta {
   /// null = this world keeps the old looping video for now.
   final String? art;
 
-  const WorldMeta(this.name, this.emoji, this.color, [this.art]);
+  /// NEW (Lottie round): a real Lottie scene for the card — the clean
+  /// background stays fixed while vector animals swim / fly / bounce
+  /// on top of it. null = not generated yet.
+  final String? lottie;
+
+  const WorldMeta(this.name, this.emoji, this.color, [this.art, this.lottie]);
 }
 
 /// In the SAME order buildGalleryItems() builds the worlds.
@@ -38,32 +43,78 @@ class WorldMeta {
 const String kFreeDrawArt = 'assets/images/cards/free.jpg';
 
 const List<WorldMeta> kWorldMeta = [
-  WorldMeta('Zoo', '🦁', Color(0xFF3D9142), 'assets/images/cards/zoo.jpg'),
-  WorldMeta('Sea', '🌊', Color(0xFF1976D2), 'assets/images/cards/sea.jpg'),
+  WorldMeta(
+    'Zoo',
+    '🦁',
+    Color(0xFF3D9142),
+    'assets/images/cards/zoo.jpg',
+    'assets/json/cards/zoo.json',
+  ),
+  WorldMeta(
+    'Sea',
+    '🌊',
+    Color(0xFF1976D2),
+    'assets/images/cards/sea.jpg',
+    'assets/json/cards/sea.json',
+  ),
   WorldMeta(
     'Dragons',
     '🐉',
     Color(0xFF7B1FA2),
     'assets/images/cards/dragons.jpg',
+    'assets/json/cards/dragons.json',
   ),
-  WorldMeta('Fairy', '🧚', Color(0xFFE91E63), 'assets/images/cards/fairy.jpg'),
-  WorldMeta('Space', '🚀', Color(0xFF303F9F), 'assets/images/cards/space.jpg'),
-  WorldMeta('Cars', '🚗', Color(0xFFF57C00), 'assets/images/cards/cars.jpg'),
+  WorldMeta(
+    'Fairy',
+    '🧚',
+    Color(0xFFE91E63),
+    'assets/images/cards/fairy.jpg',
+    'assets/json/cards/fairy.json',
+  ),
+  WorldMeta(
+    'Space',
+    '🚀',
+    Color(0xFF303F9F),
+    'assets/images/cards/space.jpg',
+    'assets/json/cards/space.json',
+  ),
+  WorldMeta(
+    'Cars',
+    '🚗',
+    Color(0xFFF57C00),
+    'assets/images/cards/cars.jpg',
+    'assets/json/cards/cars.json',
+  ),
   WorldMeta(
     'Circus',
     '🎪',
     Color(0xFFE53935),
     'assets/images/cards/circus.jpg',
+    'assets/json/cards/circus.json',
   ),
-  WorldMeta('Food', '🍓', Color(0xFFEF6C00), 'assets/images/cards/food.jpg'),
+  WorldMeta(
+    'Food',
+    '🍓',
+    Color(0xFFEF6C00),
+    'assets/images/cards/food.jpg',
+    'assets/json/cards/food.json',
+  ),
   WorldMeta(
     'Flowers',
     '🌸',
     Color(0xFFEC407A),
     'assets/images/cards/flowers.jpg',
+    'assets/json/cards/flowers.json',
   ),
-  // art lands in the next round — until then the video plays here:
-  WorldMeta('Letters', '🔤', Color(0xFF00897B)),
+  WorldMeta(
+    'Letters',
+    '🔤',
+    Color(0xFF00897B),
+    null,
+    'assets/json/cards/letters.json',
+  ),
+  // clean background + Lottie land in the next round — the old
+  // animated-still / video fallback plays here until then:
   WorldMeta('Numbers', '🔢', Color(0xFF5D4037)),
 ];
 
