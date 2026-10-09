@@ -80,7 +80,6 @@ flutter:
     - assets/images/
     - assets/images/cards/
     - assets/json/
-    - assets/json/cards/
     - assets/pattern/
     - assets/stamp/
     - assets/images/zoo/

@@ -40,81 +40,48 @@ class WorldMeta {
 /// The whiteboard "Free Draw" card is the LAST item there; on the
 /// shelf it becomes the FIRST one, so it has no entry here.
 /// The Free Draw hero card art.
-const String kFreeDrawArt = 'assets/images/cards/free.jpg';
+const String kFreeDrawArt = 'assets/images/cards/free_bg.jpg';
 
 const List<WorldMeta> kWorldMeta = [
-  WorldMeta(
-    'Zoo',
-    '🦁',
-    Color(0xFF3D9142),
-    'assets/images/cards/zoo.jpg',
-    'assets/json/cards/zoo.json',
-  ),
-  WorldMeta(
-    'Sea',
-    '🌊',
-    Color(0xFF1976D2),
-    'assets/images/cards/sea.jpg',
-    'assets/json/cards/sea.json',
-  ),
+  // Calm category backgrounds (4:3, matching the card). The Lottie
+  // field stays null until a downloaded Lottie is dropped into
+  // assets/json/cards/<world>.json — see LOTTIE-SOURCES.md.
+  WorldMeta('Zoo', '🦁', Color(0xFF3D9142), 'assets/images/cards/zoo_bg.jpg'),
+  WorldMeta('Sea', '🌊', Color(0xFF1976D2), 'assets/images/cards/sea_bg.jpg'),
   WorldMeta(
     'Dragons',
     '🐉',
     Color(0xFF7B1FA2),
-    'assets/images/cards/dragons.jpg',
-    'assets/json/cards/dragons.json',
+    'assets/images/cards/dragons_bg.jpg',
   ),
   WorldMeta(
     'Fairy',
     '🧚',
     Color(0xFFE91E63),
-    'assets/images/cards/fairy.jpg',
-    'assets/json/cards/fairy.json',
+    'assets/images/cards/fairy_bg.jpg',
   ),
   WorldMeta(
     'Space',
     '🚀',
     Color(0xFF303F9F),
-    'assets/images/cards/space.jpg',
-    'assets/json/cards/space.json',
+    'assets/images/cards/space_bg.jpg',
   ),
-  WorldMeta(
-    'Cars',
-    '🚗',
-    Color(0xFFF57C00),
-    'assets/images/cards/cars.jpg',
-    'assets/json/cards/cars.json',
-  ),
+  WorldMeta('Cars', '🚗', Color(0xFFF57C00), 'assets/images/cards/cars_bg.jpg'),
   WorldMeta(
     'Circus',
     '🎪',
     Color(0xFFE53935),
-    'assets/images/cards/circus.jpg',
-    'assets/json/cards/circus.json',
+    'assets/images/cards/circus_bg.jpg',
   ),
-  WorldMeta(
-    'Food',
-    '🍓',
-    Color(0xFFEF6C00),
-    'assets/images/cards/food.jpg',
-    'assets/json/cards/food.json',
-  ),
+  WorldMeta('Food', '🍓', Color(0xFFEF6C00), 'assets/images/cards/food_bg.jpg'),
   WorldMeta(
     'Flowers',
     '🌸',
     Color(0xFFEC407A),
-    'assets/images/cards/flowers.jpg',
-    'assets/json/cards/flowers.json',
+    'assets/images/cards/flowers_bg.jpg',
   ),
-  WorldMeta(
-    'Letters',
-    '🔤',
-    Color(0xFF00897B),
-    null,
-    'assets/json/cards/letters.json',
-  ),
-  // clean background + Lottie land in the next round — the old
-  // animated-still / video fallback plays here until then:
+  // backgrounds land in the next round; until then a soft tint shows:
+  WorldMeta('Letters', '🔤', Color(0xFF00897B)),
   WorldMeta('Numbers', '🔢', Color(0xFF5D4037)),
 ];
 

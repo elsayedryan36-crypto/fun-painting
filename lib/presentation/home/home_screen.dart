@@ -8,7 +8,8 @@ import 'package:fun_painting/presentation/common/widgets/rate_wedgit_home.dart';
 import 'package:lottie/lottie.dart'; // NEW (Lottie round): cards play real Lottie scenes
 import 'package:upgrader/upgrader.dart';
 
-import 'package:fun_painting/presentation/home/Widgets/jungle.dart';
+// OLD import (the video card moved out of the thumb; kept for the commented builds):
+// import 'package:fun_painting/presentation/home/Widgets/jungle.dart';
 import 'package:fun_painting/presentation/home/Widgets/kid_home_shelf.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
@@ -216,21 +217,41 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   // Shelf pieces (fantastic home)
   // ============================================================
 
-  /// NEW (Lottie round): a card's picture is a real Lottie scene —
-  /// clean background fixed, vector animals alive on top. Worlds that
-  /// do not have their Lottie yet fall back to the animated still
-  /// (which itself falls back to the old video).
+  /// OLD (Lottie round, superseded — the art moved to calm backgrounds
+  /// plus user-downloaded Lotties; see LOTTIE-SOURCES.md):
+  /// a card's picture was a generated Lottie scene with embedded art.
+  /// OLD (card art round): AnimatedWorldThumb with Ken-Burns zoom.
+  /// OLD (first home): CollectionWidget looping the MP4 videos.
   Widget _cardThumb(ShelfSlot slot) {
-    final lottiePath = slot.isHero ? null : slot.meta!.lottie;
-    if (lottiePath != null) {
-      return Lottie.asset(lottiePath, fit: BoxFit.cover);
-    }
-    return AnimatedWorldThumb(
-      artPath: slot.isHero ? kFreeDrawArt : slot.meta!.art,
-      emoji: slot.isHero ? '🖍️' : slot.meta!.emoji,
-      fallback: CollectionWidget(videoPath: slot.item.imagePath),
+    // NEW (Lottie-sources round): a calm category background, and any
+    // Lottie dropped into assets/json/cards/<world>.json plays on top.
+    // No zoom, no crowds — the downloaded character does the moving.
+    final meta = slot.meta;
+    final bgPath = slot.isHero ? kFreeDrawArt : meta!.art;
+    final lottiePath = slot.isHero ? null : meta!.lottie;
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        if (bgPath != null)
+          Image.asset(
+            bgPath,
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
+          )
+        else
+          Container(color: meta!.color.withOpacity(0.35)),
+        if (lottiePath != null) Lottie.asset(lottiePath, fit: BoxFit.contain),
+      ],
     );
   }
+
+  // OLD _cardThumb body (kept beneath, per the standing rule):
+  //   return AnimatedWorldThumb(
+  //     artPath: slot.isHero ? kFreeDrawArt : slot.meta!.art,
+  //     emoji: slot.isHero ? '🖍️' : slot.meta!.emoji,
+  //     fallback: CollectionWidget(videoPath: slot.item.imagePath),
+  //   );
 
   static const int _cardsPerPage = 3;
 
