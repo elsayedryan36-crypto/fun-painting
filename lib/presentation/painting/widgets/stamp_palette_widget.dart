@@ -35,7 +35,7 @@ class StampPaletteWidget extends StatelessWidget {
             children: [
               Text(
                 'Stamp Size: ${stampSize.round()}',
-                style: TextStyle(color: Colors.white, fontSize: 12),
+                style: TextStyle(color: Colors.black, fontSize: 15),
               ),
               Slider(
                 value: stampSize,

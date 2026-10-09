@@ -934,6 +934,40 @@ class ColoringCanvasState extends State<ColoringCanvas> {
   Offset _lastTouchPosition = Offset.zero;
   AppPreferences appPreferences = AppPreferences();
 
+  // ---- zoom ----
+  static const double _minZoom = 1.0;
+  static const double _maxZoom = 4.0;
+
+  double _zoom = 1.0;
+  Offset _pan = Offset.zero; // screen position of the picture's top-left
+  double _zoomStart = 1.0;
+  Offset _focalBaseStart = Offset.zero;
+  bool _isZooming = false;
+  bool _ignoreUntilAllUp = false; // a leftover finger must not start drawing
+  final Set<int> _pointers = {};
+  Offset? _firstDownLocal; // where the first finger touched (screen coords)
+  TapDownDetails? _pendingTap;
+
+  // Used by the page so saved images and thumbnails are never zoomed crops.
+  double get zoom => _zoom;
+  Offset get pan => _pan;
+  void setView(double zoom, Offset pan) {
+    if (!mounted || _isDisposed) return;
+    setState(() {
+      _zoom = zoom;
+      _pan = pan;
+    });
+  }
+
+  void resetZoom() => setView(1.0, Offset.zero);
+
+  Offset _unzoom(Offset local) => (local - _pan) / _zoom;
+
+  Offset _clampPan(Offset pan, double z, Size size) => Offset(
+    pan.dx.clamp(size.width * (1 - z), 0.0).toDouble(),
+    pan.dy.clamp(size.height * (1 - z), 0.0).toDouble(),
+  );
+
   /// ✅ CHANGED: keyed by the Stroke instance (identity) instead of its
   /// hashCode — a hashCode collision used to draw a different stroke's pixels.
   final Map<Stroke, ui.Picture> _strokePictureCache = {};
@@ -1221,6 +1255,7 @@ class ColoringCanvasState extends State<ColoringCanvas> {
   }
 
   Offset _toPathSpace(Offset localPos, Size size) {
+    localPos = _unzoom(localPos); // undo the zoom first
     final t = _computeTransform(size);
     final sx = t['scaleX']!;
     final sy = t['scaleY']!;
@@ -1230,7 +1265,7 @@ class ColoringCanvasState extends State<ColoringCanvas> {
   }
 
   void _handleTapDown(TapDownDetails details, Size size) {
-    _lastTouchPosition = details.localPosition;
+    _lastTouchPosition = _unzoom(details.localPosition);
     if (_isDisposed) return;
 
     if (widget.brushMode == BrushMode.freehand ||
@@ -1476,7 +1511,7 @@ class ColoringCanvasState extends State<ColoringCanvas> {
   }
 
   void _handlePanUpdate(DragUpdateDetails details, Size size) {
-    _lastTouchPosition = details.localPosition;
+    _lastTouchPosition = _unzoom(details.localPosition);
     if (_currentStroke == null || _isDisposed) return;
     final p = _toPathSpace(details.localPosition, size);
 
@@ -1696,6 +1731,82 @@ class ColoringCanvasState extends State<ColoringCanvas> {
     if (mounted && !_isDisposed) setState(() {});
   }
 
+  void _onPointerEnd(PointerEvent e) {
+    _pointers.remove(e.pointer);
+    if (_pointers.isEmpty) {
+      _isZooming = false;
+      _ignoreUntilAllUp = false;
+    }
+  }
+
+  void _onScaleStart(ScaleStartDetails d, Size size) {
+    if (_isDisposed || _ignoreUntilAllUp) return;
+
+    if (d.pointerCount >= 2) {
+      // A second finger: stop drawing, start zooming.
+      if (_currentStroke != null) _handlePanCancel();
+      _stopBrushSound();
+      _isZooming = true;
+      _zoomStart = _zoom;
+      _focalBaseStart = (d.localFocalPoint - _pan) / _zoom;
+      return;
+    }
+
+    _isZooming = false;
+    _startBrushSound();
+    // Start the line where the finger first touched, not where the drag
+    // was recognised, so lines don't lose their first few millimetres.
+    _handlePanStart(
+      DragStartDetails(
+        globalPosition: d.focalPoint,
+        localPosition: _firstDownLocal ?? d.localFocalPoint,
+      ),
+      size,
+    );
+    _handlePanUpdate(
+      DragUpdateDetails(
+        globalPosition: d.focalPoint,
+        localPosition: d.localFocalPoint,
+      ),
+      size,
+    );
+  }
+
+  void _onScaleUpdate(ScaleUpdateDetails d, Size size) {
+    if (_isDisposed || _ignoreUntilAllUp) return;
+
+    if (_isZooming) {
+      final z = (_zoomStart * d.scale).clamp(_minZoom, _maxZoom).toDouble();
+      final pan = d.localFocalPoint - _focalBaseStart * z;
+      setState(() {
+        _zoom = z;
+        _pan = _clampPan(pan, z, size);
+      });
+      return;
+    }
+
+    if (d.pointerCount >= 2) return; // the zoom start follows
+    _handlePanUpdate(
+      DragUpdateDetails(
+        globalPosition: d.focalPoint,
+        localPosition: d.localFocalPoint,
+      ),
+      size,
+    );
+  }
+
+  void _onScaleEnd(ScaleEndDetails d) {
+    if (_isZooming) {
+      // One finger may still be down: it must not start drawing.
+      _isZooming = false;
+      _ignoreUntilAllUp = true;
+      return;
+    }
+    if (_ignoreUntilAllUp) return;
+    _stopBrushSound();
+    _handlePanEnd(DragEndDetails());
+  }
+
   /// ✅ NEW: silence the brush when a tap is cancelled, but stay out of the
   /// way when that "tap" is really the first 100 ms of a drag (Flutter fires
   /// onTapDown after kPressTimeout) — the pan handlers own the sound then.
@@ -1729,76 +1840,98 @@ class ColoringCanvasState extends State<ColoringCanvas> {
 
         _lastCanvasSize = size;
 
-        return GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTapDown: (d) {
-            _handleTapDown(d, size);
+        return Listener(
+          behavior: HitTestBehavior.translucent,
+          onPointerDown: (e) {
+            if (_pointers.isEmpty) {
+              _firstDownLocal = e.localPosition;
+              _ignoreUntilAllUp = false;
+            }
+            _pointers.add(e.pointer);
           },
-          onTapUp: (d) {
-            _handleTapUp(d, size);
-          },
-          // ✅ NEW: without these two handlers a cancelled gesture left the
-          // brush sound looping and _currentStroke alive.
-          onTapCancel: _handleTapCancel,
-          onPanCancel: _handlePanCancel,
-          onPanStart: (d) {
-            _startBrushSound();
-            _handlePanStart(d, size);
-          },
-          onPanUpdate: (d) => _handlePanUpdate(d, size),
-          onPanEnd: (d) {
-            _stopBrushSound();
-            _handlePanEnd(d);
-          },
-          child: Stack(
-            children: [
-              CustomPaint(
-                size: size,
-                painter: ColoringPainter(
-                  regions: widget.regions,
-                  scaleX: sx,
-                  scaleY: sy,
-                  tx: tx,
-                  ty: ty,
-                  glitterImage: _glitterImage,
-                  strokePictureCache: _strokePictureCache,
-                  revision: _revision, // ✅ NEW: drives shouldRepaint()
-                ),
-              ),
-              ..._animations.map((animation) {
-                return Positioned(
-                  // ✅ NEW: a stable key so removing one confetti does not
-                  // recycle another one's Lottie state.
-                  key: ValueKey(animation.id),
-                  // ✅ NEW (kid-ui): the burst is centred on the finger, at
-                  // whatever size the kind of tap asked for.
-                  left: animation.position.dx - animation.size / 2,
-                  top: animation.position.dy - animation.size / 2,
-                  child: SizedBox(
-                    width: animation.size,
-                    height: animation.size,
-                    child: IgnorePointer(
-                      // ✅ NEW (kid-ui): a locked shape answers with a ring,
-                      // not with a celebration.
-                      child: animation.locked
-                          ? const _LockedPulse()
-                          : Lottie.asset(
-                              "assets/json/Confetti.json",
-                              repeat: false,
-                              onLoaded: (_) {},
-                              delegates: null,
-                              frameRate: FrameRate.max,
-                              animate: true,
-                              fit: BoxFit.contain,
-                              options: LottieOptions(enableMergePaths: true),
-                              controller: null,
-                              onWarning: (warning) {},
+          onPointerUp: _onPointerEnd,
+          onPointerCancel: _onPointerEnd,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            // Taps act on lift, so a pinch never fills or stamps by accident.
+            onTapDown: (d) => _pendingTap = d,
+            onTapUp: (d) {
+              final pending = _pendingTap;
+              _pendingTap = null;
+              if (pending != null) _handleTapDown(pending, size);
+              _handleTapUp(d, size);
+            },
+            onTapCancel: () {
+              _pendingTap = null;
+              _handleTapCancel();
+            },
+            onScaleStart: (d) => _onScaleStart(d, size),
+            onScaleUpdate: (d) => _onScaleUpdate(d, size),
+            onScaleEnd: _onScaleEnd,
+            child: ClipRect(
+              child: Stack(
+                children: [
+                  // The picture: zoomed and panned.
+                  Positioned.fill(
+                    child: Transform.translate(
+                      offset: _pan,
+                      child: Transform.scale(
+                        scale: _zoom,
+                        alignment: Alignment.topLeft,
+                        child: RepaintBoundary(
+                          child: CustomPaint(
+                            size: size,
+                            painter: ColoringPainter(
+                              regions: widget.regions,
+                              scaleX: sx,
+                              scaleY: sy,
+                              tx: tx,
+                              ty: ty,
+                              glitterImage: _glitterImage,
+                              strokePictureCache: _strokePictureCache,
+                              revision: _revision,
                             ),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                );
-              }),
-            ],
+
+                  // Sparkles stay the same size on screen, wherever you zoom.
+                  ..._animations.map((animation) {
+                    return Positioned(
+                      key: ValueKey(animation.id),
+                      left:
+                          animation.position.dx * _zoom +
+                          _pan.dx -
+                          animation.size / 2,
+                      top:
+                          animation.position.dy * _zoom +
+                          _pan.dy -
+                          animation.size / 2,
+                      child: SizedBox(
+                        width: animation.size,
+                        height: animation.size,
+                        child: IgnorePointer(
+                          child: animation.locked
+                              ? const _LockedPulse()
+                              : Lottie.asset(
+                                  "assets/json/Confetti.json",
+                                  repeat: false,
+                                  animate: true,
+                                  fit: BoxFit.contain,
+                                  frameRate: FrameRate.max,
+                                  options: LottieOptions(
+                                    enableMergePaths: true,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    );
+                  }),
+                ],
+              ),
+            ),
           ),
         );
       },
