@@ -80,9 +80,22 @@ const List<WorldMeta> kWorldMeta = [
     Color(0xFFEC407A),
     'assets/images/cards/flowers_bg.jpg',
   ),
-  // backgrounds land in the next round; until then a soft tint shows:
-  WorldMeta('Letters', '🔤', Color(0xFF00897B)),
-  WorldMeta('Numbers', '🔢', Color(0xFF5D4037)),
+  WorldMeta(
+    'Letters',
+    '🔤',
+    Color(0xFF00897B),
+    'assets/images/cards/letters_bg.jpg',
+  ),
+  WorldMeta(
+    'Numbers',
+    '🔢',
+    Color(0xFF5D4037),
+    'assets/images/cards/numbers_bg.jpg',
+  ),
+  // OLD (kept commented per the release rule) — no backgrounds yet:
+  // // backgrounds land in the next round; until then a soft tint shows:
+  // WorldMeta('Letters', '🔤', Color(0xFF00897B)),
+  // WorldMeta('Numbers', '🔢', Color(0xFF5D4037)),
 ];
 
 /// One slot on the shelf. [meta] == null marks the Free Draw hero.

@@ -15,7 +15,11 @@ const _bgs = [
   'circus',
   'food',
   'flowers',
+  'letters', // NEW this round
+  'numbers', // NEW this round
 ];
+// OLD list ended at 'flowers' — Letters and Numbers got their calm
+// backgrounds this round, so they join the asset check.
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
