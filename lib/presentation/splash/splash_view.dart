@@ -179,6 +179,7 @@
 //   }
 // }
 
+import 'dart:math' as math;
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
@@ -191,7 +192,12 @@ import '../common/resources/routs_manager.dart';
 import '../common/resources/values_manager.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+  /// Widget-test seam only: flutter_tester has no Rive native runtime, so
+  /// tests pass a stand-in for the dragon. In production this is always
+  /// null and the real .riv plays.
+  final Widget? dragonOverride;
+
+  const SplashScreen({super.key, this.dragonOverride});
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -374,85 +380,263 @@ class _SplashScreenState extends State<SplashScreen>
   // UI
   // ============================================================
 
+  // ============================================================
+  // Mute sticker (parents, first screen)
+  // ============================================================
+
+  bool _muted = false;
+
+  Future<void> _toggleMute() async {
+    setState(() => _muted = !_muted);
+    await _player.setVolume(_muted ? 0 : 0.08);
+  }
+
+  // ============================================================
+  // UI
+  // ============================================================
+
   @override
   Widget build(BuildContext context) {
+    // NEW (splash plan): calm sky, the wordmark, ONE big un-mirrored
+    // dragon, a real bouncy PLAY button, and a mute sticker.
     return Scaffold(
       backgroundColor: ColorManager.primary,
-      body: Center(
-        child: Stack(
-          children: [
-            // ---------------------------------------
-            // Background
-            // ---------------------------------------
-            Image.asset(
-              ImageAssets.background,
-              width: double.infinity,
-              height: double.infinity,
-              fit: BoxFit.cover,
-            ),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // calm sky in the same family as the card backgrounds
+          Image.asset(
+            'assets/images/splash_bg.jpg',
+            width: double.infinity,
+            height: double.infinity,
+            fit: BoxFit.cover,
+          ),
 
-            // ---------------------------------------
-            // Leaves animation
-            // ---------------------------------------
-            Lottie.asset(
+          // leaves, light, over the sky
+          Opacity(
+            opacity: 0.55,
+            child: Lottie.asset(
               JsonAssets.leaves,
               width: AppSizeWidth.s100,
               height: AppSizeHeight.s100,
             ),
+          ),
 
-            // ---------------------------------------
-            // Dragon + Start animation
-            // ---------------------------------------
-            Center(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  // -----------------------------------
-                  // Dragon
-                  // -----------------------------------
-                  FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: ScaleTransition(
-                      scale: _scaleAnimation,
-                      child: SizedBox(
-                        width: AppSizeWidth.s60,
-                        height: AppSizeHeight.s100,
-                        child: Transform(
-                          alignment: Alignment.center,
-                          transform: Matrix4.identity()..scale(-1.0, 1.0),
-                          child: RiveAnimation.asset(
-                            ImageAssets.dragon,
-                            artboard: 'dragon',
-                            controllers: _controllers,
-                          ),
+          // the wordmark, big, at the top
+          Positioned(
+            top: AppSizeHeight.s4,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Image.asset(
+                'assets/images/app_icon.png',
+                height: math.max(70, AppSizeHeight.s24),
+              ),
+            ),
+          ),
+
+          // the dragon: big, centred, facing the child (no mirror)
+          Center(
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: ScaleTransition(
+                scale: _scaleAnimation,
+                child: SizedBox(
+                  width: AppSizeWidth.s55,
+                  height: AppSizeHeight.s56,
+                  child:
+                      widget.dragonOverride ??
+                      RiveAnimation.asset(
+                        ImageAssets.dragon,
+                        artboard: 'dragon',
+                        controllers: _controllers,
+                      ),
+                ),
+              ),
+            ),
+          ),
+
+          // the PLAY sticker — the old start.json, reborn as a button
+          Positioned(
+            bottom: AppSizeHeight.s6,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: GestureDetector(
+                onTap: _goNext,
+                child: _Bouncy(
+                  child: Container(
+                    width: math.max(72, AppSizeWidth.s13),
+                    height: math.max(72, AppSizeHeight.s18),
+                    decoration: BoxDecoration(
+                      color: ColorManager.gold,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: ColorManager.white, width: 4),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0x4D000000),
+                          blurRadius: 12,
+                          offset: Offset(0, 6),
                         ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Lottie.asset(
+                        JsonAssets.start,
+                        width: math.max(44, AppSizeWidth.s9),
+                        height: math.max(44, AppSizeHeight.s11),
                       ),
                     ),
                   ),
-
-                  // -----------------------------------
-                  // Start animation
-                  //
-                  // NOT clickable.
-                  // Navigation happens automatically
-                  // after app initialization.
-                  // -----------------------------------
-                  // IgnorePointer(
-                  //   ignoring: true,
-                  //   child: Lottie.asset(
-                  //     JsonAssets.start,
-                  //     width: AppSizeWidth.s30,
-                  //     height: AppSizeHeight.s100,
-                  //   ),
-                  // ),
-                  SizedBox(width: AppPaddingWidth.p8),
-                ],
+                ),
               ),
             ),
-          ],
-        ),
+          ),
+
+          // mute sticker, top-right
+          Positioned(
+            top: AppSizeHeight.s3,
+            right: AppSizeWidth.s3,
+            child: GestureDetector(
+              onTap: _toggleMute,
+              child: Container(
+                width: math.max(48, AppSizeWidth.s9),
+                height: math.max(48, AppSizeHeight.s12),
+                decoration: BoxDecoration(
+                  color: ColorManager.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Color(0x33000000),
+                      blurRadius: 8,
+                      offset: Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Text(
+                    _muted ? '🔇' : '🔊',
+                    style: TextStyle(fontSize: math.max(18, AppSizeHeight.s5)),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
+
+/// A gentle "breathing" scale so the PLAY button invites the tap.
+class _Bouncy extends StatefulWidget {
+  final Widget child;
+  const _Bouncy({required this.child});
+
+  @override
+  State<_Bouncy> createState() => _BouncyState();
+}
+
+class _BouncyState extends State<_Bouncy> with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 900),
+    lowerBound: 0.94,
+    upperBound: 1.0,
+  )..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ScaleTransition(scale: _c, child: widget.child);
+  }
+}
+
+// OLD splash build (busy rainbow background, mirrored dragon, no title,
+// nothing to tap) — kept beneath per the standing rule:
+// @override
+// Widget build(BuildContext context) {
+//   return Scaffold(
+//     backgroundColor: ColorManager.primary,
+//     body: Center(
+//       child: Stack(
+//         children: [
+//           // ---------------------------------------
+//           // Background
+//           // ---------------------------------------
+//           Image.asset(
+//             ImageAssets.background,
+//             width: double.infinity,
+//             height: double.infinity,
+//             fit: BoxFit.cover,
+//           ),
+//
+//           // ---------------------------------------
+//           // Leaves animation
+//           // ---------------------------------------
+//           Lottie.asset(
+//             JsonAssets.leaves,
+//             width: AppSizeWidth.s100,
+//             height: AppSizeHeight.s100,
+//           ),
+//
+//           // ---------------------------------------
+//           // Dragon + Start animation
+//           // ---------------------------------------
+//           Center(
+//             child: Row(
+//               crossAxisAlignment: CrossAxisAlignment.center,
+//               mainAxisAlignment: MainAxisAlignment.spaceAround,
+//               children: [
+//                 // -----------------------------------
+//                 // Dragon
+//                 // -----------------------------------
+//                 FadeTransition(
+//                   opacity: _fadeAnimation,
+//                   child: ScaleTransition(
+//                     scale: _scaleAnimation,
+//                     child: SizedBox(
+//                       width: AppSizeWidth.s60,
+//                       height: AppSizeHeight.s100,
+//                       child: Transform(
+//                         alignment: Alignment.center,
+//                         transform: Matrix4.identity()..scale(-1.0, 1.0),
+//                         child: RiveAnimation.asset(
+//                           ImageAssets.dragon,
+//                           artboard: 'dragon',
+//                           controllers: _controllers,
+//                         ),
+//                       ),
+//                     ),
+//                   ),
+//                 ),
+//
+//                 // -----------------------------------
+//                 // Start animation
+//                 //
+//                 // NOT clickable.
+//                 // Navigation happens automatically
+//                 // after app initialization.
+//                 // -----------------------------------
+//                 // IgnorePointer(
+//                 //   ignoring: true,
+//                 //   child: Lottie.asset(
+//                 //     JsonAssets.start,
+//                 //     width: AppSizeWidth.s30,
+//                 //     height: AppSizeHeight.s100,
+//                 //   ),
+//                 // ),
+//                 SizedBox(width: AppPaddingWidth.p8),
+//               ],
+//             ),
+//           ),
+//         ],
+//       ),
+//     ),
+//   );
+// }
