@@ -5,97 +5,143 @@ import 'package:flutter/material.dart';
 import '../../common/local_data/Class.dart';
 import '../../common/resources/color_manager.dart';
 import '../../common/resources/values_manager.dart';
+import 'jungle.dart' show FrameRange, LottieLayer;
 
 // ============================================================
-// The "pick your world" storybook shelf (fantastic home).
+// The "pick your world" storybook shelf.
 //
-// The home screen used to show ONE world at a time (12 swipes to
-// reach Numbers, no names anywhere). Now the worlds sit on a shelf
-// of sticker cards: looping video thumbnail + name plate with an
-// emoji, and the whiteboard "Free Draw" card is the hero at slot 1.
+// Worlds sit on a shelf of sticker cards: an animated picture, plus a name
+// plate with an emoji. The whiteboard "Free Draw" card is the hero at slot 1.
 //
-// Sizing follows the app's own percent-of-screen language
-// (AppSizeHeight / AppSizeWidth), clamped to real fingertip targets.
+// Every card has its own Lottie file and plays a slice of it: a start frame
+// and an end frame (FrameRange). Make a card still with FrameRange.still(n).
 // ============================================================
 
-/// One world on the shelf: name, emoji and ribbon colour.
+/// One world on the shelf: name, emoji, ribbon colour and its animation.
 class WorldMeta {
   final String name;
   final String emoji;
   final Color color;
 
-  /// NEW (card art round): generated sticker art for the card.
-  /// null = this world keeps the old looping video for now.
-  final String? art;
-
-  /// NEW (Lottie round): a real Lottie scene for the card — the clean
-  /// background stays fixed while vector animals swim / fly / bounce
-  /// on top of it. null = not generated yet.
+  /// Path of this card's Lottie (.json) file. null = no animation.
   final String? lottie;
 
-  const WorldMeta(this.name, this.emoji, this.color, [this.art, this.lottie]);
+  /// Start / end frame of that file for this card.
+  /// null = the card plays the whole file.
+  final FrameRange? frames;
+
+  /// Extra Lotties stacked on top of the main one, in order (last = top).
+  final List<LottieLayer> layers;
+
+  const WorldMeta(
+    this.name,
+    this.emoji,
+    this.color, {
+    this.lottie,
+    this.frames,
+    this.layers = const [],
+  });
 }
 
-/// In the SAME order buildGalleryItems() builds the worlds.
-/// The whiteboard "Free Draw" card is the LAST item there; on the
-/// shelf it becomes the FIRST one, so it has no entry here.
-/// The Free Draw hero card art.
-const String kFreeDrawArt = 'assets/images/cards/free_bg.jpg';
+/// The Free Draw hero card: its Lottie file and frames.
+/// Put the real file name here (the file itself goes in assets/images/cards/).
+const String kFreeDrawLottie = 'assets/images/cards/free hand.json';
+const FrameRange kFreeDrawFrames = FrameRange(0, 60);
 
+/// The hero card used to draw an orange gradient and a big "FREE DRAW!" over
+/// its picture. The name plate already says it, so this is off by default.
+const bool kShowHeroOverlay = false;
+
+/// In the SAME order buildGalleryItems() builds the worlds.
+/// The whiteboard "Free Draw" card is the LAST item there; on the shelf it
+/// becomes the FIRST one, so it has no entry here.
+///
+/// Per card: `lottie` is its file, `frames` is FrameRange(start, end).
+/// Examples:
+///   frames: FrameRange(13, 72)        plays frames 13 to 72, looping
+///   frames: FrameRange.still(40)      a still card showing frame 40
+///   (no frames line)                  plays the whole file
 const List<WorldMeta> kWorldMeta = [
-  // Calm category backgrounds (4:3, matching the card). The Lottie
-  // field stays null until a downloaded Lottie is dropped into
-  // assets/json/cards/<world>.json — see LOTTIE-SOURCES.md.
-  WorldMeta('Zoo', '🦁', Color(0xFF3D9142), 'assets/images/cards/zoo_bg.jpg'),
-  WorldMeta('Sea', '🌊', Color(0xFF1976D2), 'assets/images/cards/sea_bg.jpg'),
+  WorldMeta(
+    'Zoo',
+    '🦁',
+    Color(0xFF3D9142),
+    lottie: 'assets/images/cards/jungle.json',
+    frames: FrameRange(13, 72),
+  ),
+  WorldMeta(
+    'Sea',
+    '🌊',
+    Color(0xFF1976D2),
+    lottie: 'assets/images/cards/sea.json',
+    frames: FrameRange(0, 60),
+  ),
   WorldMeta(
     'Dragons',
     '🐉',
     Color(0xFF7B1FA2),
-    'assets/images/cards/dragons_bg.jpg',
+    lottie: 'assets/images/cards/dragons.json',
+    frames: FrameRange(20, 130),
+
+    // A second Lottie stacked on top of the dragon. Put its file in
+    // assets/images/cards/ and use its real name and frames.
   ),
   WorldMeta(
     'Fairy',
     '🧚',
     Color(0xFFE91E63),
-    'assets/images/cards/fairy_bg.jpg',
+    lottie: 'assets/images/cards/fairy.json',
+    frames: FrameRange(0, 30),
   ),
   WorldMeta(
     'Space',
     '🚀',
     Color(0xFF303F9F),
-    'assets/images/cards/space_bg.jpg',
+    lottie: 'assets/images/cards/space.json',
+    frames: FrameRange(0, 70),
   ),
-  WorldMeta('Cars', '🚗', Color(0xFFF57C00), 'assets/images/cards/cars_bg.jpg'),
+  WorldMeta(
+    'Cars',
+    '🚗',
+    Color(0xFFF57C00),
+    lottie: 'assets/images/cards/cars.json',
+    frames: FrameRange(0, 19),
+  ),
   WorldMeta(
     'Circus',
     '🎪',
     Color(0xFFE53935),
-    'assets/images/cards/circus_bg.jpg',
+    lottie: 'assets/images/cards/circus.json',
+    frames: FrameRange(0, 95),
   ),
-  WorldMeta('Food', '🍓', Color(0xFFEF6C00), 'assets/images/cards/food_bg.jpg'),
+  WorldMeta(
+    'Food',
+    '🍓',
+    Color(0xFFEF6C00),
+    lottie: 'assets/images/cards/food.json',
+    frames: FrameRange(0, 29),
+  ),
   WorldMeta(
     'Flowers',
     '🌸',
     Color(0xFFEC407A),
-    'assets/images/cards/flowers_bg.jpg',
+    lottie: 'assets/images/cards/flowers.json',
+    frames: FrameRange(0, 133),
   ),
   WorldMeta(
     'Letters',
     '🔤',
     Color(0xFF00897B),
-    'assets/images/cards/letters_bg.jpg',
+    lottie: 'assets/images/cards/letters.json',
+    frames: FrameRange(0, 61),
   ),
   WorldMeta(
     'Numbers',
     '🔢',
     Color(0xFF5D4037),
-    'assets/images/cards/numbers_bg.jpg',
+    lottie: 'assets/images/cards/numbers.json',
+    frames: FrameRange(0, 72),
   ),
-  // OLD (kept commented per the release rule) — no backgrounds yet:
-  // // backgrounds land in the next round; until then a soft tint shows:
-  // WorldMeta('Letters', '🔤', Color(0xFF00897B)),
-  // WorldMeta('Numbers', '🔢', Color(0xFF5D4037)),
 ];
 
 /// One slot on the shelf. [meta] == null marks the Free Draw hero.
@@ -136,8 +182,7 @@ List<List<ShelfSlot>> chunkShelf(List<ShelfSlot> slots, int perPage) {
   return pages;
 }
 
-/// A sticker card: white frame, looping-video thumb, name plate.
-/// The hero card (Free Draw) gets a sunrise gradient and a big label.
+/// A sticker card: white frame, picture, name plate.
 class WorldCard extends StatelessWidget {
   final ShelfSlot slot;
   final Widget thumb;
@@ -157,79 +202,83 @@ class WorldCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final radius = math.max(14.0, AppSizeHeight.s4);
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Transform.rotate(
-        angle: slot.tilt,
-        child: Container(
-          decoration: BoxDecoration(
-            color: ColorManager.white,
-            borderRadius: BorderRadius.circular(radius),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x40142846),
-                blurRadius: 12,
-                offset: Offset(0, 6),
-              ),
-            ],
-          ),
-          padding: EdgeInsets.all(math.max(5.0, AppSizeHeight.s1_5)),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(radius * 0.7),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      thumb,
-                      if (slot.isHero)
-                        const DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [Color(0x14FFFFFF), Color(0xB8FF9800)],
-                            ),
-                          ),
-                        ),
-                      if (slot.isHero)
-                        Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                '🖍️',
-                                style: TextStyle(
-                                  fontSize: math.max(30, AppSizeHeight.s9),
-                                ),
-                              ),
-                              Text(
-                                'FREE DRAW!',
-                                style: TextStyle(
-                                  fontSize: math.max(16, AppSizeHeight.s4),
-                                  fontWeight: FontWeight.w900,
-                                  color: const Color(0xFF7A4B00),
-                                  shadows: const [
-                                    Shadow(color: Colors.white, blurRadius: 6),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
+    return Semantics(
+      button: true,
+      label: slot.isHero ? 'Free draw' : slot.meta!.name,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Transform.rotate(
+          angle: slot.tilt,
+          child: Container(
+            decoration: BoxDecoration(
+              color: ColorManager.white,
+              borderRadius: BorderRadius.circular(radius),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x40142846),
+                  blurRadius: 12,
+                  offset: Offset(0, 6),
+                ),
+              ],
+            ),
+            padding: EdgeInsets.all(math.max(5.0, AppSizeHeight.s1_5)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(radius * 0.7),
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        thumb,
+                        if (slot.isHero && kShowHeroOverlay) ..._heroOverlay(),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              SizedBox(height: math.max(4.0, AppSizeHeight.s1)),
-              _namePlate(),
-            ],
+                SizedBox(height: math.max(4.0, AppSizeHeight.s1)),
+                _namePlate(),
+              ],
+            ),
           ),
         ),
       ),
     );
+  }
+
+  List<Widget> _heroOverlay() {
+    return [
+      const DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0x14FFFFFF), Color(0xB8FF9800)],
+          ),
+        ),
+      ),
+      Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '🖍️',
+              style: TextStyle(fontSize: math.max(30, AppSizeHeight.s9)),
+            ),
+            Text(
+              'FREE DRAW!',
+              style: TextStyle(
+                fontSize: math.max(16, AppSizeHeight.s4),
+                fontWeight: FontWeight.w900,
+                color: const Color(0xFF7A4B00),
+                shadows: const [Shadow(color: Colors.white, blurRadius: 6)],
+              ),
+            ),
+          ],
+        ),
+      ),
+    ];
   }
 
   Widget _namePlate() {
@@ -261,149 +310,6 @@ class WorldCard extends StatelessWidget {
                 color: ColorManager.white,
                 fontWeight: FontWeight.w900,
                 fontSize: math.max(13, AppSizeHeight.s4),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// The card picture that *breathes*: a slow Ken-Burns zoom, a floating
-/// emoji bubble and a soft gradient. Animated like a video, but at
-/// ~200 KB of art instead of ~5 MB of MP4 per world.
-///
-/// If a world has no art yet — or the art cannot be loaded on this
-/// device — the old looping video shows instead, so a card can never
-/// appear broken.
-class AnimatedWorldThumb extends StatefulWidget {
-  final String? artPath;
-  final String emoji;
-  final Widget fallback;
-
-  /// Test override: inject the picture instead of loading an asset.
-  final Widget? art;
-
-  const AnimatedWorldThumb({
-    super.key,
-    required this.artPath,
-    required this.emoji,
-    required this.fallback,
-    this.art,
-  });
-
-  @override
-  State<AnimatedWorldThumb> createState() => _AnimatedWorldThumbState();
-}
-
-class _AnimatedWorldThumbState extends State<AnimatedWorldThumb>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  bool _broken = false;
-  bool _checked = false;
-
-  bool get _useArt => widget.artPath != null && !_broken;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 6),
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final path = widget.artPath;
-    if (widget.art == null && path != null && !_checked) {
-      _checked = true;
-      // If the art file is not on this device yet, show the old
-      // video instead of a grey error box.
-      precacheImage(Image.asset(path).image, context).catchError((Object e) {
-        if (mounted) setState(() => _broken = true);
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (!_useArt) return widget.fallback;
-
-    final art =
-        widget.art ??
-        Image.asset(
-          widget.artPath!,
-          fit: BoxFit.cover,
-          width: double.infinity,
-          height: double.infinity,
-        );
-
-    return ClipRect(
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          // the picture breathes: slow zoom + drift
-          AnimatedBuilder(
-            animation: _controller,
-            child: art,
-            builder: (context, child) {
-              final t = Curves.easeInOut.transform(_controller.value);
-              return Transform.scale(
-                scale: 1.05 + 0.07 * t,
-                alignment: Alignment(0, -0.2 + 0.4 * (1 - t)),
-                child: child,
-              );
-            },
-          ),
-          // a floating emoji bubble
-          AnimatedBuilder(
-            animation: _controller,
-            builder: (context, child) {
-              final t = _controller.value;
-              return Positioned(
-                right: 6 + 4 * math.sin(t * math.pi),
-                top: 8 + 10 * (1 - t),
-                child: child!,
-              );
-            },
-            child: Container(
-              width: math.max(26, AppSizeHeight.s7),
-              height: math.max(26, AppSizeHeight.s7),
-              decoration: const BoxDecoration(
-                color: Color(0xB3FFFFFF),
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Color(0x33142846),
-                    blurRadius: 6,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Center(
-                child: Text(
-                  widget.emoji,
-                  style: TextStyle(fontSize: math.max(13, AppSizeHeight.s4)),
-                ),
-              ),
-            ),
-          ),
-          // soft floor so the name plate always reads
-          const DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Color(0x00000000), Color(0x33000000)],
               ),
             ),
           ),

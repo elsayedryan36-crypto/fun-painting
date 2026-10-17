@@ -102,9 +102,9 @@ class _GalleryPageState extends State<GalleryPage> with RouteAware {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            if (meta?.art != null)
+            if (meta?.frames != null)
               Image.asset(
-                meta!.art!,
+                meta!.emoji,
                 fit: BoxFit.cover,
                 width: double.infinity,
                 height: double.infinity,

@@ -1,27 +1,22 @@
 import 'dart:math' as math;
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:fun_painting/data/services/review_service.dart';
 import 'package:fun_painting/presentation/common/widgets/rate_wedgit_home.dart';
-// OLD-build imports (the commented build below still mentions them):
-import 'package:lottie/lottie.dart'; // NEW (Lottie round): cards play real Lottie scenes
-import 'package:upgrader/upgrader.dart';
-
-// OLD import (the video card moved out of the thumb; kept for the commented builds):
-// import 'package:fun_painting/presentation/home/Widgets/jungle.dart';
+import 'package:fun_painting/presentation/home/Widgets/jungle.dart';
 import 'package:fun_painting/presentation/home/Widgets/kid_home_shelf.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:upgrader/upgrader.dart';
 
 import '../../app/app_pref.dart';
 import '../../data/services/ad_unit_ids.dart';
 import '../common/local_data/collection_list.dart';
-// OLD-build imports (the commented build below still mentions them):
-// import '../common/resources/assets_manager.dart' show JsonAssets;
 import '../common/resources/color_manager.dart' show ColorManager;
 import '../common/resources/values_manager.dart';
-import '../common/widgets/setting_Widget.dart';
 import '../common/widgets/banner_ad_widget.dart';
+import '../common/widgets/setting_Widget.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -31,11 +26,13 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
+  static const int _cardsPerPage = 3;
+
   final PageController _pageController = PageController();
   final AudioPlayer _player = AudioPlayer();
+  final AppPreferences appPreferences = AppPreferences();
   int _currentPage = 0;
-  AppPreferences appPreferences = AppPreferences();
-  // double _currentVolume = 0.2; // matches your current default
+
   @override
   void initState() {
     super.initState();
@@ -51,15 +48,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     debugPrint('Open count after increment: $count');
 
     if (count > 0 && count % 10 == 0 && mounted) {
-      // OLD (interrupted the shelf too early):
-      // if (count > 0 && count % 5 == 0 && mounted) {
-      // Small delay so it doesn't pop over an unfinished loading UI
+      // Small delay so it doesn't pop over an unfinished loading UI.
       await Future.delayed(const Duration(milliseconds: 2000));
       if (!mounted) return;
 
       showDialog(
         context: context,
-        builder: (context) => Dialog(
+        builder: (dialogContext) => Dialog(
           backgroundColor: ColorManager.lightPrimary,
           insetPadding: const EdgeInsets.symmetric(
             horizontal: 40,
@@ -71,9 +66,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           child: SizedBox(
             width: AppSizeWidth.s55,
             height: AppSizeHeight.s70,
-            // OLD:
-            // width: AppSizeWidth.s65,
-            // height: AppSizeHeight.s80,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -83,11 +75,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     const Expanded(child: SizedBox()),
                     IconButton(
                       icon: Icon(Icons.close, color: ColorManager.darkPrimary),
-                      onPressed: () => Navigator.of(context).pop(),
+                      onPressed: () => Navigator.of(dialogContext).pop(),
                     ),
                   ],
                 ),
-
                 Padding(
                   padding: EdgeInsets.only(
                     top: AppPaddingHeight.p2,
@@ -96,11 +87,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   ),
                   child: Column(
                     children: [
-                      SizedBox(
-                        child: Image.asset(
-                          'assets/images/app_icon.png',
-                          height: AppSizeHeight.s33,
-                        ),
+                      Image.asset(
+                        'assets/images/app_icon.png',
+                        height: AppSizeHeight.s33,
                       ),
                       const RateAppWidgetHome(),
                       SizedBox(height: AppSizeHeight.s5),
@@ -154,14 +143,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    // NEW (fantastic home): the "pick your world" storybook shelf —
-    // sticker cards with names and emoji, Free Draw as the hero card,
-    // chunky hand arrows, crayon dots, and the ad on a wood shelf.
-    final galaryItems = buildGalleryItems(context);
-    final pages = chunkShelf(buildShelfSlots(galaryItems), _cardsPerPage);
+    // The "pick your world" storybook shelf: sticker cards with names and
+    // emoji, Free Draw as the hero card, hand arrows, crayon dots, and the
+    // ad on a wood shelf.
+    final galleryItems = buildGalleryItems(context);
+    final pages = chunkShelf(buildShelfSlots(galleryItems), _cardsPerPage);
 
     return UpgradeAlert(
-      upgrader: Upgrader(debugLogging: true),
+      upgrader: Upgrader(debugLogging: kDebugMode),
       showIgnore: false,
       showLater: true,
       showReleaseNotes: true,
@@ -214,82 +203,76 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   // ============================================================
-  // Shelf pieces (fantastic home)
+  // Shelf pieces
   // ============================================================
 
-  /// OLD (Lottie round, superseded — the art moved to calm backgrounds
-  /// plus user-downloaded Lotties; see LOTTIE-SOURCES.md):
-  /// a card's picture was a generated Lottie scene with embedded art.
-  /// OLD (card art round): AnimatedWorldThumb with Ken-Burns zoom.
-  /// OLD (first home): CollectionWidget looping the MP4 videos.
+  /// A card's picture: its own Lottie, playing the card's start / end frame,
+  /// with any extra layers stacked on top (WorldMeta.layers). No background
+  /// picture. The Free Draw hero card uses kFreeDrawLottie / kFreeDrawFrames.
   Widget _cardThumb(ShelfSlot slot) {
-    // NEW (Lottie-sources round): a calm category background, and any
-    // Lottie dropped into assets/json/cards/<world>.json plays on top.
-    // No zoom, no crowds — the downloaded character does the moving.
-    final meta = slot.meta;
-    final bgPath = slot.isHero ? kFreeDrawArt : meta!.art;
-    final lottiePath = slot.isHero ? null : meta!.lottie;
+    final asset = slot.isHero ? kFreeDrawLottie : slot.meta?.lottie;
+    final frames = slot.isHero ? kFreeDrawFrames : slot.meta?.frames;
+    final layers = slot.meta?.layers ?? const <LottieLayer>[];
+
+    if (asset == null && layers.isEmpty) return const SizedBox.shrink();
+
     return Stack(
       fit: StackFit.expand,
       children: [
-        if (bgPath != null)
-          Image.asset(
-            bgPath,
-            fit: BoxFit.cover,
-            width: double.infinity,
-            height: double.infinity,
-          )
-        else
-          Container(color: meta!.color.withOpacity(0.35)),
-        if (lottiePath != null) Lottie.asset(lottiePath, fit: BoxFit.contain),
+        if (asset != null) CardLottieThumb(asset: asset, frames: frames),
+        for (final layer in layers)
+          CardLottieThumb(
+            key: ValueKey(layer.lottie),
+            asset: layer.lottie,
+            frames: layer.frames,
+            fit: layer.fit,
+            alignment: layer.alignment,
+            scale: layer.scale,
+          ),
       ],
     );
   }
 
-  // OLD _cardThumb body (kept beneath, per the standing rule):
-  //   return AnimatedWorldThumb(
-  //     artPath: slot.isHero ? kFreeDrawArt : slot.meta!.art,
-  //     emoji: slot.isHero ? '🖍️' : slot.meta!.emoji,
-  //     fallback: CollectionWidget(videoPath: slot.item.imagePath),
-  //   );
-
-  static const int _cardsPerPage = 3;
-
   Widget _buildMascotBanner() {
-    return Container(
-      height: math.max(56, AppSizeHeight.s14),
-      margin: EdgeInsets.symmetric(
-        horizontal: AppPaddingWidth.p2,
-        vertical: AppPaddingHeight.p1,
-      ),
-      decoration: BoxDecoration(
-        color: ColorManager.white,
-        borderRadius: BorderRadius.circular(math.max(14, AppSizeHeight.s4)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x2B142846),
-            blurRadius: 8,
-            offset: Offset(0, 4),
+    return Center(
+      child: FractionallySizedBox(
+        widthFactor: 0.8, // 0.6 = 60% of the screen width
+        child: Container(
+          height: math.max(56, AppSizeHeight.s14),
+          margin: EdgeInsets.symmetric(
+            horizontal: AppPaddingWidth.p2,
+            vertical: AppPaddingHeight.p1,
           ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Image.asset(
-            'assets/images/app_icon.png',
-            height: math.max(40, AppSizeHeight.s11),
+          decoration: BoxDecoration(
+            color: ColorManager.white,
+            borderRadius: BorderRadius.circular(math.max(14, AppSizeHeight.s4)),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x2B142846),
+                blurRadius: 8,
+                offset: Offset(0, 4),
+              ),
+            ],
           ),
-          SizedBox(width: AppPaddingWidth.p2),
-          Text(
-            'pick your world!',
-            style: TextStyle(
-              color: ColorManager.darkPrimary,
-              fontWeight: FontWeight.w900,
-              fontSize: math.max(15, AppSizeHeight.s4),
-            ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset(
+                'assets/images/app_icon.png',
+                height: math.max(40, AppSizeHeight.s11),
+              ),
+              SizedBox(width: AppPaddingWidth.p2),
+              Text(
+                'pick your world!',
+                style: TextStyle(
+                  color: ColorManager.darkPrimary,
+                  fontWeight: FontWeight.w900,
+                  fontSize: math.max(15, AppSizeHeight.s4),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -323,7 +306,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               decoration: BoxDecoration(
                 color: ColorManager.white,
                 shape: BoxShape.circle,
-                boxShadow: [
+                boxShadow: const [
                   BoxShadow(
                     color: Color(0x33142846),
                     blurRadius: 8,
@@ -365,7 +348,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             children: [
               for (final slot in page)
                 Expanded(
-                  flex: slot.isHero ? 5 : 4,
+                  flex: slot.isHero ? 4 : 4,
                   child: Padding(
                     padding: EdgeInsets.symmetric(
                       horizontal: AppPaddingWidth.p1,
@@ -373,15 +356,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     child: WorldCard(
                       slot: slot,
                       thumb: _cardThumb(slot),
-                      // OLD (animated still, and before it the video):
-                      // thumb: AnimatedWorldThumb(
-                      //   artPath: slot.isHero ? kFreeDrawArt : slot.meta!.art,
-                      //   emoji: slot.isHero ? '🖍️' : slot.meta!.emoji,
-                      //   fallback: CollectionWidget(
-                      //     videoPath: slot.item.imagePath,
-                      //   ),
-                      // ),
-                      // thumb: CollectionWidget(videoPath: slot.item.imagePath),
                       onTap: slot.item.onTap,
                     ),
                   ),
@@ -446,187 +420,4 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       ),
     );
   }
-
-  // OLD (one world at a time, no names — replaced by the shelf above):
-  // @override
-  // Widget build(BuildContext context) {
-  //   final galaryItems = buildGalleryItems(context);
-  //
-  //   return UpgradeAlert(
-  //     upgrader: Upgrader(debugLogging: true),
-  //     showIgnore: false,
-  //     showLater: true,
-  //     showReleaseNotes: true,
-  //     child: Scaffold(
-  //       backgroundColor: ColorManager.lightPrimary,
-  //       body: SafeArea(
-  //         child: Stack(
-  //           children: [
-  //             Column(
-  //               children: [
-  //                 Expanded(
-  //                   child: Row(
-  //                     crossAxisAlignment: CrossAxisAlignment.center,
-  //                     mainAxisAlignment: MainAxisAlignment.center,
-  //                     children: [
-  //                       SizedBox(
-  //                         width: AppSizeWidth.s12,
-  //                         child: Center(
-  //                           child: IconButton(
-  //                             icon: Transform.rotate(
-  //                               angle: math.pi,
-  //                               child: Lottie.asset(
-  //                                 JsonAssets.start,
-  //                                 width: AppSizeWidth.s30,
-  //                                 height: AppSizeHeight.s30,
-  //                               ),
-  //                             ),
-  //                             onPressed: _currentPage == 0
-  //                                 ? null
-  //                                 : () {
-  //                                     _pageController.previousPage(
-  //                                       duration: const Duration(
-  //                                         milliseconds: 300,
-  //                                       ),
-  //                                       curve: Curves.ease,
-  //                                     );
-  //                                   },
-  //                           ),
-  //                         ),
-  //                       ),
-  //
-  //                       // ============================================================
-  //                       // MAIN GALLERY
-  //                       // ============================================================
-  //                       Expanded(
-  //                         child: Column(
-  //                           crossAxisAlignment: CrossAxisAlignment.center,
-  //                           mainAxisAlignment: MainAxisAlignment.center,
-  //                           children: [
-  //                             // ========================================================
-  //                             // PAGE VIEW
-  //                             // ========================================================
-  //                             SizedBox(
-  //                               width: AppSizeWidth.s80,
-  //                               height: AppSizeHeight.s70,
-  //                               child: PageView.builder(
-  //                                 controller: _pageController,
-  //                                 itemCount: galaryItems.length,
-  //
-  //                                 onPageChanged: (index) {
-  //                                   if (!mounted) return;
-  //
-  //                                   setState(() {
-  //                                     _currentPage = index;
-  //                                   });
-  //                                 },
-  //
-  //                                 itemBuilder: (context, index) {
-  //                                   final item = galaryItems[index];
-  //
-  //                                   return GestureDetector(
-  //                                     onTap: item.onTap,
-  //                                     child: CollectionWidget(
-  //                                       videoPath: item.imagePath,
-  //                                     ),
-  //                                   );
-  //                                 },
-  //                               ),
-  //                             ),
-  //
-  //                             // ========================================================
-  //                             // SPACE ABOVE DOTS
-  //                             // ========================================================
-  //                             const SizedBox(height: 16),
-  //
-  //                             SmoothPageIndicator(
-  //                               controller: _pageController,
-  //                               count: galaryItems.length,
-  //                               effect: CustomizableEffect(
-  //                                 spacing: 10.0,
-  //                                 activeDotDecoration: DotDecoration(
-  //                                   width: 22,
-  //                                   height: AppSizeHeight.s4,
-  //                                   color: ColorManager
-  //                                       .gold, // or your brand active color
-  //                                   borderRadius: BorderRadius.circular(6),
-  //                                   dotBorder: const DotBorder(
-  //                                     color: Color(0xFF2E3A8C),
-  //                                     width: 2,
-  //                                     padding: 2,
-  //                                   ),
-  //                                 ),
-  //                                 dotDecoration: DotDecoration(
-  //                                   width: 14,
-  //                                   height: 14,
-  //                                   borderRadius: BorderRadius.circular(14),
-  //                                 ),
-  //                                 inActiveColorOverride: (index) {
-  //                                   const palette = [
-  //                                     Color(0xFF4CAF50),
-  //                                     Color(0xFF69F0AE),
-  //                                     Color(0xFFFFCA28),
-  //                                     Color(0xFF42A5F5),
-  //                                     Color(0xFFFFC107),
-  //                                   ];
-  //                                   return palette[index % palette.length];
-  //                                 },
-  //                               ),
-  //                             ),
-  //                             //   }),
-  //                             // ),
-  //
-  //                             // ========================================================
-  //                             // SPACE BELOW DOTS
-  //                             // ========================================================
-  //                             // const SizedBox(height: 24),
-  //                           ],
-  //                         ),
-  //                       ),
-  //
-  //                       // ============================================================
-  //                       // NEXT BUTTON
-  //                       // ============================================================
-  //                       SizedBox(
-  //                         width: AppSizeWidth.s12,
-  //                         child: Center(
-  //                           child: IconButton(
-  //                             icon: Lottie.asset(
-  //                               JsonAssets.start,
-  //                               width: AppSizeWidth.s30,
-  //                               height: AppSizeHeight.s30,
-  //                             ),
-  //
-  //                             onPressed: _currentPage >= galaryItems.length - 1
-  //                                 ? null
-  //                                 : () {
-  //                                     _pageController.nextPage(
-  //                                       duration: const Duration(
-  //                                         milliseconds: 300,
-  //                                       ),
-  //                                       curve: Curves.ease,
-  //                                     );
-  //                                   },
-  //                           ),
-  //                         ),
-  //                       ),
-  //                     ],
-  //                   ),
-  //                 ),
-  //                 BannerAdWidget(adUnitId: AdUnitIds.galleryBanner),
-  //               ],
-  //             ),
-  //             SettingWidget(
-  //               player: _player,
-  //               initialVolume: appPreferences.getKSoundVolum(),
-  //               onVolumeChanged: (value) {
-  //                 appPreferences.setKSoundVolum(value);
-  //               },
-  //             ),
-  //           ],
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
 }
