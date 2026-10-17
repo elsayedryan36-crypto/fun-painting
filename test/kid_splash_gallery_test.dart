@@ -35,13 +35,19 @@ void main() {
       // the mute sticker is on stage and toggles
       expect(find.text('🔊'), findsOneWidget);
 
+      // the meadow promises a world to colour and a fat PLAY pill
+      expect(find.text('Pick a world & colour!'), findsOneWidget);
+      expect(find.text('▶  PLAY'), findsOneWidget);
+
       // the mute sticker toggles
       await tester.tap(find.text('🔊'));
       await tester.pump();
       expect(find.text('🔇'), findsOneWidget);
 
-      // let the auto-navigation run; it must not throw
+      // tapping PLAY bursts confetti and opens home without throwing
+      await tester.tap(find.text('▶  PLAY'));
       await tester.pump(const Duration(milliseconds: 700));
+      await tester.pump(const Duration(milliseconds: 300));
     });
   });
 
