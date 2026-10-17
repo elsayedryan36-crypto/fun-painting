@@ -400,169 +400,98 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    // NEW (the Meadow, option B): sky over grass with two soft hills,
-    // the dragon standing on the grass at the left, and at the right the
-    // wordmark + a promise chip + one fat PLAY pill. Tapping PLAY bursts
+    // NEW (the Paint Splash, option D): a clean white canvas with bright
+    // paint splats, the mascot on a tilted white card at the left, and the
+    // dragon above a bubbly pink PLAY drop at the right. Tapping PLAY bursts
     // confetti before home opens.
     return Scaffold(
-      backgroundColor: ColorManager.primary,
+      backgroundColor: const Color(0xFFFFFDF8),
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // sky into grass, one calm two-tone gradient
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                stops: [0, 0.58, 0.58, 1],
-                colors: [
-                  Color(0xFFEAF6FF),
-                  Color(0xFFF6FBFF),
-                  Color(0xFFBFE3B4),
-                  Color(0xFFA8D795),
-                ],
-              ),
+          // paint splats in the four corners
+          Positioned(
+            left: -40,
+            top: -40,
+            child: _splat(const Color(0xFFFFB020), 190, 170),
+          ),
+          Positioned(
+            right: -30,
+            top: -30,
+            child: _splat(const Color(0xFF3EC6E0), 180, 160),
+          ),
+          Positioned(
+            left: -30,
+            bottom: -40,
+            child: _splat(const Color(0xFF7ED957), 220, 170),
+          ),
+          Positioned(
+            right: -20,
+            bottom: -30,
+            child: _splat(const Color(0xFFB983FF), 180, 150),
+          ),
+
+          // the mascot card, the dragon and the PLAY drop
+          Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: ScaleTransition(
+                    scale: _scaleAnimation,
+                    child: _mascotCard(),
+                  ),
+                ),
+                const SizedBox(width: 48),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: math.max(140, AppSizeWidth.s26),
+                      height: math.max(150, AppSizeHeight.s38),
+                      child:
+                          widget.dragonOverride ??
+                          RiveAnimation.asset(
+                            ImageAssets.dragon,
+                            artboard: 'dragon',
+                            controllers: _controllers,
+                          ),
+                    ),
+                    const SizedBox(height: 12),
+                    GestureDetector(
+                      onTap: _playAndGo,
+                      child: _Bouncy(
+                        child: Container(
+                          width: math.max(200, AppSizeWidth.s26),
+                          height: math.max(64, AppSizeHeight.s12),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFF4F8B),
+                            borderRadius: BorderRadius.circular(50),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color(0xFFC2295F),
+                                offset: Offset(0, 7),
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            '▶  PLAY',
+                            style: TextStyle(
+                              color: ColorManager.white,
+                              fontWeight: FontWeight.w900,
+                              fontSize: math.max(22, AppSizeHeight.s5),
+                              letterSpacing: 2,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ),
-
-          // two soft hills on the horizon
-          Positioned(
-            left: -80,
-            bottom: -90,
-            child: _hill(const Color(0xFFB4DDA4), 420, 200),
-          ),
-          Positioned(
-            right: -90,
-            bottom: -110,
-            child: _hill(const Color(0xFFCBE8BC), 460, 220),
-          ),
-
-          // two quiet clouds
-          Positioned(
-            top: AppSizeHeight.s6,
-            left: AppSizeWidth.s8,
-            child: _cloud(90),
-          ),
-          Positioned(
-            top: AppSizeHeight.s13,
-            left: AppSizeWidth.s40,
-            child: _cloud(120),
-          ),
-
-          // the meadow row: dragon on the grass left, wordmark right
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Expanded(
-                flex: 115,
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                      bottom: math.max(20, AppSizeHeight.s6),
-                    ),
-                    child: FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: ScaleTransition(
-                        scale: _scaleAnimation,
-                        child: SizedBox(
-                          width: math.max(160, AppSizeWidth.s35),
-                          height: math.max(150, AppSizeHeight.s60),
-                          child:
-                              widget.dragonOverride ??
-                              RiveAnimation.asset(
-                                ImageAssets.dragon,
-                                artboard: 'dragon',
-                                controllers: _controllers,
-                              ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Expanded(
-                flex: 100,
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Image.asset(
-                        'assets/images/app_icon.png',
-                        height: math.max(110, AppSizeHeight.s38),
-                      ),
-                      SizedBox(height: math.max(8, AppSizeHeight.s2)),
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: AppPaddingWidth.p3,
-                          vertical: AppPaddingHeight.p_5,
-                        ),
-                        decoration: BoxDecoration(
-                          color: ColorManager.white,
-                          borderRadius: BorderRadius.circular(99),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Color(0x1F000000),
-                              blurRadius: 7,
-                              offset: Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: Text(
-                          'Pick a world & colour!',
-                          style: TextStyle(
-                            color: const Color(0xFF4E7A3C),
-                            fontWeight: FontWeight.w900,
-                            fontSize: math.max(13, AppSizeHeight.s4),
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: math.max(12, AppSizeHeight.s3)),
-                      GestureDetector(
-                        onTap: _playAndGo,
-                        child: _Bouncy(
-                          child: Container(
-                            width: math.max(180, AppSizeWidth.s26),
-                            height: math.max(56, AppSizeHeight.s15),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [Color(0xFFFFD54F), Color(0xFFFF9800)],
-                              ),
-                              borderRadius: BorderRadius.circular(99),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Color(0x66C86E00),
-                                  offset: Offset(0, 6),
-                                ),
-                                BoxShadow(
-                                  color: Color(0x4D000000),
-                                  blurRadius: 14,
-                                  offset: Offset(0, 10),
-                                ),
-                              ],
-                            ),
-                            child: Center(
-                              child: Text(
-                                '▶  PLAY',
-                                style: TextStyle(
-                                  color: const Color(0xFF7A3C00),
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: math.max(18, AppSizeHeight.s5),
-                                  letterSpacing: 2,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
           ),
 
           // the confetti burst when PLAY is tapped
@@ -607,26 +536,277 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
-  /// One soft hill on the horizon.
-  Widget _hill(Color color, double w, double h) {
-    return Container(
-      width: w,
-      height: h,
-      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-    );
-  }
-
-  /// One quiet cloud.
-  Widget _cloud(double w) {
-    return Container(
-      width: w,
-      height: w * 0.32,
-      decoration: BoxDecoration(
-        color: ColorManager.white.withValues(alpha: 0.8),
-        borderRadius: BorderRadius.circular(99),
+  /// The mascot on a slightly tilted white card with a hard, paint-like shadow.
+  Widget _mascotCard() {
+    return Transform.rotate(
+      angle: -0.035,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(26, 18, 26, 14),
+        decoration: BoxDecoration(
+          color: ColorManager.white,
+          borderRadius: BorderRadius.circular(34),
+          boxShadow: const [
+            BoxShadow(color: Color(0xFFE9E2D2), offset: Offset(0, 10)),
+            BoxShadow(
+              color: Color(0x2E3C321E),
+              blurRadius: 26,
+              offset: Offset(0, 16),
+            ),
+          ],
+        ),
+        child: Image.asset(
+          'assets/images/app_icon.png',
+          height: math.max(170, AppSizeHeight.s38),
+        ),
       ),
     );
   }
+
+  /// One organic paint splat: a blob with uneven elliptical corners.
+  Widget _splat(Color color, double w, double h) {
+    return Container(
+      width: w,
+      height: h,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.elliptical(w * 0.45, h * 0.55),
+          topRight: Radius.elliptical(w * 0.4, h * 0.45),
+          bottomRight: Radius.elliptical(w * 0.5, h * 0.4),
+          bottomLeft: Radius.elliptical(w * 0.45, h * 0.6),
+        ),
+      ),
+    );
+  }
+
+  // Meadow (option B) — kept commented beneath the Paint Splash, per the rule:
+  //     // NEW (the Meadow, option B): sky over grass with two soft hills,
+  //     // the dragon standing on the grass at the left, and at the right the
+  //     // wordmark + a promise chip + one fat PLAY pill. Tapping PLAY bursts
+  //     // confetti before home opens.
+  //     return Scaffold(
+  //       backgroundColor: ColorManager.primary,
+  //       body: Stack(
+  //         fit: StackFit.expand,
+  //         children: [
+  //           // sky into grass, one calm two-tone gradient
+  //           Container(
+  //             decoration: const BoxDecoration(
+  //               gradient: LinearGradient(
+  //                 begin: Alignment.topCenter,
+  //                 end: Alignment.bottomCenter,
+  //                 stops: [0, 0.58, 0.58, 1],
+  //                 colors: [
+  //                   Color(0xFFEAF6FF),
+  //                   Color(0xFFF6FBFF),
+  //                   Color(0xFFBFE3B4),
+  //                   Color(0xFFA8D795),
+  //                 ],
+  //               ),
+  //             ),
+  //           ),
+  //
+  //           // two soft hills on the horizon
+  //           Positioned(
+  //             left: -80,
+  //             bottom: -90,
+  //             child: _hill(const Color(0xFFB4DDA4), 420, 200),
+  //           ),
+  //           Positioned(
+  //             right: -90,
+  //             bottom: -110,
+  //             child: _hill(const Color(0xFFCBE8BC), 460, 220),
+  //           ),
+  //
+  //           // two quiet clouds
+  //           Positioned(
+  //             top: AppSizeHeight.s6,
+  //             left: AppSizeWidth.s8,
+  //             child: _cloud(90),
+  //           ),
+  //           Positioned(
+  //             top: AppSizeHeight.s13,
+  //             left: AppSizeWidth.s40,
+  //             child: _cloud(120),
+  //           ),
+  //
+  //           // the meadow row: dragon on the grass left, wordmark right
+  //           Row(
+  //             crossAxisAlignment: CrossAxisAlignment.end,
+  //             children: [
+  //               Expanded(
+  //                 flex: 115,
+  //                 child: Align(
+  //                   alignment: Alignment.bottomCenter,
+  //                   child: Padding(
+  //                     padding: EdgeInsets.only(
+  //                       bottom: math.max(20, AppSizeHeight.s6),
+  //                     ),
+  //                     child: FadeTransition(
+  //                       opacity: _fadeAnimation,
+  //                       child: ScaleTransition(
+  //                         scale: _scaleAnimation,
+  //                         child: SizedBox(
+  //                           width: math.max(160, AppSizeWidth.s35),
+  //                           height: math.max(150, AppSizeHeight.s60),
+  //                           child:
+  //                               widget.dragonOverride ??
+  //                               RiveAnimation.asset(
+  //                                 ImageAssets.dragon,
+  //                                 artboard: 'dragon',
+  //                                 controllers: _controllers,
+  //                               ),
+  //                         ),
+  //                       ),
+  //                     ),
+  //                   ),
+  //                 ),
+  //               ),
+  //               Expanded(
+  //                 flex: 100,
+  //                 child: Center(
+  //                   child: Column(
+  //                     mainAxisSize: MainAxisSize.min,
+  //                     children: [
+  //                       Image.asset(
+  //                         'assets/images/app_icon.png',
+  //                         height: math.max(110, AppSizeHeight.s38),
+  //                       ),
+  //                       SizedBox(height: math.max(8, AppSizeHeight.s2)),
+  //                       Container(
+  //                         padding: EdgeInsets.symmetric(
+  //                           horizontal: AppPaddingWidth.p3,
+  //                           vertical: AppPaddingHeight.p_5,
+  //                         ),
+  //                         decoration: BoxDecoration(
+  //                           color: ColorManager.white,
+  //                           borderRadius: BorderRadius.circular(99),
+  //                           boxShadow: const [
+  //                             BoxShadow(
+  //                               color: Color(0x1F000000),
+  //                               blurRadius: 7,
+  //                               offset: Offset(0, 3),
+  //                             ),
+  //                           ],
+  //                         ),
+  //                         child: Text(
+  //                           'Pick a world & colour!',
+  //                           style: TextStyle(
+  //                             color: const Color(0xFF4E7A3C),
+  //                             fontWeight: FontWeight.w900,
+  //                             fontSize: math.max(13, AppSizeHeight.s4),
+  //                           ),
+  //                         ),
+  //                       ),
+  //                       SizedBox(height: math.max(12, AppSizeHeight.s3)),
+  //                       GestureDetector(
+  //                         onTap: _playAndGo,
+  //                         child: _Bouncy(
+  //                           child: Container(
+  //                             width: math.max(180, AppSizeWidth.s26),
+  //                             height: math.max(56, AppSizeHeight.s15),
+  //                             decoration: BoxDecoration(
+  //                               gradient: LinearGradient(
+  //                                 begin: Alignment.topCenter,
+  //                                 end: Alignment.bottomCenter,
+  //                                 colors: [Color(0xFFFFD54F), Color(0xFFFF9800)],
+  //                               ),
+  //                               borderRadius: BorderRadius.circular(99),
+  //                               boxShadow: [
+  //                                 BoxShadow(
+  //                                   color: Color(0x66C86E00),
+  //                                   offset: Offset(0, 6),
+  //                                 ),
+  //                                 BoxShadow(
+  //                                   color: Color(0x4D000000),
+  //                                   blurRadius: 14,
+  //                                   offset: Offset(0, 10),
+  //                                 ),
+  //                               ],
+  //                             ),
+  //                             child: Center(
+  //                               child: Text(
+  //                                 '▶  PLAY',
+  //                                 style: TextStyle(
+  //                                   color: const Color(0xFF7A3C00),
+  //                                   fontWeight: FontWeight.w900,
+  //                                   fontSize: math.max(18, AppSizeHeight.s5),
+  //                                   letterSpacing: 2,
+  //                                 ),
+  //                               ),
+  //                             ),
+  //                           ),
+  //                         ),
+  //                       ),
+  //                     ],
+  //                   ),
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //
+  //           // the confetti burst when PLAY is tapped
+  //           if (_confetti)
+  //             Positioned.fill(
+  //               child: IgnorePointer(
+  //                 child: Lottie.asset(JsonAssets.confetti, fit: BoxFit.cover),
+  //               ),
+  //             ),
+  //
+  //           // mute sticker, top-right
+  //           Positioned(
+  //             top: AppSizeHeight.s3,
+  //             right: AppSizeWidth.s3,
+  //             child: GestureDetector(
+  //               onTap: _toggleMute,
+  //               child: Container(
+  //                 width: math.max(48, AppSizeWidth.s9),
+  //                 height: math.max(48, AppSizeHeight.s12),
+  //                 decoration: BoxDecoration(
+  //                   color: ColorManager.white,
+  //                   shape: BoxShape.circle,
+  //                   boxShadow: [
+  //                     BoxShadow(
+  //                       color: Color(0x33000000),
+  //                       blurRadius: 8,
+  //                       offset: Offset(0, 3),
+  //                     ),
+  //                   ],
+  //                 ),
+  //                 child: Center(
+  //                   child: Text(
+  //                     _muted ? '🔇' : '🔊',
+  //                     style: TextStyle(fontSize: math.max(18, AppSizeHeight.s5)),
+  //                   ),
+  //                 ),
+  //               ),
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //     );
+  //   }
+  //
+  //   /// One soft hill on the horizon.
+  //   Widget _hill(Color color, double w, double h) {
+  //     return Container(
+  //       width: w,
+  //       height: h,
+  //       decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+  //     );
+  //   }
+  //
+  //   /// One quiet cloud.
+  //   Widget _cloud(double w) {
+  //     return Container(
+  //       width: w,
+  //       height: w * 0.32,
+  //       decoration: BoxDecoration(
+  //         color: ColorManager.white.withValues(alpha: 0.8),
+  //         borderRadius: BorderRadius.circular(99),
+  //       ),
+  //     );
+  //   }
 
   /// PLAY: burst the confetti, then open home.
   Future<void> _playAndGo() async {
