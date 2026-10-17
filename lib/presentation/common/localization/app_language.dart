@@ -35,6 +35,12 @@ class AppLanguage {
     LanguageOption('pt', 'Português'),
     LanguageOption('tr', 'Türkçe'),
     LanguageOption('id', 'Bahasa Indonesia'),
+    LanguageOption('it', 'Italiano'),
+    LanguageOption('ru', 'Русский'),
+    LanguageOption('hi', 'हिन्दी'),
+    LanguageOption('zh', '简体中文'),
+    LanguageOption('ja', '日本語'),
+    LanguageOption('ko', '한국어'),
   ];
 
   /// The language code the UI currently uses. MaterialApp listens to this.

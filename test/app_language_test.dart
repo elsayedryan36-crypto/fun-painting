@@ -18,8 +18,8 @@ void main() {
     });
 
     test('falls back to English when the phone language is not supported', () {
-      expect(AppLanguage.resolveDevice(const Locale('ja')), 'en');
-      expect(AppLanguage.resolveDevice(const Locale('zh', 'CN')), 'en');
+      expect(AppLanguage.resolveDevice(const Locale('th')), 'en');
+      expect(AppLanguage.resolveDevice(const Locale('sw', 'KE')), 'en');
     });
 
     test('older Android reports Indonesian as "in"', () {
