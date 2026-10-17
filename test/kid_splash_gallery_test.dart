@@ -35,8 +35,7 @@ void main() {
       // the mute sticker is on stage and toggles
       expect(find.text('🔊'), findsOneWidget);
 
-      // the meadow promises a world to colour and a fat PLAY pill
-      expect(find.text('Pick a world & colour!'), findsOneWidget);
+      // the paint splash shows the mascot card and a bubbly PLAY drop
       expect(find.text('▶  PLAY'), findsOneWidget);
 
       // the mute sticker toggles
