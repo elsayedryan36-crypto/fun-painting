@@ -19,10 +19,11 @@ class GalleryCard extends StatefulWidget {
   final bool isFree;
   final VoidCallback onReturn;
 
-  /// NEW (sticker book): the world colour for the ribbon, and the
-  /// tiny "sticker on the fridge" tilt.
-  final Color ribbonColor;
-  final double tilt;
+  /// NEW (Calm & clean): the world colour for the "Watch to open" pill.
+  /// OLD (sticker book): ribbon colour + tilt —
+  ///   final Color ribbonColor;
+  ///   final double tilt;
+  final Color accentColor;
 
   const GalleryCard({
     super.key,
@@ -31,8 +32,7 @@ class GalleryCard extends StatefulWidget {
     required this.refreshId,
     required this.isFree,
     required this.onReturn,
-    this.ribbonColor = const Color(0xFF344D67),
-    this.tilt = 0,
+    this.accentColor = const Color(0xFF344D67),
   });
 
   @override
@@ -107,81 +107,88 @@ class _GalleryCardState extends State<GalleryCard> {
 
   @override
   Widget build(BuildContext context) {
-    // NEW (sticker book): polaroid frame, coloured ribbon, the picture
-    // keeps its colours when locked (a present, never grey), and a gold
-    // star when the child already coloured it.
+    // NEW (Calm & clean): no frame, no tilt — the picture fills a soft
+    // rounded card edge to edge; locked = soft white veil + gift (never
+    // grey); finished = a small white star chip inside the corner.
     final showLocked = _checkedUnlockState && !_isUnlocked;
     final hasStar = widget.repository.box.containsKey(_imageId);
 
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        GestureDetector(
-          onTap: _isLoadingAd ? null : _handleTap,
-          child: Transform.rotate(
-            angle: widget.tilt,
-            child: Container(
-              decoration: BoxDecoration(
-                color: ColorManager.white,
-                borderRadius: BorderRadius.circular(
-                  math.max(12, AppSizeHeight.s3),
-                ),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x33142846),
-                    blurRadius: 10,
-                    offset: Offset(0, 5),
-                  ),
-                ],
-              ),
-              padding: EdgeInsets.all(math.max(5, AppSizeHeight.s1_5)),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Expanded(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(
-                        math.max(10, AppSizeHeight.s2),
-                      ),
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          Container(
-                            color: ColorManager.white,
-                            child: GallerySvg(
-                              key: ValueKey(
-                                '${widget.item.imagePath}_${widget.refreshId}',
-                              ),
-                              assetName: widget.item.imagePath,
-                              imageId: widget.item.imagePath,
-                              repository: widget.repository,
-                              fillColor: ColorManager.white,
-                              strokeWidth: 5,
-                            ),
-                          ),
-                          if (showLocked) GiftOverlay(isLoading: _isLoadingAd),
-                        ],
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: math.max(4, AppSizeHeight.s1)),
-                  Container(
-                    height: math.max(14, AppSizeHeight.s4),
-                    decoration: BoxDecoration(
-                      color: widget.ribbonColor,
-                      borderRadius: BorderRadius.circular(
-                        math.max(8, AppSizeHeight.s2),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+    return GestureDetector(
+      onTap: _isLoadingAd ? null : _handleTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: ColorManager.white,
+          borderRadius: BorderRadius.circular(math.max(16, AppSizeHeight.s4)),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x26142846),
+              blurRadius: 11,
+              offset: Offset(0, 5),
             ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(math.max(16, AppSizeHeight.s4)),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Container(
+                color: ColorManager.white,
+                child: GallerySvg(
+                  key: ValueKey('${widget.item.imagePath}_${widget.refreshId}'),
+                  assetName: widget.item.imagePath,
+                  imageId: widget.item.imagePath,
+                  repository: widget.repository,
+                  fillColor: ColorManager.white,
+                  strokeWidth: 5,
+                ),
+              ),
+              if (showLocked)
+                GiftOverlay(
+                  isLoading: _isLoadingAd,
+                  pillColor: widget.accentColor,
+                ),
+              if (hasStar)
+                const Positioned(top: 6, right: 6, child: StarBadge()),
+            ],
           ),
         ),
-        if (hasStar) const Positioned(top: -6, right: -6, child: StarBadge()),
-      ],
+      ),
     );
+
+    // OLD (sticker book: polaroid frame + ribbon + tilt, kept commented
+    // per the release rule):
+    // return Stack(
+    //   clipBehavior: Clip.none,
+    //   children: [
+    //     GestureDetector(
+    //       onTap: _isLoadingAd ? null : _handleTap,
+    //       child: Transform.rotate(
+    //         angle: widget.tilt,
+    //         child: Container(
+    //           decoration: BoxDecoration(
+    //             color: ColorManager.white,
+    //             borderRadius: BorderRadius.circular(math.max(12, AppSizeHeight.s3)),
+    //             boxShadow: const [BoxShadow(color: Color(0x33142846),
+    //               blurRadius: 10, offset: Offset(0, 5))],
+    //           ),
+    //           padding: EdgeInsets.all(math.max(5, AppSizeHeight.s1_5)),
+    //           child: Column(
+    //             crossAxisAlignment: CrossAxisAlignment.stretch,
+    //             children: [
+    //               Expanded(child: ClipRRect(... GallerySvg ... ,
+    //                 if (showLocked) GiftOverlay(isLoading: _isLoadingAd))),
+    //               SizedBox(height: math.max(4, AppSizeHeight.s1)),
+    //               Container(height: math.max(14, AppSizeHeight.s4),
+    //                 decoration: BoxDecoration(color: widget.ribbonColor, ...)),
+    //             ],
+    //           ),
+    //         ),
+    //       ),
+    //     ),
+    //     if (hasStar) const Positioned(top: -6, right: -6, child: StarBadge()),
+    //   ],
+    // );
 
     // OLD (locked = greyscale + grey veil + tiny corner gift badge):
     // return GestureDetector(

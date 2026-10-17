@@ -15,15 +15,18 @@ import '../common/widgets/banner_ad_widget.dart' show BannerAdWidget;
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 import '../home/Widgets/kid_home_shelf.dart';
-import '../home/Widgets/jungle.dart' show CardLottieThumb;
+// OLD (Lottie wallpaper round): import '../home/Widgets/jungle.dart' show CardLottieThumb;
 import 'widgets/gallery_preloader.dart';
 import 'widgets/kid_gallery_widgets.dart';
 
-/// Stickers per gallery page — 4 or 6:
-/// 2 columns × 3 rows = 6 on a tall screen (a phone held upright),
-/// 2 × 2 = 4 when the screen is short or wide (landscape, tablet).
+/// Stickers per gallery page: always 6 (the app is locked to landscape,
+/// where they sit 3 × 2; upright they would sit 2 × 3).
 /// Top-level so tests can pin the rule down.
-int galleryPerPage(Size size) => size.height >= size.width ? 6 : 4;
+int galleryPerPage(Size size) => 6;
+
+/// How many columns those 6 stickers sit in: 3 on a wide screen
+/// (landscape — the app's real orientation), 2 on a tall one.
+int galleryColumns(Size size) => size.width >= size.height ? 3 : 2;
 
 class GalleryPage extends StatefulWidget {
   final int listName;
@@ -98,61 +101,66 @@ class _GalleryPageState extends State<GalleryPage> with RouteAware {
       );
     }
     final items = GalleryCollectionHelper.getItems(context, widget.listName);
-    // 4 or 6 per page, decided by the screen shape (see galleryPerPage).
+    // NEW (Calm & clean): 6 per page; 3 × 2 in landscape, 2 × 3 upright.
     final perPage = galleryPerPage(MediaQuery.sizeOf(context));
-    final rows = perPage ~/ 2;
+    final cols = galleryColumns(MediaQuery.sizeOf(context));
+    final rows = perPage ~/ cols;
     final totalPages = (items.length / perPage).ceil();
     final meta = widget.listName < kWorldMeta.length
         ? kWorldMeta[widget.listName]
         : null;
+    final worldColor = meta?.color ?? ColorManager.darkPrimary;
 
-    // NEW (sticker book): the page lives inside its own world's calm
-    // colour; polaroid cards; present-not-grey locking; gold stars.
+    // NEW (Calm & clean): flat pastel page in the world's own colour,
+    // two soft blobs, no animation behind the cards.
     return Scaffold(
       backgroundColor: ColorManager.lightPrimary,
       body: SafeArea(
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // the world's calm tint, always underneath
-            Container(
-              color: (meta?.color ?? ColorManager.lightPrimary).withValues(
-                alpha: 0.35,
+            // the calm base: white + a whisper of the world colour
+            Positioned.fill(
+              child: ColoredBox(
+                color: Color.alphaBlend(
+                  worldColor.withValues(alpha: 0.07),
+                  const Color(0xFFF7FAF6),
+                ),
               ),
             ),
-            // NEW: the world's own Lottie is the wallpaper now — the jpg
-            // backgrounds were retired when the worlds became Lotties.
-            if (meta?.lottie != null)
-              CardLottieThumb(
-                asset: meta!.lottie!,
-                frames: meta.frames,
-                loop: true,
-                fit: BoxFit.cover,
-              ),
-            // OLD (kept commented per the release rule — this quick edit
-            // would crash: Image.asset on an emoji is not an asset path):
-            // if (meta?.frames != null)
-            //   Image.asset(
-            //     meta!.emoji,
+            // two soft blobs, barely there
+            Positioned(top: -70, right: -60, child: _blob(worldColor, 210)),
+            Positioned(bottom: 20, left: -55, child: _blob(worldColor, 160)),
+            // OLD (Lottie wallpaper round — too busy behind the cards,
+            // kept commented per the release rule):
+            // Container(
+            //   color: (meta?.color ?? ColorManager.lightPrimary)
+            //       .withValues(alpha: 0.35),
+            // ),
+            // if (meta?.lottie != null)
+            //   CardLottieThumb(
+            //     asset: meta!.lottie!,
+            //     frames: meta.frames,
+            //     loop: true,
             //     fit: BoxFit.cover,
-            //     width: double.infinity,
-            //     height: double.infinity,
-            //   )
-            // else
-            //   Container(
-            //     color: (meta?.color ?? ColorManager.lightPrimary).withValues(
-            //       alpha: 0.35,
-            //     ),
             //   ),
             Column(
               children: [
-                WorldBanner(
+                GalleryTopBar(
                   emoji: meta?.emoji ?? '🎨',
                   name: meta?.name ?? 'Pictures',
                   count: items.length,
-                  color: meta?.color ?? ColorManager.darkPrimary,
+                  color: worldColor,
                   onHome: () => Navigator.pop(context),
                 ),
+                // OLD (sticker-book banner, kept per the rule):
+                // WorldBanner(
+                //   emoji: meta?.emoji ?? '🎨',
+                //   name: meta?.name ?? 'Pictures',
+                //   count: items.length,
+                //   color: meta?.color ?? ColorManager.darkPrimary,
+                //   onHome: () => Navigator.pop(context),
+                // ),
                 Expanded(
                   child: PageView.builder(
                     controller: _pageController,
@@ -174,8 +182,8 @@ class _GalleryPageState extends State<GalleryPage> with RouteAware {
                           final cellW =
                               (box.maxWidth -
                                   AppPaddingWidth.p3 * 2 -
-                                  spacing) /
-                              2;
+                                  spacing * (cols - 1)) /
+                              cols;
                           final cellH =
                               (box.maxHeight -
                                   AppPaddingHeight.p1 * 2 -
@@ -191,7 +199,7 @@ class _GalleryPageState extends State<GalleryPage> with RouteAware {
                             itemCount: pageItems.length,
                             gridDelegate:
                                 SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
+                                  crossAxisCount: cols,
                                   childAspectRatio: aspect,
                                   crossAxisSpacing: spacing,
                                   mainAxisSpacing: spacing,
@@ -218,9 +226,11 @@ class _GalleryPageState extends State<GalleryPage> with RouteAware {
                                   });
                                 },
                                 isFree: isFree,
-                                ribbonColor:
-                                    meta?.color ?? ColorManager.darkPrimary,
-                                tilt: _tilts[index % _tilts.length],
+                                accentColor: worldColor,
+                                // OLD (sticker book): ribbonColor + tilt
+                                // ribbonColor:
+                                //     meta?.color ?? ColorManager.darkPrimary,
+                                // tilt: _tilts[index % _tilts.length],
                               );
                             },
                           );
@@ -274,16 +284,24 @@ class _GalleryPageState extends State<GalleryPage> with RouteAware {
     );
   }
 
-  // Six tilts now, one per sticker on a 2×3 page.
-  // OLD: static const List<double> _tilts = [-0.02, 0.016, 0.012, -0.014];
-  static const List<double> _tilts = [
-    -0.02,
-    0.016,
-    0.012,
-    -0.014,
-    0.018,
-    -0.011,
-  ];
+  // OLD (sticker book: six tilts, one per tilted polaroid — Calm & clean
+  // lays the cards straight, kept commented per the release rule):
+  // static const List<double> _tilts = [-0.02, 0.016, 0.012, -0.014];
+  // static const List<double> _tilts = [
+  //   -0.02, 0.016, 0.012, -0.014, 0.018, -0.011,
+  // ];
+
+  /// One of the two barely-there background blobs.
+  Widget _blob(Color worldColor, double size) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: worldColor.withValues(alpha: 0.06),
+        shape: BoxShape.circle,
+      ),
+    );
+  }
 
   Widget _buildWoodShelfAd() {
     return Container(
