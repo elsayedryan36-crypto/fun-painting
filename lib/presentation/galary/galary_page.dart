@@ -15,8 +15,15 @@ import '../common/widgets/banner_ad_widget.dart' show BannerAdWidget;
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 import '../home/Widgets/kid_home_shelf.dart';
+import '../home/Widgets/jungle.dart' show CardLottieThumb;
 import 'widgets/gallery_preloader.dart';
 import 'widgets/kid_gallery_widgets.dart';
+
+/// Stickers per gallery page — 4 or 6:
+/// 2 columns × 3 rows = 6 on a tall screen (a phone held upright),
+/// 2 × 2 = 4 when the screen is short or wide (landscape, tablet).
+/// Top-level so tests can pin the rule down.
+int galleryPerPage(Size size) => size.height >= size.width ? 6 : 4;
 
 class GalleryPage extends StatefulWidget {
   final int listName;
@@ -35,7 +42,9 @@ class _GalleryPageState extends State<GalleryPage> with RouteAware {
   // and used by the old arrows/dots. SmoothPageIndicator tracks it now.
   // int _currentPage = 0;
 
-  static const int _itemsPerPage = 4; // OLD: 6;
+  // OLD (kept commented per the release rule): one fixed count for every
+  // screen. Now galleryPerPage() picks 6 upright / 4 in landscape.
+  // static const int _itemsPerPage = 4; // OLD: 6;
   bool _loading = true;
 
   @override
@@ -89,7 +98,10 @@ class _GalleryPageState extends State<GalleryPage> with RouteAware {
       );
     }
     final items = GalleryCollectionHelper.getItems(context, widget.listName);
-    final totalPages = (items.length / _itemsPerPage).ceil();
+    // 4 or 6 per page, decided by the screen shape (see galleryPerPage).
+    final perPage = galleryPerPage(MediaQuery.sizeOf(context));
+    final rows = perPage ~/ 2;
+    final totalPages = (items.length / perPage).ceil();
     final meta = widget.listName < kWorldMeta.length
         ? kWorldMeta[widget.listName]
         : null;
@@ -102,19 +114,36 @@ class _GalleryPageState extends State<GalleryPage> with RouteAware {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            if (meta?.frames != null)
-              Image.asset(
-                meta!.emoji,
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: double.infinity,
-              )
-            else
-              Container(
-                color: (meta?.color ?? ColorManager.lightPrimary).withValues(
-                  alpha: 0.35,
-                ),
+            // the world's calm tint, always underneath
+            Container(
+              color: (meta?.color ?? ColorManager.lightPrimary).withValues(
+                alpha: 0.35,
               ),
+            ),
+            // NEW: the world's own Lottie is the wallpaper now — the jpg
+            // backgrounds were retired when the worlds became Lotties.
+            if (meta?.lottie != null)
+              CardLottieThumb(
+                asset: meta!.lottie!,
+                frames: meta.frames,
+                loop: true,
+                fit: BoxFit.cover,
+              ),
+            // OLD (kept commented per the release rule — this quick edit
+            // would crash: Image.asset on an emoji is not an asset path):
+            // if (meta?.frames != null)
+            //   Image.asset(
+            //     meta!.emoji,
+            //     fit: BoxFit.cover,
+            //     width: double.infinity,
+            //     height: double.infinity,
+            //   )
+            // else
+            //   Container(
+            //     color: (meta?.color ?? ColorManager.lightPrimary).withValues(
+            //       alpha: 0.35,
+            //     ),
+            //   ),
             Column(
               children: [
                 WorldBanner(
@@ -131,42 +160,69 @@ class _GalleryPageState extends State<GalleryPage> with RouteAware {
                     // OLD: setState(() => _currentPage = index);
                     onPageChanged: (_) {},
                     itemBuilder: (_, pageIndex) {
-                      final start = pageIndex * _itemsPerPage;
-                      final end = (start + _itemsPerPage > items.length)
+                      final start = pageIndex * perPage;
+                      final end = (start + perPage > items.length)
                           ? items.length
-                          : start + _itemsPerPage;
+                          : start + perPage;
                       final pageItems = items.sublist(start, end);
-                      return GridView.builder(
-                        physics: const NeverScrollableScrollPhysics(),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: AppPaddingWidth.p3,
-                          vertical: AppPaddingHeight.p1,
-                        ),
-                        itemCount: pageItems.length,
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              childAspectRatio: 0.95,
-                              crossAxisSpacing: 10,
-                              mainAxisSpacing: 10,
+                      // NEW: the grid measures its page and sizes the cells
+                      // so 2×3 (or 2×2) always fit exactly — no squashed or
+                      // clipped polaroids on any screen.
+                      return LayoutBuilder(
+                        builder: (context, box) {
+                          const spacing = 10.0;
+                          final cellW =
+                              (box.maxWidth -
+                                  AppPaddingWidth.p3 * 2 -
+                                  spacing) /
+                              2;
+                          final cellH =
+                              (box.maxHeight -
+                                  AppPaddingHeight.p1 * 2 -
+                                  spacing * (rows - 1)) /
+                              rows;
+                          final aspect = cellH > 0 ? cellW / cellH : 0.95;
+                          return GridView.builder(
+                            physics: const NeverScrollableScrollPhysics(),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: AppPaddingWidth.p3,
+                              vertical: AppPaddingHeight.p1,
                             ),
-                        itemBuilder: (_, index) {
-                          final globalIndex = start + index;
-                          final isFree = globalIndex < 6;
-                          return GalleryCard(
-                            item: pageItems[index],
-                            repository: repository,
-                            refreshId: _refreshId,
-                            onReturn: () {
-                              if (!mounted) return;
-                              setState(() {
-                                _refreshId++;
-                              });
+                            itemCount: pageItems.length,
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 2,
+                                  childAspectRatio: aspect,
+                                  crossAxisSpacing: spacing,
+                                  mainAxisSpacing: spacing,
+                                ),
+                            // OLD (kept commented per the release rule):
+                            // gridDelegate:
+                            //     const SliverGridDelegateWithFixedCrossAxisCount(
+                            //       crossAxisCount: 2,
+                            //       childAspectRatio: 0.95,
+                            //       crossAxisSpacing: 10,
+                            //       mainAxisSpacing: 10,
+                            //     ),
+                            itemBuilder: (_, index) {
+                              final globalIndex = start + index;
+                              final isFree = globalIndex < 6;
+                              return GalleryCard(
+                                item: pageItems[index],
+                                repository: repository,
+                                refreshId: _refreshId,
+                                onReturn: () {
+                                  if (!mounted) return;
+                                  setState(() {
+                                    _refreshId++;
+                                  });
+                                },
+                                isFree: isFree,
+                                ribbonColor:
+                                    meta?.color ?? ColorManager.darkPrimary,
+                                tilt: _tilts[index % _tilts.length],
+                              );
                             },
-                            isFree: isFree,
-                            ribbonColor:
-                                meta?.color ?? ColorManager.darkPrimary,
-                            tilt: _tilts[index % _tilts.length],
                           );
                         },
                       );
@@ -218,7 +274,16 @@ class _GalleryPageState extends State<GalleryPage> with RouteAware {
     );
   }
 
-  static const List<double> _tilts = [-0.02, 0.016, 0.012, -0.014];
+  // Six tilts now, one per sticker on a 2×3 page.
+  // OLD: static const List<double> _tilts = [-0.02, 0.016, 0.012, -0.014];
+  static const List<double> _tilts = [
+    -0.02,
+    0.016,
+    0.012,
+    -0.014,
+    0.018,
+    -0.011,
+  ];
 
   Widget _buildWoodShelfAd() {
     return Container(
