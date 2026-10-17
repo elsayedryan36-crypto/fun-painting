@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fun_painting/presentation/common/localization/app_language.dart';
 import 'package:flutter_svg/svg.dart';
 
 import '../../common/resources/assets_manager.dart';
@@ -244,7 +245,8 @@ class VerticalToolPaletteWidget extends StatelessWidget {
                     color: ColorManager.white,
                     child: Center(
                       child: Text(
-                        'Stamp',
+                        tr('stamp'),
+                        // 'Stamp',
                         style: TextStyle(
                           fontSize: 10,
                           color: ColorManager.darkPrimary,

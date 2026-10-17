@@ -88,6 +88,7 @@ import 'package:fun_painting/presentation/common/resources/color_manager.dart';
 import 'package:sizer/sizer.dart';
 
 import 'app/app.dart';
+import 'presentation/common/localization/app_language.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -109,6 +110,9 @@ Future<void> main() async {
       systemNavigationBarIconBrightness: Brightness.light,
     ),
   );
+
+  // NEW: choose the language (saved choice, else the phone's, else English).
+  await AppLanguage.load();
 
   // Start initialization in the background.
   // We do NOT await it here, so Flutter can show the SplashScreen immediately.

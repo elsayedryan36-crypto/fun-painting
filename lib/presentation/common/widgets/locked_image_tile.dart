@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fun_painting/presentation/common/localization/app_language.dart';
 
 import '../../../data/services/rewarded_ad_service.dart';
 
@@ -49,8 +50,9 @@ class _LockedImageTileState extends State<LockedImageTile> {
 
     if (!success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Ad not ready yet — try again in a moment.'),
+        SnackBar(
+          content: Text(tr('ad_not_ready')),
+          // content: Text('Ad not ready yet — try again in a moment.'),
         ),
       );
     }
@@ -99,11 +101,12 @@ class _LockedImageTileState extends State<LockedImageTile> {
                     ? const CircularProgressIndicator(color: Colors.white)
                     : Column(
                         mainAxisSize: MainAxisSize.min,
-                        children: const [
+                        children: [
                           Icon(Icons.lock, color: Colors.white, size: 28),
                           SizedBox(height: 4),
                           Text(
-                            'Watch to unlock',
+                            tr('watch_to_unlock'),
+                            // 'Watch to unlock',
                             style: TextStyle(color: Colors.white, fontSize: 12),
                           ),
                         ],

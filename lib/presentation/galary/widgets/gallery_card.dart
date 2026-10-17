@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:fun_painting/presentation/common/localization/app_language.dart';
 import 'package:fun_painting/presentation/galary/widgets/gallery_svg.dart';
 import 'package:fun_painting/presentation/galary/widgets/kid_gallery_widgets.dart';
 
@@ -98,8 +99,9 @@ class _GalleryCardState extends State<GalleryCard> {
       _openPainting();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Ad not ready yet — try again in a moment.'),
+        SnackBar(
+          content: Text(tr('ad_not_ready')),
+          // content: Text('Ad not ready yet — try again in a moment.'),
         ),
       );
     }

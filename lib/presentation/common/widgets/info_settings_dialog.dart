@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:fun_painting/presentation/common/localization/app_language.dart';
+import 'package:fun_painting/presentation/common/resources/routs_manager.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:font_awesome_icon_class/font_awesome_icon_class.dart';
 import 'package:fun_painting/presentation/common/resources/color_manager.dart';
@@ -34,6 +36,57 @@ class _InfoSettingsDialogState extends State<InfoSettingsDialog> {
     _volume = widget.initialVolume;
   }
 
+  /// NEW: a row of language chips, each shown in its own language.
+  Widget _languageSection(BuildContext context) {
+    return ValueListenableBuilder<String>(
+      valueListenable: AppLanguage.current,
+      builder: (context, selected, _) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              tr('language'),
+              style: TextStyle(
+                fontSize: FontSize.s18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 6),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  for (final option in AppLanguage.options)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: ChoiceChip(
+                        key: ValueKey('language_${option.code}'),
+                        label: Text(option.nativeName),
+                        selected: option.code == selected,
+                        selectedColor: ColorManager.gold,
+                        onSelected: (_) => _pickLanguage(context, option.code),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// NEW: switch language, then restart the screens from home in the new language.
+  Future<void> _pickLanguage(BuildContext context, String code) async {
+    if (code == AppLanguage.current.value) return;
+    await AppLanguage.select(code);
+    if (!context.mounted) return;
+    Navigator.of(
+      context,
+      rootNavigator: true,
+    ).pushNamedAndRemoveUntil(Routes.homeRoute, (_) => false);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -59,7 +112,8 @@ class _InfoSettingsDialogState extends State<InfoSettingsDialog> {
                 children: [
                   // SizedBox(child: Expanded(child: Container())),
                   Text(
-                    'Sound',
+                    tr('sound'),
+                    // 'Sound',
                     style: TextStyle(
                       fontSize: FontSize.s18,
                       fontWeight: FontWeight.bold,
@@ -114,6 +168,11 @@ class _InfoSettingsDialogState extends State<InfoSettingsDialog> {
                 ),
               ),
 
+              // ---------------- LANGUAGE ----------------
+              // NEW: pick the app language; the choice is remembered.
+              _languageSection(context),
+              SizedBox(height: AppSizeHeight.s2),
+
               Center(
                 child: SizedBox(
                   height: AppSizeHeight.s10,
@@ -122,8 +181,9 @@ class _InfoSettingsDialogState extends State<InfoSettingsDialog> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      const Text(
-                        'Contact us',
+                      Text(
+                        tr('contact_us'),
+                        // 'Contact us',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -179,7 +239,8 @@ class _InfoSettingsDialogState extends State<InfoSettingsDialog> {
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Cannot open email app')));
+      ).showSnackBar(SnackBar(content: Text(tr('cannot_open_email'))));
+      // ).showSnackBar(const SnackBar(content: Text('Cannot open email app')));
     }
   }
 
@@ -202,7 +263,8 @@ class _InfoSettingsDialogState extends State<InfoSettingsDialog> {
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Cannot open WhatsApp')));
+      ).showSnackBar(SnackBar(content: Text(tr('cannot_open_whatsapp'))));
+      // ).showSnackBar(const SnackBar(content: Text('Cannot open WhatsApp')));
     }
   }
 }

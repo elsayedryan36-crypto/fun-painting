@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:fun_painting/presentation/common/localization/app_language.dart';
 
 import '../../common/resources/color_manager.dart';
 import 'kid_layout.dart';
@@ -117,7 +118,8 @@ class KidCrayonBubble extends StatelessWidget {
       key: const Key('kid_crayon_bubble'),
       size: side,
       selected: open,
-      tooltip: 'Colours',
+      tooltip: tr('colours'),
+      // tooltip: 'Colours',
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fun_painting/presentation/common/localization/app_language.dart';
 
 import '../../common/resources/color_manager.dart';
 import '../models/brush_size.dart';
@@ -236,7 +237,8 @@ class KidColorStrip extends StatelessWidget {
               onTap: onMore,
               selected: moreOpen,
               faceColor: const Color(0xFFFFE082),
-              tooltip: 'All colours',
+              tooltip: tr('all_colours'),
+              // tooltip: 'All colours',
               child: Icon(
                 moreOpen ? Icons.keyboard_arrow_down_rounded : Icons.add,
                 color: ColorManager.darkPrimary,
@@ -315,7 +317,7 @@ class KidSizeChips extends StatelessWidget {
         key: Key('kid_brush_size_${size.name}'),
         onTap: () => onChanged(size),
         selected: size == selected,
-        tooltip: size.label,
+        tooltip: trName(size.label),
         child: Container(
           width: size.dotDiameter,
           height: size.dotDiameter,

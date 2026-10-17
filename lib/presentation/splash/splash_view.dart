@@ -182,6 +182,7 @@
 import 'dart:math' as math;
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:fun_painting/presentation/common/localization/app_language.dart';
 import 'package:lottie/lottie.dart';
 import 'package:rive/rive.dart' hide Image, LinearGradient;
 
@@ -477,7 +478,7 @@ class _SplashScreenState extends State<SplashScreen>
                             ],
                           ),
                           child: Text(
-                            '▶  PLAY',
+                            '▶  ${tr('play')}',
                             style: TextStyle(
                               color: ColorManager.white,
                               fontWeight: FontWeight.w900,

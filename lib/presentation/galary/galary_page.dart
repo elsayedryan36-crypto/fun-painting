@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:fun_painting/presentation/common/localization/app_language.dart';
 import 'package:fun_painting/presentation/common/resources/color_manager.dart';
 import 'package:fun_painting/presentation/galary/helpers/gallery_collection_helper.dart';
 import 'package:fun_painting/presentation/galary/widgets/gallery_card.dart';
@@ -148,7 +149,8 @@ class _GalleryPageState extends State<GalleryPage> with RouteAware {
               children: [
                 GalleryTopBar(
                   emoji: meta?.emoji ?? '🎨',
-                  name: meta?.name ?? 'Pictures',
+                  name: trName(meta?.name ?? 'Pictures'),
+                  // (world + 'Pictures' names are translated for display)
                   count: items.length,
                   color: worldColor,
                   onHome: () => Navigator.pop(context),

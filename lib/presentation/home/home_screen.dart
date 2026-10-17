@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:fun_painting/presentation/common/localization/app_language.dart';
 import 'package:flutter/material.dart';
 import 'package:fun_painting/data/services/review_service.dart';
 import 'package:fun_painting/presentation/common/widgets/rate_wedgit_home.dart';
@@ -263,7 +264,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               ),
               SizedBox(width: AppPaddingWidth.p2),
               Text(
-                'pick your world!',
+                tr('pick_your_world'),
+                // 'pick your world!',
                 style: TextStyle(
                   color: ColorManager.darkPrimary,
                   fontWeight: FontWeight.w900,

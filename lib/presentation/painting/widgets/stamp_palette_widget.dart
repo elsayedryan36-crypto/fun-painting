@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fun_painting/presentation/common/localization/app_language.dart';
 import 'package:flutter_svg/svg.dart';
 
 import '../../common/resources/color_manager.dart';
@@ -34,7 +35,7 @@ class StampPaletteWidget extends StatelessWidget {
           child: Column(
             children: [
               Text(
-                'Stamp Size: ${stampSize.round()}',
+                tr('stamp_size', {'size': '${stampSize.round()}'}),
                 style: TextStyle(color: Colors.black, fontSize: 15),
               ),
               Slider(

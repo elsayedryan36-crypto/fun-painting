@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fun_painting/presentation/common/localization/app_language.dart';
 
 import '../../common/resources/color_manager.dart';
 
@@ -26,7 +27,8 @@ Future<bool> showClearAllDialog(BuildContext context) async {
               const Text('🧽', style: TextStyle(fontSize: 44)),
               const SizedBox(height: 6),
               Text(
-                'Erase everything?',
+                tr('erase_everything_q'),
+                // 'Erase everything?',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 26,
@@ -35,8 +37,9 @@ Future<bool> showClearAllDialog(BuildContext context) async {
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'All the colours and drawings on this page will be gone.',
+              Text(
+                tr('erase_body'),
+                // 'All the colours and drawings on this page will be gone.',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 18, height: 1.3),
               ),
@@ -45,7 +48,8 @@ Future<bool> showClearAllDialog(BuildContext context) async {
                 children: [
                   Expanded(
                     child: _KidDialogButton(
-                      label: 'Keep painting',
+                      label: tr('keep_painting'),
+                      // label: 'Keep painting',
                       icon: Icons.brush_rounded,
                       onTap: () => Navigator.of(dialogContext).pop(false),
                     ),
@@ -53,7 +57,8 @@ Future<bool> showClearAllDialog(BuildContext context) async {
                   const SizedBox(width: 12),
                   Expanded(
                     child: _KidDialogButton(
-                      label: 'Erase all',
+                      label: tr('erase_all'),
+                      // label: 'Erase all',
                       icon: Icons.delete_forever_rounded,
                       danger: true,
                       onTap: () => Navigator.of(dialogContext).pop(true),

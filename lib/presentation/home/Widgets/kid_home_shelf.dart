@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:fun_painting/presentation/common/localization/app_language.dart';
 
 import '../../common/local_data/Class.dart';
 import '../../common/resources/color_manager.dart';
@@ -204,7 +205,8 @@ class WorldCard extends StatelessWidget {
 
     return Semantics(
       button: true,
-      label: slot.isHero ? 'Free draw' : slot.meta!.name,
+      label: slot.isHero ? tr('free_draw') : trName(slot.meta!.name),
+      // label: slot.isHero ? 'Free draw' : slot.meta!.name,
       child: GestureDetector(
         onTap: onTap,
         child: Transform.rotate(
@@ -267,7 +269,8 @@ class WorldCard extends StatelessWidget {
               style: TextStyle(fontSize: math.max(30, AppSizeHeight.s9)),
             ),
             Text(
-              'FREE DRAW!',
+              tr('free_draw_upper'),
+              // 'FREE DRAW!',
               style: TextStyle(
                 fontSize: math.max(16, AppSizeHeight.s4),
                 fontWeight: FontWeight.w900,
@@ -304,7 +307,8 @@ class WorldCard extends StatelessWidget {
           const SizedBox(width: 6),
           Flexible(
             child: Text(
-              slot.isHero ? 'FREE DRAW!' : meta!.name,
+              slot.isHero ? tr('free_draw_upper') : trName(meta!.name),
+              // slot.isHero ? 'FREE DRAW!' : meta!.name,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: ColorManager.white,
