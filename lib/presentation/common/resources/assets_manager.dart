@@ -71,6 +71,7 @@ class JsonAssets {
   static const String home = '$jsonPath/home.json';
   static const String loader = '$jsonPath/Loader.json';
   static const String setting = '$jsonPath/setting.json';
+  static const String confetti = '$jsonPath/Confetti.json';
 }
 
 ////////////////////////////////// pattern Images////////////////////////////
