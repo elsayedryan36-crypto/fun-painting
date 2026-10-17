@@ -1,3 +1,93 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:fun_painting/presentation/common/local_data/Class.dart';
+import 'package:fun_painting/presentation/home/Widgets/kid_home_shelf.dart';
+import 'package:sizer/sizer.dart';
+
+// The "pick your world" shelf, rebuilt for the Lottie cards (commit
+// b6dc5b3). Data-layer promises only — the animation files themselves are
+// checked by lottie_card_test.dart, and mounting them needs a real device.
+
+void main() {
+  group('the shelf data', () {
+    test('eleven worlds, each with a name, an emoji, a colour, a Lottie', () {
+      expect(kWorldMeta.length, 11);
+      for (final m in kWorldMeta) {
+        expect(m.name, isNotEmpty);
+        expect(m.emoji, isNotEmpty);
+        expect(m.lottie, isNotNull, reason: '${m.name} lost its Lottie');
+      }
+      expect(kWorldMeta.first.name, 'Zoo');
+      expect(kWorldMeta.last.name, 'Numbers');
+    });
+
+    test('Free Draw is the hero at slot 1, worlds keep their order', () {
+      final items = List.generate(
+        12,
+        (i) => Collections(imagePath: 'v$i', onTap: () async {}),
+      );
+      final slots = buildShelfSlots(items);
+      expect(slots, hasLength(12));
+      expect(slots.first.isHero, isTrue);
+      expect(slots.first.item.imagePath, 'v11');
+      expect(slots[1].meta?.name, 'Zoo');
+      expect(slots.last.meta?.name, 'Numbers');
+    });
+
+    test('the shelf becomes four pages of three stickers', () {
+      final items = List.generate(
+        12,
+        (i) => Collections(imagePath: 'v$i', onTap: () async {}),
+      );
+      final pages = chunkShelf(buildShelfSlots(items), 3);
+      expect(pages, hasLength(4));
+      for (final p in pages) {
+        expect(p, hasLength(3));
+      }
+    });
+  });
+
+  group('the sticker card', () {
+    testWidgets('shows its name plate and opens its world on tap', (
+      tester,
+    ) async {
+      var opened = 0;
+      final slot = ShelfSlot(
+        Collections(imagePath: 'zoo1', onTap: () async {}),
+        kWorldMeta.first,
+        0.01,
+      );
+      await tester.pumpWidget(
+        Sizer(
+          builder: (_, __, ___) => MaterialApp(
+            home: Scaffold(
+              body: SizedBox(
+                width: 200,
+                height: 240,
+                child: WorldCard(
+                  slot: slot,
+                  thumb: const ColoredBox(color: Color(0xFF3D9142)),
+                  onTap: () => opened++,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Zoo'), findsOneWidget);
+      expect(find.text('🦁'), findsWidgets);
+
+      await tester.tap(find.text('Zoo'));
+      expect(opened, 1);
+    });
+  });
+}
+
+// ------------------------------------------------------------------
+// OLD tests (kept commented per the release rule) — written for the
+// pre-Lottie shelf (jpg art, video thumbs, the `meta.art` fallback):
+// ------------------------------------------------------------------
 // import 'package:flutter/material.dart';
 // import 'package:flutter_test/flutter_test.dart';
 // import 'package:fun_painting/presentation/common/local_data/Class.dart';

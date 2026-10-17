@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fun_painting/presentation/galary/galary_page.dart'
+    show galleryPerPage;
 import 'package:fun_painting/presentation/galary/widgets/kid_gallery_widgets.dart';
 import 'package:fun_painting/presentation/splash/splash_view.dart';
 import 'package:sizer/sizer.dart';
@@ -40,6 +42,15 @@ void main() {
 
       // let the auto-navigation run; it must not throw
       await tester.pump(const Duration(milliseconds: 700));
+    });
+  });
+
+  group('4 or 6 stickers per page', () {
+    test('a tall phone page holds six, a wide page holds four', () {
+      expect(galleryPerPage(const Size(360, 800)), 6); // phone, upright
+      expect(galleryPerPage(const Size(412, 915)), 6); // big phone, upright
+      expect(galleryPerPage(const Size(800, 360)), 4); // landscape
+      expect(galleryPerPage(const Size(600, 600)), 6); // square counts as tall
     });
   });
 
