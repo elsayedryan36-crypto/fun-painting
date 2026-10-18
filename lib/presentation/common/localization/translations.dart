@@ -81,6 +81,7 @@ const Map<String, Map<String, String>> kTranslations = {
     'background_music': 'Background music',
     'brush_sounds': 'Brush sounds',
     'close': 'Close',
+    'rate_app': 'Rate the app',
   },
   'ar': {
     'pick_your_world': 'اختر عالمك!',
@@ -156,6 +157,7 @@ const Map<String, Map<String, String>> kTranslations = {
     'background_music': 'موسيقى الخلفية',
     'brush_sounds': 'أصوات الفرشاة',
     'close': 'إغلاق',
+    'rate_app': 'قيّم التطبيق',
   },
   'fr': {
     'pick_your_world': 'choisis ton monde !',
@@ -234,6 +236,7 @@ const Map<String, Map<String, String>> kTranslations = {
     'background_music': 'Musique de fond',
     'brush_sounds': 'Sons des outils',
     'close': 'Fermer',
+    'rate_app': 'Noter l\'application',
   },
   'es': {
     'pick_your_world': '¡elige tu mundo!',
@@ -310,6 +313,7 @@ const Map<String, Map<String, String>> kTranslations = {
     'background_music': 'Música de fondo',
     'brush_sounds': 'Sonidos de pincel',
     'close': 'Cerrar',
+    'rate_app': 'Calificar la app',
   },
   'de': {
     'pick_your_world': 'Wähle deine Welt!',
@@ -390,6 +394,7 @@ const Map<String, Map<String, String>> kTranslations = {
     'background_music': 'Hintergrundmusik',
     'brush_sounds': 'Pinselgeräusche',
     'close': 'Schließen',
+    'rate_app': 'App bewerten',
   },
   'pt': {
     'pick_your_world': 'escolha seu mundo!',
@@ -468,6 +473,7 @@ const Map<String, Map<String, String>> kTranslations = {
     'background_music': 'Música de fundo',
     'brush_sounds': 'Sons dos pincéis',
     'close': 'Fechar',
+    'rate_app': 'Avaliar o app',
   },
   'tr': {
     'pick_your_world': 'dünyanı seç!',
@@ -544,6 +550,7 @@ const Map<String, Map<String, String>> kTranslations = {
     'background_music': 'Arka plan müziği',
     'brush_sounds': 'Fırça sesleri',
     'close': 'Kapat',
+    'rate_app': 'Uygulamayı puanla',
   },
   'id': {
     'pick_your_world': 'pilih duniamu!',
@@ -620,6 +627,7 @@ const Map<String, Map<String, String>> kTranslations = {
     'background_music': 'Musik latar',
     'brush_sounds': 'Suara kuas',
     'close': 'Tutup',
+    'rate_app': 'Nilai aplikasi',
   },
   'it': {
     'pick_your_world': 'scegli il tuo mondo!',
@@ -697,6 +705,7 @@ const Map<String, Map<String, String>> kTranslations = {
     'background_music': 'Musica di sottofondo',
     'brush_sounds': 'Suoni dei pennelli',
     'close': 'Chiudi',
+    'rate_app': 'Valuta l\'app',
   },
   'ru': {
     'pick_your_world': 'выбери свой мир!',
@@ -774,6 +783,7 @@ const Map<String, Map<String, String>> kTranslations = {
     'background_music': 'Фоновая музыка',
     'brush_sounds': 'Звуки кистей',
     'close': 'Закрыть',
+    'rate_app': 'Оцените приложение',
   },
   'hi': {
     'pick_your_world': 'अपनी दुनिया चुनो!',
@@ -851,6 +861,7 @@ const Map<String, Map<String, String>> kTranslations = {
     'background_music': 'बैकग्राउंड म्यूज़िक',
     'brush_sounds': 'ब्रश की आवाज़ें',
     'close': 'बंद करो',
+    'rate_app': 'ऐप को रेट करें',
   },
   'zh': {
     'pick_your_world': '选一个世界吧！',
@@ -926,6 +937,7 @@ const Map<String, Map<String, String>> kTranslations = {
     'background_music': '背景音乐',
     'brush_sounds': '画笔声音',
     'close': '关闭',
+    'rate_app': '为应用评分',
   },
   'ja': {
     'pick_your_world': 'せかいをえらぼう！',
@@ -1001,6 +1013,7 @@ const Map<String, Map<String, String>> kTranslations = {
     'background_music': 'BGM',
     'brush_sounds': 'ふでの おと',
     'close': 'とじる',
+    'rate_app': 'アプリを評価',
   },
   'ko': {
     'pick_your_world': '세상을 고르자!',
@@ -1076,5 +1089,6 @@ const Map<String, Map<String, String>> kTranslations = {
     'background_music': '배경 음악',
     'brush_sounds': '붓 소리',
     'close': '닫기',
+    'rate_app': '앱 평가하기',
   },
 };
