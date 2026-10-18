@@ -129,7 +129,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       ),
     );
     await _player.setReleaseMode(ReleaseMode.loop);
-    await _player.setVolume(appPreferences.getKSoundVolum());
+    await _player.setVolume(
+      appPreferences.getKMusicVolume(),
+    ); // NEW: music level from Sound levels
+    // (old)     await _player.setVolume(appPreferences.getKSoundVolum());
     await _player.play(AssetSource('sounds/main.mp3'));
   }
 
@@ -189,13 +192,22 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   _buildWoodShelfAd(),
                 ],
               ),
-              SettingWidget(
-                player: _player,
-                initialVolume: appPreferences.getKSoundVolum(),
-                onVolumeChanged: (value) {
-                  appPreferences.setKSoundVolum(value);
-                },
+              // NEW: gear (Settings) and sound button (Sound levels) side by side
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SettingWidget(),
+                  const SizedBox(width: 12),
+                  SoundLevelButton(player: _player),
+                ],
               ),
+              // (old) SettingWidget(
+              //   player: _player,
+              //   initialVolume: appPreferences.getKSoundVolum(),
+              //   onVolumeChanged: (value) {
+              //     appPreferences.setKSoundVolum(value);
+              //   },
+              // ),
             ],
           ),
         ),

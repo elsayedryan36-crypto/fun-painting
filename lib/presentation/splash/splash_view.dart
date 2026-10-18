@@ -182,6 +182,7 @@
 import 'dart:math' as math;
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:fun_painting/app/app_pref.dart';
 import 'package:fun_painting/presentation/common/localization/app_language.dart';
 import 'package:lottie/lottie.dart';
 import 'package:rive/rive.dart' hide Image, LinearGradient;
@@ -290,7 +291,10 @@ class _SplashScreenState extends State<SplashScreen>
 
       await _player.setReleaseMode(ReleaseMode.loop);
 
-      await _player.setVolume(0.08);
+      await _player.setVolume(
+        AppPreferences().getKMusicVolume(),
+      ); // NEW: music level from Sound levels
+      // (old)       await _player.setVolume(0.08);
 
       await _player.play(AssetSource('sounds/main.mp3'));
     } catch (e) {
@@ -392,7 +396,10 @@ class _SplashScreenState extends State<SplashScreen>
 
   Future<void> _toggleMute() async {
     setState(() => _muted = !_muted);
-    await _player.setVolume(_muted ? 0 : 0.08);
+    await _player.setVolume(
+      _muted ? 0 : AppPreferences().getKMusicVolume(),
+    ); // NEW
+    // (old)     await _player.setVolume(_muted ? 0 : 0.08);
   }
 
   // ============================================================

@@ -1,0 +1,155 @@
+import 'package:flutter/material.dart';
+import 'package:fun_painting/presentation/common/localization/app_language.dart';
+import 'package:fun_painting/presentation/common/resources/color_manager.dart';
+import 'package:fun_painting/presentation/common/resources/values_manager.dart';
+import 'package:fun_painting/presentation/common/services/sound_service.dart';
+
+import '../resources/font_manager.dart';
+
+/// NEW: the Sound levels popup. Two sliders, background music and brush
+/// sounds, each from 0% to 100%. Changes apply right away; releasing the
+/// brush slider plays a short click so the user can hear the new level.
+class SoundLevelsDialog extends StatefulWidget {
+  final double initialMusic;
+  final double initialBrush;
+  final ValueChanged<double> onMusicChanged;
+  final ValueChanged<double> onBrushChanged;
+
+  const SoundLevelsDialog({
+    super.key,
+    required this.initialMusic,
+    required this.initialBrush,
+    required this.onMusicChanged,
+    required this.onBrushChanged,
+  });
+
+  @override
+  State<SoundLevelsDialog> createState() => _SoundLevelsDialogState();
+}
+
+class _SoundLevelsDialogState extends State<SoundLevelsDialog> {
+  late double _music = widget.initialMusic;
+  late double _brush = widget.initialBrush;
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      insetPadding: EdgeInsets.symmetric(
+        horizontal: AppSizeWidth.s5,
+        vertical: AppSizeHeight.s5,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSizeHeight.s10),
+      ),
+      backgroundColor: ColorManager.lightPrimary,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 440),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 8, 8, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ---- HEADER: title + close ----
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      tr('sound_levels'),
+                      style: TextStyle(
+                        fontSize: FontSize.s18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: tr('close'),
+                    icon: Icon(Icons.close, color: ColorManager.darkPrimary),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+
+              // ---- BACKGROUND MUSIC ----
+              _levelRow(
+                icon: _music == 0
+                    ? Icons.volume_off_rounded
+                    : Icons.music_note_rounded,
+                label: tr('background_music'),
+                value: _music,
+                onChanged: (value) {
+                  setState(() => _music = value);
+                  widget.onMusicChanged(value);
+                },
+              ),
+              const SizedBox(height: 16),
+
+              // ---- BRUSH SOUNDS (preview click on release) ----
+              _levelRow(
+                icon: Icons.brush_rounded,
+                label: tr('brush_sounds'),
+                value: _brush,
+                onChanged: (value) {
+                  setState(() => _brush = value);
+                  widget.onBrushChanged(value);
+                },
+                onChangeEnd: (_) =>
+                    BrushSoundService.instance.playOnce('sounds/fill.mp3'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _levelRow({
+    required IconData icon,
+    required String label,
+    required double value,
+    required ValueChanged<double> onChanged,
+    ValueChanged<double>? onChangeEnd,
+  }) {
+    final percent = (value * 100).round();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, color: ColorManager.darkBluPrimary),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: FontSize.s16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            Text(
+              '$percent%',
+              style: TextStyle(
+                fontSize: FontSize.s16,
+                fontWeight: FontWeight.bold,
+                color: ColorManager.darkPrimary,
+              ),
+            ),
+          ],
+        ),
+        Slider(
+          activeColor: ColorManager.gold,
+          inactiveColor: Colors.grey.shade300,
+          value: value,
+          min: 0,
+          max: 1,
+          divisions: 20,
+          label: '$percent%',
+          onChanged: onChanged,
+          onChangeEnd: onChangeEnd,
+        ),
+      ],
+    );
+  }
+}

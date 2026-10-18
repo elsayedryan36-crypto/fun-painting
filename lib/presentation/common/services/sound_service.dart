@@ -18,6 +18,17 @@ class BrushSoundService {
   bool _isDisposed = false;
   bool _isInitialized = false;
 
+  // NEW: the brush sounds level from the Sound levels popup (0..1).
+  // Click sounds play at a fifth of it, so the default (0.5) keeps the
+  // click loudness the app always had; the pencil/eraser loop uses it directly.
+  double _level = 0.5;
+  double get level => _level;
+  double get _oneShotVolume => _level * 0.2;
+
+  void setLevel(double value) {
+    _level = value.clamp(0.0, 1.0);
+  }
+
   // Serializes every play/stop call so rapid tool switching can never
   // fire overlapping native audio operations.
   Future<void> _lock = Future.value();
@@ -64,6 +75,7 @@ class BrushSoundService {
       try {
         await _loopPlayer.stop();
         await _loopPlayer.setReleaseMode(ReleaseMode.loop);
+        await _loopPlayer.setVolume(_level); // NEW: brush sounds level
         await _loopPlayer.play(AssetSource(asset));
       } catch (e) {
         debugPrint('BrushSoundService.playLoop error: $e');
@@ -72,7 +84,8 @@ class BrushSoundService {
   }
 
   /// One click sound (fill, magic, stamp)
-  Future<void> playOnce(String asset, double kSoundVolum) {
+  Future<void> playOnce(String asset) {
+    // (old) Future<void> playOnce(String asset, double kSoundVolum) {
     if (_isDisposed) return Future.value();
     return _runExclusive(() async {
       // Stop the loop sound so pencil/eraser loop never bleeds into a
@@ -93,7 +106,10 @@ class BrushSoundService {
 
       try {
         await player.setReleaseMode(ReleaseMode.release);
-        await player.setVolume(kSoundVolum); // <-- volume bug fixed
+        await player.setVolume(
+          _oneShotVolume,
+        ); // NEW: from the brush sounds level
+        // (old)         await player.setVolume(kSoundVolum); // <-- volume bug fixed
         await player.play(AssetSource(asset));
 
         player.onPlayerComplete.listen((_) async {

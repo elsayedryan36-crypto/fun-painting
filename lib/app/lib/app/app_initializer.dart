@@ -34,6 +34,8 @@ Future<void> _initializeApp() async {
     // 1. App Preferences
     // ---------------------------------------
     await AppPreferences().init();
+    // NEW: brush sounds use the saved level from the start
+    BrushSoundService.instance.setLevel(AppPreferences().getKBrushVolume());
 
     debugPrint('AppPreferences initialized');
 
