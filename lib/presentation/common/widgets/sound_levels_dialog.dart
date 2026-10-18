@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:fun_painting/app/app_pref.dart';
 import 'package:fun_painting/presentation/common/localization/app_language.dart';
 import 'package:fun_painting/presentation/common/resources/color_manager.dart';
 import 'package:fun_painting/presentation/common/resources/values_manager.dart';
+import 'package:fun_painting/presentation/common/services/music_level.dart';
 import 'package:fun_painting/presentation/common/services/sound_service.dart';
 
 import '../resources/font_manager.dart';
@@ -152,4 +154,23 @@ class _SoundLevelsDialogState extends State<SoundLevelsDialog> {
       ],
     );
   }
+}
+
+/// NEW (round 26): open the Sound levels popup from any page.
+///
+/// Background music is saved through [MusicLevel], so the home music follows
+/// at once. Brush sounds are saved and applied to [BrushSoundService].
+Future<void> showSoundLevels(BuildContext context) {
+  return showDialog<void>(
+    context: context,
+    builder: (_) => SoundLevelsDialog(
+      initialMusic: AppPreferences().getKMusicVolume(),
+      initialBrush: AppPreferences().getKBrushVolume(),
+      onMusicChanged: (value) => MusicLevel.set(value),
+      onBrushChanged: (value) {
+        AppPreferences().setKBrushVolume(value);
+        BrushSoundService.instance.setLevel(value);
+      },
+    ),
+  );
 }

@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fun_painting/app/app_pref.dart';
+import 'package:fun_painting/presentation/common/services/music_level.dart';
 import 'package:fun_painting/presentation/common/services/sound_service.dart';
+import 'package:fun_painting/presentation/galary/widgets/kid_gallery_widgets.dart';
+import 'package:fun_painting/presentation/common/widgets/setting_Widget.dart';
 import 'package:fun_painting/presentation/common/widgets/sound_levels_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizer/sizer.dart';
@@ -112,6 +115,67 @@ void main() {
       await tester.pump();
       expect(brush, isNotNull);
       expect(brush!, greaterThan(0.5));
+    });
+  });
+
+  group('MusicLevel (shared by every page)', () {
+    setUp(() async {
+      SharedPreferences.setMockInitialValues({});
+      await AppPreferences().init();
+    });
+
+    test('set changes the live level and saves it', () async {
+      await MusicLevel.set(0.6);
+      expect(MusicLevel.level.value, 0.6);
+      expect(AppPreferences().getKMusicVolume(), 0.6);
+    });
+
+    test('set clamps to 0..1', () async {
+      await MusicLevel.set(3);
+      expect(MusicLevel.level.value, 1.0);
+      await MusicLevel.set(-1);
+      expect(MusicLevel.level.value, 0.0);
+    });
+
+    test('load reads the saved level at start', () async {
+      await AppPreferences().setKMusicVolume(0.25);
+      MusicLevel.level.value = 0.9;
+      MusicLevel.load();
+      expect(MusicLevel.level.value, 0.25);
+    });
+  });
+
+  group('gallery top bar Sound button', () {
+    testWidgets('fits on a phone and opens the Sound levels popup', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(
+        740,
+        360,
+      ); // the app is landscape-only
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      await tester.pumpWidget(
+        Sizer(
+          builder: (_, _, _) => MaterialApp(
+            home: Scaffold(
+              body: GalleryTopBar(
+                emoji: '🎨',
+                name: 'Pictures',
+                count: 3,
+                color: Colors.teal,
+                onHome: () {},
+                trailing: const SoundLevelButton(size: 44),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.byType(SoundLevelButton));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.byType(SoundLevelsDialog), findsOneWidget);
     });
   });
 }

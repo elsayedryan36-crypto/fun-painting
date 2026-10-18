@@ -17,6 +17,7 @@ import '../common/local_data/collection_list.dart';
 import '../common/resources/color_manager.dart' show ColorManager;
 import '../common/resources/values_manager.dart';
 import '../common/widgets/banner_ad_widget.dart';
+import '../common/services/music_level.dart';
 import '../common/widgets/setting_Widget.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -38,6 +39,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // NEW (round 26): the Sound button on any page changes this player's volume
+    MusicLevel.level.addListener(_onMusicLevelChanged);
     _playBackgroundMusic();
     _registerOpenAndMaybeShowRating();
   }
@@ -105,6 +108,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
+  /// NEW (round 26): follow the shared music level.
+  void _onMusicLevelChanged() {
+    _player.setVolume(MusicLevel.level.value);
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused ||
@@ -139,6 +147,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    MusicLevel.level.removeListener(_onMusicLevelChanged);
     _pageController.dispose();
     _player.stop();
     _player.dispose();
@@ -198,7 +207,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 children: [
                   const SettingWidget(),
                   const SizedBox(width: 12),
-                  SoundLevelButton(player: _player),
+                  // Round 26: no player passed; the level is shared via MusicLevel
+                  const SoundLevelButton(),
+                  // (old) SoundLevelButton(player: _player),
                 ],
               ),
               // (old) SettingWidget(

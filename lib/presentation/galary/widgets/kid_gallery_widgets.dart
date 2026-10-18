@@ -103,6 +103,9 @@ class GalleryTopBar extends StatelessWidget {
   final Color color;
   final VoidCallback onHome;
 
+  /// NEW (round 26): optional widget at the right end (the Sound button).
+  final Widget? trailing;
+
   const GalleryTopBar({
     super.key,
     required this.emoji,
@@ -110,6 +113,7 @@ class GalleryTopBar extends StatelessWidget {
     required this.count,
     required this.color,
     required this.onHome,
+    this.trailing,
   });
 
   @override
@@ -209,6 +213,11 @@ class GalleryTopBar extends StatelessWidget {
               ),
             ),
           ),
+          // NEW (round 26): the Sound button, same height as the home sticker
+          if (trailing != null) ...[
+            SizedBox(width: AppPaddingWidth.p2),
+            trailing!,
+          ],
         ],
       ),
     );

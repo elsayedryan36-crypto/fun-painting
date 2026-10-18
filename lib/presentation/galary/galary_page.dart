@@ -13,6 +13,7 @@ import '../../data/services/ad_unit_ids.dart';
 import '../common/resources/assets_manager.dart' show JsonAssets;
 import '../common/resources/values_manager.dart';
 import '../common/widgets/banner_ad_widget.dart' show BannerAdWidget;
+import '../common/widgets/setting_Widget.dart' show SoundLevelButton;
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 import '../home/Widgets/kid_home_shelf.dart';
@@ -154,6 +155,10 @@ class _GalleryPageState extends State<GalleryPage> with RouteAware {
                   count: items.length,
                   color: worldColor,
                   onHome: () => Navigator.pop(context),
+                  // NEW (round 26): Sound button at the right end of the bar
+                  trailing: SoundLevelButton(
+                    size: math.max(44, AppSizeHeight.s11),
+                  ),
                 ),
                 // OLD (sticker-book banner, kept per the rule):
                 // WorldBanner(

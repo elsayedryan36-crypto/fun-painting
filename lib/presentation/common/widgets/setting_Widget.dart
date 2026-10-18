@@ -1,9 +1,6 @@
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'package:fun_painting/app/app_pref.dart';
 import 'package:fun_painting/presentation/common/localization/app_language.dart';
 import 'package:fun_painting/presentation/common/resources/color_manager.dart';
-import 'package:fun_painting/presentation/common/services/sound_service.dart';
 import 'package:lottie/lottie.dart';
 import '../resources/assets_manager.dart';
 import '../resources/values_manager.dart';
@@ -31,23 +28,26 @@ class SettingWidget extends StatelessWidget {
   }
 }
 
-/// NEW: Sound button: opens the Sound levels popup (background music and
-/// brush sounds). Both levels are saved and used across the whole app.
+/// Sound button: opens the Sound levels popup (background music and brush
+/// sounds). Works on the home, gallery and painting pages.
+/// (Round 26: no player is passed in any more; the music level is shared
+/// through MusicLevel, so the button works on every page.)
 class SoundLevelButton extends StatelessWidget {
-  /// The home screen's background music player.
-  final AudioPlayer player;
+  /// Width and height of the round button. Defaults to the gear's size.
+  final double? size;
 
-  const SoundLevelButton({super.key, required this.player});
+  const SoundLevelButton({super.key, this.size});
 
   @override
   Widget build(BuildContext context) {
+    final double side = size ?? AppSizeHeight.s10;
     return IconButton(
       padding: EdgeInsets.zero,
       constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
       tooltip: tr('sound_levels'),
       icon: Container(
-        width: AppSizeHeight.s10,
-        height: AppSizeHeight.s10,
+        width: side,
+        height: side,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: Colors.white,
@@ -59,28 +59,68 @@ class SoundLevelButton extends StatelessWidget {
             ),
           ],
         ),
-        child: Icon(Icons.volume_up_rounded, color: ColorManager.darkPrimary),
+        child: Icon(
+          Icons.volume_up_rounded,
+          color: ColorManager.darkPrimary,
+          size: side * 0.55,
+        ),
       ),
-      onPressed: () {
-        showDialog(
-          context: context,
-          builder: (_) => SoundLevelsDialog(
-            initialMusic: AppPreferences().getKMusicVolume(),
-            initialBrush: AppPreferences().getKBrushVolume(),
-            onMusicChanged: (value) {
-              AppPreferences().setKMusicVolume(value);
-              player.setVolume(value);
-            },
-            onBrushChanged: (value) {
-              AppPreferences().setKBrushVolume(value);
-              BrushSoundService.instance.setLevel(value);
-            },
-          ),
-        );
-      },
+      onPressed: () => showSoundLevels(context),
     );
   }
 }
+
+// (old) SoundLevelButton before round 26, with its own player:
+// /// NEW: Sound button: opens the Sound levels popup (background music and
+// /// brush sounds). Both levels are saved and used across the whole app.
+// class SoundLevelButton extends StatelessWidget {
+//   /// The home screen's background music player.
+//   final AudioPlayer player;
+//
+//   const SoundLevelButton({super.key, required this.player});
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return IconButton(
+//       padding: EdgeInsets.zero,
+//       constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+//       tooltip: tr('sound_levels'),
+//       icon: Container(
+//         width: AppSizeHeight.s10,
+//         height: AppSizeHeight.s10,
+//         decoration: BoxDecoration(
+//           shape: BoxShape.circle,
+//           color: Colors.white,
+//           boxShadow: const [
+//             BoxShadow(
+//               color: Colors.black26,
+//               blurRadius: 4,
+//               offset: Offset(0, 2),
+//             ),
+//           ],
+//         ),
+//         child: Icon(Icons.volume_up_rounded, color: ColorManager.darkPrimary),
+//       ),
+//       onPressed: () {
+//         showDialog(
+//           context: context,
+//           builder: (_) => SoundLevelsDialog(
+//             initialMusic: AppPreferences().getKMusicVolume(),
+//             initialBrush: AppPreferences().getKBrushVolume(),
+//             onMusicChanged: (value) {
+//               AppPreferences().setKMusicVolume(value);
+//               player.setVolume(value);
+//             },
+//             onBrushChanged: (value) {
+//               AppPreferences().setKBrushVolume(value);
+//               BrushSoundService.instance.setLevel(value);
+//             },
+//           ),
+//         );
+//       },
+//     );
+//   }
+// }
 
 // (old) the gear button with the volume slider, before round 25:
 // import 'package:audioplayers/audioplayers.dart';

@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:fun_painting/presentation/common/widgets/sound_levels_dialog.dart';
 import 'package:fun_painting/presentation/common/localization/app_language.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -929,7 +930,36 @@ class _PaintingPageState extends State<PaintingPage> {
                   ),
                 ),
 
-                // 7. Undo (and redo when there is something to redo).
+                // 7. NEW (round 26): Sound levels, bottom left. Hidden while a
+                //    panel is open, like the colour circle, so it never sits on
+                //    a tool or a colour.
+                Positioned(
+                  left: margin,
+                  bottom: margin,
+                  child: IgnorePointer(
+                    ignoring: _panel != _KidPanel.none,
+                    child: AnimatedOpacity(
+                      opacity: _panel == _KidPanel.none ? 1 : 0,
+                      duration: const Duration(milliseconds: 150),
+                      child: KidRoundBubble(
+                        key: const Key('kid_sound_bubble'),
+                        size: bubble * 0.75,
+                        faceColor: const Color(0xFFBBDEFB),
+                        tooltip: tr('sound_levels'),
+                        onTap: () {
+                          SoundService.playClick();
+                          showSoundLevels(context);
+                        },
+                        child: Icon(
+                          Icons.volume_up_rounded,
+                          color: ColorManager.darkPrimary,
+                          size: bubble * 0.36,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                // (old) 7. Undo (and redo when there is something to redo).
 
                 // 8. Leave and erase everything, top left.
                 Positioned(

@@ -10,6 +10,7 @@ import 'package:fun_painting/data/local%20data/painting_save_model.dart'
         PaintingSaveAdapter,
         PaintingSave;
 import 'package:fun_painting/data/services/ad_request_config.dart';
+import 'package:fun_painting/presentation/common/services/music_level.dart';
 import 'package:fun_painting/presentation/common/services/sound_service.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -36,6 +37,8 @@ Future<void> _initializeApp() async {
     await AppPreferences().init();
     // NEW: brush sounds use the saved level from the start
     BrushSoundService.instance.setLevel(AppPreferences().getKBrushVolume());
+    // NEW (round 26): shared background-music level, read once at start
+    MusicLevel.load();
 
     debugPrint('AppPreferences initialized');
 
