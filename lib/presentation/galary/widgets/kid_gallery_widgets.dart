@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:fun_painting/presentation/common/localization/app_language.dart';
 import 'package:lottie/lottie.dart';
 
 import '../../common/resources/color_manager.dart';
@@ -102,6 +103,9 @@ class GalleryTopBar extends StatelessWidget {
   final Color color;
   final VoidCallback onHome;
 
+  /// NEW (round 26): optional widget at the right end (the Sound button).
+  final Widget? trailing;
+
   const GalleryTopBar({
     super.key,
     required this.emoji,
@@ -109,6 +113,7 @@ class GalleryTopBar extends StatelessWidget {
     required this.count,
     required this.color,
     required this.onHome,
+    this.trailing,
   });
 
   @override
@@ -208,6 +213,11 @@ class GalleryTopBar extends StatelessWidget {
               ),
             ),
           ),
+          // NEW (round 26): the Sound button, same height as the home sticker
+          if (trailing != null) ...[
+            SizedBox(width: AppPaddingWidth.p2),
+            trailing!,
+          ],
         ],
       ),
     );
@@ -264,7 +274,8 @@ class GiftOverlay extends StatelessWidget {
                       ],
                     ),
                     child: Text(
-                      'Watch to open',
+                      tr('watch_to_open'),
+                      // 'Watch to open',
                       style: TextStyle(
                         color: ColorManager.white,
                         fontWeight: FontWeight.w900,

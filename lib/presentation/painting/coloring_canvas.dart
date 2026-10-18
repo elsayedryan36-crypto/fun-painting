@@ -1289,7 +1289,8 @@ class ColoringCanvasState extends State<ColoringCanvas> {
         if (region.path.contains(p)) {
           BrushSoundService.instance.playOnce(
             _currentBrushSound(),
-            appPreferences.getKSoundVolum(),
+            // NEW: the click sound level is read inside BrushSoundService now
+            // (old) appPreferences.getKSoundVolum(),
           );
           final stamp = Stroke(
             points: [p],
@@ -1347,7 +1348,8 @@ class ColoringCanvasState extends State<ColoringCanvas> {
             //  their strokes and pushing a no-op FillAction)
             BrushSoundService.instance.playOnce(
               _currentBrushSound(),
-              appPreferences.getKSoundVolum(),
+              // NEW: the click sound level is read inside BrushSoundService now
+              // (old) appPreferences.getKSoundVolum(),
             );
             final previousColor = region.currentFillColor;
             final previousStyle = region.currentFillStyle;
@@ -1373,7 +1375,8 @@ class ColoringCanvasState extends State<ColoringCanvas> {
           } else if (widget.brushMode == BrushMode.magic) {
             BrushSoundService.instance.playOnce(
               _currentBrushSound(),
-              appPreferences.getKSoundVolum(),
+              // NEW: the click sound level is read inside BrushSoundService now
+              // (old) appPreferences.getKSoundVolum(),
             );
             final previousColor = region.currentFillColor;
             final previousStyle = region.currentFillStyle;

@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:fun_painting/presentation/common/localization/app_language.dart';
 import 'package:fun_painting/presentation/common/resources/color_manager.dart';
 import 'package:fun_painting/presentation/galary/helpers/gallery_collection_helper.dart';
 import 'package:fun_painting/presentation/galary/widgets/gallery_card.dart';
@@ -12,6 +13,7 @@ import '../../data/services/ad_unit_ids.dart';
 import '../common/resources/assets_manager.dart' show JsonAssets;
 import '../common/resources/values_manager.dart';
 import '../common/widgets/banner_ad_widget.dart' show BannerAdWidget;
+import '../common/widgets/setting_Widget.dart' show SoundLevelButton;
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 import '../home/Widgets/kid_home_shelf.dart';
@@ -148,10 +150,15 @@ class _GalleryPageState extends State<GalleryPage> with RouteAware {
               children: [
                 GalleryTopBar(
                   emoji: meta?.emoji ?? '🎨',
-                  name: meta?.name ?? 'Pictures',
+                  name: trName(meta?.name ?? 'Pictures'),
+                  // (world + 'Pictures' names are translated for display)
                   count: items.length,
                   color: worldColor,
                   onHome: () => Navigator.pop(context),
+                  // NEW (round 26): Sound button at the right end of the bar
+                  trailing: SoundLevelButton(
+                    size: math.max(44, AppSizeHeight.s11),
+                  ),
                 ),
                 // OLD (sticker-book banner, kept per the rule):
                 // WorldBanner(

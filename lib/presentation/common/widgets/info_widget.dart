@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fun_painting/presentation/common/localization/app_language.dart';
 import 'package:fun_painting/presentation/common/resources/color_manager.dart';
 import 'package:fun_painting/presentation/common/resources/values_manager.dart';
 import 'package:in_app_review/in_app_review.dart';
@@ -73,7 +74,8 @@ class _RateAppWidgetState extends State<RateAppWidget>
       child: Row(
         children: [
           Text(
-            'Enjoying The App?',
+            tr('enjoying_the_app'),
+            // 'Enjoying The App?',
             style: TextStyle(
               fontSize: 19,
               fontWeight: FontWeight.bold,
@@ -91,7 +93,8 @@ class _RateAppWidgetState extends State<RateAppWidget>
               children: [
                 SizedBox(height: AppSizeHeight.s5),
                 Text(
-                  'Tap to rate us on Google Play',
+                  tr('tap_to_rate'),
+                  // 'Tap to rate us on Google Play',
                   style: TextStyle(
                     fontSize: FontSize.s16,
                     color: ColorManager.gold,

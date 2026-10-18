@@ -3,6 +3,8 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:fun_painting/presentation/common/widgets/sound_levels_dialog.dart';
+import 'package:fun_painting/presentation/common/localization/app_language.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -516,9 +518,10 @@ class _PaintingPageState extends State<PaintingPage> {
       final hasPermission = await _requestGalleryPermission();
       if (!hasPermission) {
         await _showSaveDialog(
-          title: 'Permission Required',
-          message:
-              'We need permission to save your beautiful coloring to your gallery.',
+          title: tr('permission_required'),
+          // title: 'Permission Required',
+          message: tr('permission_message'),
+          // 'We need permission to save your beautiful coloring to your gallery.',
           icon: Icons.photo_library_outlined,
           showSettings: true,
         );
@@ -530,8 +533,10 @@ class _PaintingPageState extends State<PaintingPage> {
       final pngBytes = await _capturePng(pixelRatio: 2.0);
       if (pngBytes == null) {
         await _showSaveDialog(
-          title: 'Oops!',
-          message: 'Could not capture your coloring.',
+          title: tr('oops'),
+          // title: 'Oops!',
+          message: tr('capture_failed'),
+          // message: 'Could not capture your coloring.',
           icon: Icons.error_outline,
         );
         return;
@@ -548,23 +553,29 @@ class _PaintingPageState extends State<PaintingPage> {
 
       if (success) {
         await _showSaveDialog(
-          title: 'Saved! 🎨',
-          message: 'Your beautiful coloring has been saved to your gallery!',
+          title: tr('saved_title'),
+          // title: 'Saved! 🎨',
+          message: tr('saved_message'),
+          // message: 'Your beautiful coloring has been saved to your gallery!',
           icon: Icons.check_circle_outline,
           success: true,
         );
       } else {
         await _showSaveDialog(
-          title: 'Couldn\'t Save',
-          message: 'We couldn\'t save your coloring. Please try again.',
+          title: tr('couldnt_save'),
+          // title: 'Couldn\'t Save',
+          message: tr('save_failed_message'),
+          // message: 'We couldn\'t save your coloring. Please try again.',
           icon: Icons.error_outline,
         );
       }
     } catch (e, st) {
       debugPrint('Save error: $e\n$st');
       await _showSaveDialog(
-        title: 'Something Went Wrong',
-        message: 'We couldn\'t save your coloring. Please try again.',
+        title: tr('something_wrong'),
+        // title: 'Something Went Wrong',
+        message: tr('save_failed_message'),
+        // message: 'We couldn\'t save your coloring. Please try again.',
         icon: Icons.error_outline,
       );
     } finally {
@@ -663,7 +674,8 @@ class _PaintingPageState extends State<PaintingPage> {
                       },
                       icon: const Icon(Icons.settings_outlined),
                       label: Text(
-                        'Open Settings',
+                        tr('open_settings'),
+                        // 'Open Settings',
                         style: TextStyle(
                           fontSize: FontSize.s16,
                           fontWeight: FontWeight.w600,
@@ -689,7 +701,8 @@ class _PaintingPageState extends State<PaintingPage> {
                       ),
                     ),
                     child: Text(
-                      showSettings ? 'Cancel' : 'OK',
+                      showSettings ? tr('cancel') : tr('ok'),
+                      // showSettings ? 'Cancel' : 'OK',
                       style: TextStyle(
                         fontSize: FontSize.s18,
                         fontWeight: FontWeight.w600,
@@ -891,7 +904,8 @@ class _PaintingPageState extends State<PaintingPage> {
                     key: const Key('kid_tool_bubble'),
                     size: toolBubble,
                     selected: fanOpen,
-                    tooltip: 'Tools',
+                    tooltip: tr('tools'),
+                    // tooltip: 'Tools',
                     faceColor: const Color(0xFFFFE082),
                     onTap: () {
                       SoundService.playClick();
@@ -916,7 +930,36 @@ class _PaintingPageState extends State<PaintingPage> {
                   ),
                 ),
 
-                // 7. Undo (and redo when there is something to redo).
+                // 7. NEW (round 26): Sound levels, bottom left. Hidden while a
+                //    panel is open, like the colour circle, so it never sits on
+                //    a tool or a colour.
+                Positioned(
+                  left: margin,
+                  bottom: margin,
+                  child: IgnorePointer(
+                    ignoring: _panel != _KidPanel.none,
+                    child: AnimatedOpacity(
+                      opacity: _panel == _KidPanel.none ? 1 : 0,
+                      duration: const Duration(milliseconds: 150),
+                      child: KidRoundBubble(
+                        key: const Key('kid_sound_bubble'),
+                        size: bubble * 0.75,
+                        faceColor: const Color(0xFFBBDEFB),
+                        tooltip: tr('sound_levels'),
+                        onTap: () {
+                          SoundService.playClick();
+                          showSoundLevels(context);
+                        },
+                        child: Icon(
+                          Icons.volume_up_rounded,
+                          color: ColorManager.darkPrimary,
+                          size: bubble * 0.36,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                // (old) 7. Undo (and redo when there is something to redo).
 
                 // 8. Leave and erase everything, top left.
                 Positioned(
@@ -926,7 +969,8 @@ class _PaintingPageState extends State<PaintingPage> {
                     key: const Key('kid_home_bubble'),
                     size: bubble * 0.76,
                     faceColor: const Color(0xFFDCE3E9),
-                    tooltip: 'Leave the drawing',
+                    tooltip: tr('leave_drawing'),
+                    // tooltip: 'Leave the drawing',
                     onTap: () {
                       SoundService.playClick();
                       _confirmClose();
@@ -949,7 +993,8 @@ class _PaintingPageState extends State<PaintingPage> {
                           key: const Key('kid_redo_bubble'),
                           size: bubble * 0.75,
                           faceColor: const Color(0xFFFFD9B0),
-                          tooltip: 'Redo',
+                          tooltip: tr('redo'),
+                          // tooltip: 'Redo',
                           onTap: () {
                             SoundService.playClick();
                             _redo();
@@ -972,7 +1017,8 @@ class _PaintingPageState extends State<PaintingPage> {
                             key: const Key('kid_undo_bubble'),
                             size: bubble * 0.75,
                             faceColor: const Color(0xFFFFD9B0),
-                            tooltip: 'Undo',
+                            tooltip: tr('undo'),
+                            // tooltip: 'Undo',
                             onTap: () {
                               SoundService.playClick();
                               _undo();
@@ -989,7 +1035,8 @@ class _PaintingPageState extends State<PaintingPage> {
                         key: const Key('kid_save_bubble'),
                         size: bubble * 0.75,
                         faceColor: const Color(0xFFC8E6C9),
-                        tooltip: 'Save to the phone',
+                        tooltip: tr('save_to_phone'),
+                        // tooltip: 'Save to the phone',
                         onTap: () {
                           SoundService.playClick();
                           _saveToGallery();
@@ -1026,7 +1073,8 @@ class _PaintingPageState extends State<PaintingPage> {
               ),
               SizedBox(height: AppSizeHeight.s3),
               Text(
-                'Could not open this drawing',
+                tr('cannot_open_drawing'),
+                // 'Could not open this drawing',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: FontSize.s18,
@@ -1036,7 +1084,8 @@ class _PaintingPageState extends State<PaintingPage> {
               ),
               SizedBox(height: AppSizeHeight.s2),
               Text(
-                'Please try again or pick another drawing.',
+                tr('try_again_or_pick'),
+                // 'Please try again or pick another drawing.',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: FontSize.s15, color: Colors.black54),
               ),
@@ -1046,11 +1095,13 @@ class _PaintingPageState extends State<PaintingPage> {
                   setState(() => _loadFailed = false);
                   _load();
                 },
-                child: const Text('Try again'),
+                child: Text(tr('try_again')),
+                // child: const Text('Try again'),
               ),
               TextButton(
                 onPressed: () => Navigator.of(context).maybePop(),
-                child: const Text('Back'),
+                child: Text(tr('back')),
+                // child: const Text('Back'),
               ),
             ],
           ),
@@ -1065,9 +1116,11 @@ class _PaintingPageState extends State<PaintingPage> {
 
     return Semantics(
       button: true,
-      label: 'Choose a colour',
+      label: tr('choose_colour'),
+      // label: 'Choose a colour',
       child: Tooltip(
-        message: 'Colours',
+        message: tr('colours'),
+        // message: 'Colours',
         child: GestureDetector(
           key: const Key('kid_color_dot'),
           behavior: HitTestBehavior.opaque,
@@ -1265,47 +1318,55 @@ class _PaintingPageState extends State<PaintingPage> {
         mode: BrushMode.fill,
         style: StrokeStyle.solid,
         type: ToolType.fill,
-        label: 'Fill a shape',
+        label: tr('fill_shape'),
+        // label: 'Fill a shape',
       ),
       tool(
         mode: BrushMode.freehand,
         style: StrokeStyle.glitter,
         type: ToolType.glitter,
-        label: 'Glitter',
+        label: tr('glitter'),
+        // label: 'Glitter',
       ),
       tool(
         mode: BrushMode.freehand,
         style: StrokeStyle.solid,
         type: ToolType.freehand,
-        label: 'Draw with a brush',
+        label: tr('draw_brush'),
+        // label: 'Draw with a brush',
       ),
       tool(
         mode: BrushMode.freehand,
         style: StrokeStyle.neon,
         type: ToolType.pencil,
-        label: 'Pencil',
+        label: tr('pencil'),
+        // label: 'Pencil',
       ),
       tool(
         mode: BrushMode.freehand,
         style: StrokeStyle.wallpaper,
         type: ToolType.wallpaper,
-        label: 'Patterns',
+        label: tr('patterns'),
+        // label: 'Patterns',
       ),
       tool(
         mode: BrushMode.stamp,
         style: StrokeStyle.solid,
         type: ToolType.stamp,
-        label: 'Stamps',
+        label: tr('stamps'),
+        // label: 'Stamps',
       ),
       tool(
         mode: BrushMode.magic,
         style: StrokeStyle.solid,
         type: ToolType.magic,
-        label: 'Magic',
+        label: tr('magic'),
+        // label: 'Magic',
       ),
       // The eraser is a mode, not a tool with a type.
       KidFanItem.action(
-        label: 'Eraser',
+        label: tr('eraser'),
+        // label: 'Eraser',
         onTap: () {
           SoundService.playClick();
           setState(() {
@@ -1322,7 +1383,8 @@ class _PaintingPageState extends State<PaintingPage> {
         ),
       ),
       KidFanItem.action(
-        label: 'Erase everything',
+        label: tr('erase_everything'),
+        // label: 'Erase everything',
         onTap: () {
           SoundService.playClick();
           _confirmClearAll();
