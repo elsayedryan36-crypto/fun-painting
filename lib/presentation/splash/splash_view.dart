@@ -206,8 +206,14 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen>
-    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   late AnimationController _controller;
+  // NEW (round 27, option A): slow loop that drives the colour drift of the
+  // background and the breathing of the paint splats (14 s per full cycle).
+  late final AnimationController _wash = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 7),
+  )..repeat(reverse: true);
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
 
@@ -374,6 +380,7 @@ class _SplashScreenState extends State<SplashScreen>
     WidgetsBinding.instance.removeObserver(this);
 
     _controller.dispose();
+    _wash.dispose(); // NEW (round 27)
 
     _player.stop();
     _player.dispose();
@@ -417,6 +424,26 @@ class _SplashScreenState extends State<SplashScreen>
       body: Stack(
         fit: StackFit.expand,
         children: [
+          // NEW (round 27, option A): the background colours drift slowly.
+          Positioned.fill(
+            child: RepaintBoundary(
+              child: AnimatedBuilder(
+                animation: _wash,
+                builder: (context, _) => DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: _washColors(
+                        Curves.easeInOut.transform(_wash.value),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+
           // paint splats in the four corners
           Positioned(
             left: -40,
@@ -571,7 +598,39 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   /// One organic paint splat: a blob with uneven elliptical corners.
+  /// NEW (round 27): the four colour stops of the background wash, from the
+  /// two palettes below, blended by [t] (0 = palette 1, 1 = palette 2).
+  List<Color> _washColors(double t) {
+    const from = [
+      Color(0xFFFFF1DC),
+      Color(0xFFDDF6FA),
+      Color(0xFFE4F7DD),
+      Color(0xFFF1E4FD),
+    ];
+    const to = [
+      Color(0xFFDDF6FA),
+      Color(0xFFE4F7DD),
+      Color(0xFFF1E4FD),
+      Color(0xFFFFF1DC),
+    ];
+    return [
+      for (var i = 0; i < from.length; i++) Color.lerp(from[i], to[i], t)!,
+    ];
+  }
+
+  /// NEW (round 27): a paint splat that breathes: it grows and shrinks a little.
   Widget _splat(Color color, double w, double h) {
+    return AnimatedBuilder(
+      animation: _wash,
+      builder: (context, child) => Transform.scale(
+        scale: 1 + 0.05 * Curves.easeInOut.transform(_wash.value),
+        child: child,
+      ),
+      child: _splatShape(color, w, h),
+    );
+  }
+
+  Widget _splatShape(Color color, double w, double h) {
     return Container(
       width: w,
       height: h,
