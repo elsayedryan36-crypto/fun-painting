@@ -6,6 +6,7 @@ import 'package:lottie/lottie.dart';
 
 import '../../common/resources/color_manager.dart';
 import '../../common/resources/values_manager.dart';
+import 'package:fun_painting/presentation/common/resources/assets_manager.dart';
 
 // ============================================================
 // Sticker-book pieces for the category (gallery) screen.
@@ -252,10 +253,7 @@ class GiftOverlay extends StatelessWidget {
                   SizedBox(
                     width: math.max(52, AppSizeWidth.s11),
                     height: math.max(52, AppSizeHeight.s13),
-                    child: Lottie.asset(
-                      'assets/json/giftBox.json',
-                      repeat: true,
-                    ),
+                    child: Lottie.asset(JsonAssets.giftBox, repeat: true),
                   ),
                   Container(
                     padding: EdgeInsets.symmetric(

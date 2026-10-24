@@ -19,6 +19,7 @@ import '../common/resources/values_manager.dart';
 import '../common/widgets/banner_ad_widget.dart';
 import '../common/services/music_level.dart';
 import '../common/widgets/setting_Widget.dart';
+import 'package:fun_painting/presentation/common/resources/assets_manager.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -92,7 +93,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   child: Column(
                     children: [
                       Image.asset(
-                        'assets/images/app_icon.png',
+                        ImageAssets.appIcon,
                         height: AppSizeHeight.s33,
                       ),
                       const RateAppWidgetHome(),
@@ -282,7 +283,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Image.asset(
-                'assets/images/app_icon.png',
+                ImageAssets.appIcon,
                 height: math.max(40, AppSizeHeight.s11),
               ),
               SizedBox(width: AppPaddingWidth.p2),

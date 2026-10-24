@@ -28,7 +28,7 @@ TextStyle getBoldStyle({required double fontSize, required Color color}) {
 
 // semi bold text style
 TextStyle getSemiBoldStyle({required double fontSize, required Color color}) {
-  return _getTextStyle(fontSize, FontWeightManager.bold, color);
+  return _getTextStyle(fontSize, FontWeightManager.semiBold, color);
 }
 
 // medium text style
