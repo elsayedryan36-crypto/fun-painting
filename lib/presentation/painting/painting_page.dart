@@ -35,6 +35,8 @@ import 'widgets/kid_paint_controls.dart';
 import 'widgets/pattern_palette_widget.dart';
 import 'widgets/stamp_palette_widget.dart';
 import 'widgets/vertical_action_tools_widget.dart' show SoundService;
+import 'package:fun_painting/app/app_pref.dart';
+import 'package:fun_painting/presentation/painting/widgets/painting_tutorial.dart';
 
 /// What is covering the picture right now. One value, so two panels can never
 /// be open (or disagree) at the same time.
@@ -108,6 +110,12 @@ class _PaintingPageState extends State<PaintingPage> {
   final GlobalKey<ColoringCanvasState> _coloringCanvasKey =
       GlobalKey<ColoringCanvasState>();
   final GlobalKey _repaintKey = GlobalKey();
+  // Targets for the painting tutorial (spotlighted, not used for anything else).
+  final GlobalKey _tutColourKey = GlobalKey();
+  final GlobalKey _tutToolKey = GlobalKey();
+  final GlobalKey _tutUndoKey = GlobalKey();
+  final GlobalKey _tutSaveKey = GlobalKey();
+  bool _showTutorial = false;
 
   final List<ColoringAction> _actionHistory = [];
   final List<ColoringAction> _redoStack = [];
@@ -183,6 +191,7 @@ class _PaintingPageState extends State<PaintingPage> {
         _loaded = true;
         _loadFailed = false;
       });
+      _maybeShowTutorial();
     } catch (e, st) {
       debugPrint('Failed to load painting "${widget.image}": $e\n$st');
       if (!mounted) return;
@@ -763,6 +772,10 @@ class _PaintingPageState extends State<PaintingPage> {
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
+        if (_showTutorial) {
+          _finishTutorial();
+          return;
+        }
         // Back closes an open panel first, then leaves the drawing.
         if (_panel != _KidPanel.none) {
           _closePanels();
@@ -900,18 +913,21 @@ class _PaintingPageState extends State<PaintingPage> {
                 Positioned(
                   right: margin,
                   bottom: margin,
-                  child: KidRoundBubble(
-                    key: const Key('kid_tool_bubble'),
-                    size: toolBubble,
-                    selected: fanOpen,
-                    tooltip: tr('tools'),
-                    // tooltip: 'Tools',
-                    faceColor: const Color(0xFFFFE082),
-                    onTap: () {
-                      SoundService.playClick();
-                      _togglePanel(_KidPanel.toolFan);
-                    },
-                    child: _currentToolIcon(),
+                  child: KeyedSubtree(
+                    key: _tutToolKey,
+                    child: KidRoundBubble(
+                      key: const Key('kid_tool_bubble'),
+                      size: toolBubble,
+                      selected: fanOpen,
+                      tooltip: tr('tools'),
+                      // tooltip: 'Tools',
+                      faceColor: const Color(0xFFFFE082),
+                      onTap: () {
+                        SoundService.playClick();
+                        _togglePanel(_KidPanel.toolFan);
+                      },
+                      child: _currentToolIcon(),
+                    ),
                   ),
                 ),
 
@@ -925,7 +941,10 @@ class _PaintingPageState extends State<PaintingPage> {
                     child: AnimatedOpacity(
                       opacity: fanOpen ? 0 : 1,
                       duration: const Duration(milliseconds: 150),
-                      child: _buildColorDot(dotSize),
+                      child: KeyedSubtree(
+                        key: _tutColourKey,
+                        child: _buildColorDot(dotSize),
+                      ),
                     ),
                   ),
                 ),
@@ -960,6 +979,36 @@ class _PaintingPageState extends State<PaintingPage> {
                   ),
                 ),
                 // (old) 7. Undo (and redo when there is something to redo).
+
+                // 7b. Help: show the painting tutorial again, above the sound bubble.
+                Positioned(
+                  left: margin,
+                  bottom: margin + bubble * 0.75 + margin * 0.6,
+                  child: IgnorePointer(
+                    ignoring: _panel != _KidPanel.none || _showTutorial,
+                    child: AnimatedOpacity(
+                      opacity: _panel == _KidPanel.none && !_showTutorial
+                          ? 1
+                          : 0,
+                      duration: const Duration(milliseconds: 150),
+                      child: KidRoundBubble(
+                        key: const Key('kid_help_bubble'),
+                        size: bubble * 0.75,
+                        faceColor: const Color(0xFFE1D5FF),
+                        tooltip: tr('tut_help'),
+                        onTap: () {
+                          SoundService.playClick();
+                          setState(() => _showTutorial = true);
+                        },
+                        child: Icon(
+                          Icons.help_outline_rounded,
+                          color: ColorManager.darkPrimary,
+                          size: bubble * 0.36,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
 
                 // 8. Leave and erase everything, top left.
                 Positioned(
@@ -1013,42 +1062,56 @@ class _PaintingPageState extends State<PaintingPage> {
                         ignoring: _actionHistory.isEmpty,
                         child: Opacity(
                           opacity: _actionHistory.isEmpty ? 0.4 : 1,
-                          child: KidRoundBubble(
-                            key: const Key('kid_undo_bubble'),
-                            size: bubble * 0.75,
-                            faceColor: const Color(0xFFFFD9B0),
-                            tooltip: tr('undo'),
-                            // tooltip: 'Undo',
-                            onTap: () {
-                              SoundService.playClick();
-                              _undo();
-                            },
-                            child: Image.asset(
-                              ImageAssets.redo,
-                              fit: BoxFit.contain,
+                          child: KeyedSubtree(
+                            key: _tutUndoKey,
+                            child: KidRoundBubble(
+                              key: const Key('kid_undo_bubble'),
+                              size: bubble * 0.75,
+                              faceColor: const Color(0xFFFFD9B0),
+                              tooltip: tr('undo'),
+                              // tooltip: 'Undo',
+                              onTap: () {
+                                SoundService.playClick();
+                                _undo();
+                              },
+                              child: Image.asset(
+                                ImageAssets.redo,
+                                fit: BoxFit.contain,
+                              ),
                             ),
                           ),
                         ),
                       ),
                       SizedBox(width: margin * 0.6),
-                      KidRoundBubble(
-                        key: const Key('kid_save_bubble'),
-                        size: bubble * 0.75,
-                        faceColor: const Color(0xFFC8E6C9),
-                        tooltip: tr('save_to_phone'),
-                        // tooltip: 'Save to the phone',
-                        onTap: () {
-                          SoundService.playClick();
-                          _saveToGallery();
-                        },
-                        child: Image.asset(
-                          ImageAssets.camera,
-                          fit: BoxFit.contain,
+                      KeyedSubtree(
+                        key: _tutSaveKey,
+                        child: KidRoundBubble(
+                          key: const Key('kid_save_bubble'),
+                          size: bubble * 0.75,
+                          faceColor: const Color(0xFFC8E6C9),
+                          tooltip: tr('save_to_phone'),
+                          // tooltip: 'Save to the phone',
+                          onTap: () {
+                            SoundService.playClick();
+                            _saveToGallery();
+                          },
+                          child: Image.asset(
+                            ImageAssets.camera,
+                            fit: BoxFit.contain,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
+                // 10. The painting tutorial, on top of everything.
+                if (_showTutorial)
+                  Positioned.fill(
+                    child: PaintingTutorial(
+                      steps: _tutorialSteps(),
+                      onFinished: _finishTutorial,
+                    ),
+                  ),
               ],
             );
           },
@@ -1056,6 +1119,56 @@ class _PaintingPageState extends State<PaintingPage> {
       ),
     );
   }
+
+  /// Shows the tutorial the first time the painting page opens.
+  void _maybeShowTutorial() {
+    if (AppPreferences().getPaintingTutorialSeen()) return;
+    setState(() => _showTutorial = true);
+  }
+
+  void _finishTutorial() {
+    setState(() => _showTutorial = false);
+    AppPreferences().setPaintingTutorialSeen(true);
+  }
+
+  List<TutorialStep> _tutorialSteps() => [
+    TutorialStep(
+      target: _tutColourKey,
+      titleKey: 'tut_colour_title',
+      bodyKey: 'tut_colour_body',
+      icon: Icons.palette_rounded,
+    ),
+    TutorialStep(
+      target: _tutToolKey,
+      titleKey: 'tut_tool_title',
+      bodyKey: 'tut_tool_body',
+      icon: Icons.brush_rounded,
+    ),
+    TutorialStep(
+      target: _repaintKey,
+      titleKey: 'tut_zoom_in_title',
+      bodyKey: 'tut_zoom_in_body',
+      icon: Icons.zoom_in_rounded,
+    ),
+    TutorialStep(
+      target: _repaintKey,
+      titleKey: 'tut_zoom_out_title',
+      bodyKey: 'tut_zoom_out_body',
+      icon: Icons.zoom_out_rounded,
+    ),
+    TutorialStep(
+      target: _tutUndoKey,
+      titleKey: 'tut_undo_title',
+      bodyKey: 'tut_undo_body',
+      icon: Icons.undo_rounded,
+    ),
+    TutorialStep(
+      target: _tutSaveKey,
+      titleKey: 'tut_save_title',
+      bodyKey: 'tut_save_body',
+      icon: Icons.save_alt_rounded,
+    ),
+  ];
 
   Widget _buildErrorScaffold() {
     return Scaffold(
