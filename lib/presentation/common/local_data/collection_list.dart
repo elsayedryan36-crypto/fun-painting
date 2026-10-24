@@ -3,62 +3,63 @@ import 'package:flutter/material.dart';
 import '../resources/routs_manager.dart';
 import 'Class.dart';
 import 'list.dart';
+import 'package:fun_painting/presentation/common/resources/assets_manager.dart';
 
 List<Collections> buildGalleryItems(BuildContext context) {
   return [
     Collections(
-      imagePath: 'assets/videos/jungle.mp4',
+      imagePath: VideoAssets.jungle,
       onTap: () => Navigator.pushNamed(context, Routes.gallery, arguments: 0),
     ),
     Collections(
-      imagePath: 'assets/videos/sea.mp4',
+      imagePath: VideoAssets.sea,
       onTap: () => Navigator.pushNamed(context, Routes.gallery, arguments: 1),
     ),
 
     Collections(
-      imagePath: 'assets/videos/dragons.mp4',
+      imagePath: VideoAssets.dragons,
       onTap: () => Navigator.pushNamed(context, Routes.gallery, arguments: 2),
     ),
 
     Collections(
-      imagePath: 'assets/videos/fairy.mp4',
+      imagePath: VideoAssets.fairy,
       onTap: () => Navigator.pushNamed(context, Routes.gallery, arguments: 3),
     ),
     Collections(
-      imagePath: 'assets/videos/space.mp4',
+      imagePath: VideoAssets.space,
       onTap: () => Navigator.pushNamed(context, Routes.gallery, arguments: 4),
     ),
 
     Collections(
-      imagePath: 'assets/videos/cars.mp4',
+      imagePath: VideoAssets.cars,
       onTap: () => Navigator.pushNamed(context, Routes.gallery, arguments: 5),
     ),
     Collections(
-      imagePath: 'assets/videos/cirks.mp4',
+      imagePath: VideoAssets.cirks,
       onTap: () => Navigator.pushNamed(context, Routes.gallery, arguments: 6),
     ),
     Collections(
-      imagePath: 'assets/videos/food.mp4',
+      imagePath: VideoAssets.food,
       onTap: () => Navigator.pushNamed(context, Routes.gallery, arguments: 7),
     ),
     Collections(
-      imagePath: 'assets/videos/flowers.mp4',
+      imagePath: VideoAssets.flowers,
       onTap: () => Navigator.pushNamed(context, Routes.gallery, arguments: 8),
     ),
     Collections(
-      imagePath: 'assets/videos/letters.mp4',
+      imagePath: VideoAssets.letters,
       onTap: () => Navigator.pushNamed(context, Routes.gallery, arguments: 9),
     ),
     Collections(
-      imagePath: 'assets/videos/numbers.mp4',
+      imagePath: VideoAssets.numbers,
       onTap: () => Navigator.pushNamed(context, Routes.gallery, arguments: 10),
     ),
     Collections(
-      imagePath: 'assets/videos/whiteboard.mp4',
+      imagePath: VideoAssets.whiteboard,
       onTap: () => Navigator.pushNamed(
         context,
         Routes.painting,
-        arguments: 'assets/images/0.svg',
+        arguments: ImageAssets.zero,
       ),
     ),
   ];

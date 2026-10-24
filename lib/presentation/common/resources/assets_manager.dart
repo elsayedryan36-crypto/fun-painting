@@ -3,6 +3,9 @@ const String jsonPath = 'assets/json';
 const String animationPath = 'assets/animation';
 const String patternPath = 'assets/pattern';
 const String stampPath = 'assets/stamp';
+const String videoPath = 'assets/videos';
+const String cardsPath = 'assets/images/cards';
+
 const String zooPath = 'assets/images/zoo';
 const String seaPath = 'assets/images/sea';
 const String dragonsPath = 'assets/images/dragons';
@@ -54,6 +57,9 @@ class ImageAssets {
   static const String wallpaper = '$imagePath/wallpaper.svg';
   static const String stamp = '$imagePath/stamp.svg';
   static const String delete = '$imagePath/delete.svg';
+  static const String appIcon = '$imagePath/app_icon.png';
+  static const String splashBackground = '$imagePath/splash_bg.jpg';
+  static const String zero = '$imagePath/0.svg';
 }
 
 class JsonAssets {
@@ -72,6 +78,7 @@ class JsonAssets {
   static const String loader = '$jsonPath/Loader.json';
   static const String setting = '$jsonPath/setting.json';
   static const String confetti = '$jsonPath/Confetti.json';
+  static const String giftBox = '$jsonPath/giftBox.json';
 }
 
 ////////////////////////////////// pattern Images////////////////////////////
@@ -146,4 +153,38 @@ class NumbersAssets {
 
 class FlowersAssets {
   static String asset(int index) => '$flowersPath/$index.svg';
+}
+
+//////////////////////////////////// Home cards (Lottie)////////////////////////////
+
+class CardAssets {
+  static const String jungle = '$cardsPath/jungle.json';
+  static const String sea = '$cardsPath/sea.json';
+  static const String dragons = '$cardsPath/dragons.json';
+  static const String fairy = '$cardsPath/fairy.json';
+  static const String space = '$cardsPath/space.json';
+  static const String cars = '$cardsPath/cars.json';
+  static const String circus = '$cardsPath/circus.json';
+  static const String food = '$cardsPath/food.json';
+  static const String flowers = '$cardsPath/flowers.json';
+  static const String letters = '$cardsPath/letters.json';
+  static const String numbers = '$cardsPath/numbers.json';
+  static const String freeHand = '$cardsPath/free hand.json';
+}
+
+//////////////////////////////////// Videos////////////////////////////
+
+class VideoAssets {
+  static const String jungle = '$videoPath/jungle.mp4';
+  static const String sea = '$videoPath/sea.mp4';
+  static const String dragons = '$videoPath/dragons.mp4';
+  static const String fairy = '$videoPath/fairy.mp4';
+  static const String space = '$videoPath/space.mp4';
+  static const String cars = '$videoPath/cars.mp4';
+  static const String cirks = '$videoPath/cirks.mp4';
+  static const String food = '$videoPath/food.mp4';
+  static const String flowers = '$videoPath/flowers.mp4';
+  static const String letters = '$videoPath/letters.mp4';
+  static const String numbers = '$videoPath/numbers.mp4';
+  static const String whiteboard = '$videoPath/whiteboard.mp4';
 }

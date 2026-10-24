@@ -1919,7 +1919,7 @@ class ColoringCanvasState extends State<ColoringCanvas> {
                           child: animation.locked
                               ? const _LockedPulse()
                               : Lottie.asset(
-                                  "assets/json/Confetti.json",
+                                  JsonAssets.confetti,
                                   repeat: false,
                                   animate: true,
                                   fit: BoxFit.contain,

@@ -590,7 +590,7 @@ class _SplashScreenState extends State<SplashScreen>
           ],
         ),
         child: Image.asset(
-          'assets/images/app_icon.png',
+          ImageAssets.appIcon,
           height: math.max(170, AppSizeHeight.s38),
         ),
       ),
@@ -736,7 +736,7 @@ class _SplashScreenState extends State<SplashScreen>
   //                     mainAxisSize: MainAxisSize.min,
   //                     children: [
   //                       Image.asset(
-  //                         'assets/images/app_icon.png',
+  //                         ImageAssets.appIcon,
   //                         height: math.max(110, AppSizeHeight.s38),
   //                       ),
   //                       SizedBox(height: math.max(8, AppSizeHeight.s2)),
@@ -895,7 +895,7 @@ class _SplashScreenState extends State<SplashScreen>
   //         children: [
   //           // calm sky in the same family as the card backgrounds
   //           Image.asset(
-  //             'assets/images/splash_bg.jpg',
+  //             ImageAssets.splashBackground,
   //             width: double.infinity,
   //             height: double.infinity,
   //             fit: BoxFit.cover,
@@ -918,7 +918,7 @@ class _SplashScreenState extends State<SplashScreen>
   //             right: 0,
   //             child: Center(
   //               child: Image.asset(
-  //                 'assets/images/app_icon.png',
+  //                 ImageAssets.appIcon,
   //                 height: math.max(70, AppSizeHeight.s24),
   //               ),
   //             ),

@@ -7,6 +7,7 @@ import '../../common/local_data/Class.dart';
 import '../../common/resources/color_manager.dart';
 import '../../common/resources/values_manager.dart';
 import 'jungle.dart' show FrameRange, LottieLayer;
+import 'package:fun_painting/presentation/common/resources/assets_manager.dart';
 
 // ============================================================
 // The "pick your world" storybook shelf.
@@ -46,7 +47,7 @@ class WorldMeta {
 
 /// The Free Draw hero card: its Lottie file and frames.
 /// Put the real file name here (the file itself goes in assets/images/cards/).
-const String kFreeDrawLottie = 'assets/images/cards/free hand.json';
+const String kFreeDrawLottie = CardAssets.freeHand;
 const FrameRange kFreeDrawFrames = FrameRange(0, 60);
 
 /// The hero card used to draw an orange gradient and a big "FREE DRAW!" over
@@ -67,21 +68,21 @@ const List<WorldMeta> kWorldMeta = [
     'Zoo',
     '🦁',
     Color(0xFF3D9142),
-    lottie: 'assets/images/cards/jungle.json',
+    lottie: CardAssets.jungle,
     frames: FrameRange(13, 72),
   ),
   WorldMeta(
     'Sea',
     '🌊',
     Color(0xFF1976D2),
-    lottie: 'assets/images/cards/sea.json',
+    lottie: CardAssets.sea,
     frames: FrameRange(0, 60),
   ),
   WorldMeta(
     'Dragons',
     '🐉',
     Color(0xFF7B1FA2),
-    lottie: 'assets/images/cards/dragons.json',
+    lottie: CardAssets.dragons,
     frames: FrameRange(20, 130),
 
     // A second Lottie stacked on top of the dragon. Put its file in
@@ -91,56 +92,56 @@ const List<WorldMeta> kWorldMeta = [
     'Fairy',
     '🧚',
     Color(0xFFE91E63),
-    lottie: 'assets/images/cards/fairy.json',
+    lottie: CardAssets.fairy,
     frames: FrameRange(0, 30),
   ),
   WorldMeta(
     'Space',
     '🚀',
     Color(0xFF303F9F),
-    lottie: 'assets/images/cards/space.json',
+    lottie: CardAssets.space,
     frames: FrameRange(0, 70),
   ),
   WorldMeta(
     'Cars',
     '🚗',
     Color(0xFFF57C00),
-    lottie: 'assets/images/cards/cars.json',
+    lottie: CardAssets.cars,
     frames: FrameRange(0, 19),
   ),
   WorldMeta(
     'Circus',
     '🎪',
     Color(0xFFE53935),
-    lottie: 'assets/images/cards/circus.json',
+    lottie: CardAssets.circus,
     frames: FrameRange(0, 95),
   ),
   WorldMeta(
     'Food',
     '🍓',
     Color(0xFFEF6C00),
-    lottie: 'assets/images/cards/food.json',
+    lottie: CardAssets.food,
     frames: FrameRange(0, 29),
   ),
   WorldMeta(
     'Flowers',
     '🌸',
     Color(0xFFEC407A),
-    lottie: 'assets/images/cards/flowers.json',
+    lottie: CardAssets.flowers,
     frames: FrameRange(0, 133),
   ),
   WorldMeta(
     'Letters',
     '🔤',
     Color(0xFF00897B),
-    lottie: 'assets/images/cards/letters.json',
+    lottie: CardAssets.letters,
     frames: FrameRange(0, 61),
   ),
   WorldMeta(
     'Numbers',
     '🔢',
     Color(0xFF5D4037),
-    lottie: 'assets/images/cards/numbers.json',
+    lottie: CardAssets.numbers,
     frames: FrameRange(0, 72),
   ),
 ];

@@ -621,7 +621,7 @@ class _PaintingPageState extends State<PaintingPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Image.asset(
-                  'assets/images/app_icon.png',
+                  ImageAssets.appIcon,
                   height: AppSizeHeight.s30,
                   fit: BoxFit.contain,
                 ),
