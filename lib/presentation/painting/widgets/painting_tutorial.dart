@@ -148,19 +148,25 @@ class _PaintingTutorialState extends State<PaintingTutorial> {
     final maxLeft = math.max(margin, size.width - cardWidth - margin);
     final left = (centreX - cardWidth / 2).clamp(margin, maxLeft).toDouble();
 
-    final card = _cardBody(cardWidth);
     if (hole == null) {
       return Positioned(
         left: left,
         top: size.height / 2 - AppSizeHeight.s30,
-        child: card,
+        child: _cardBody(cardWidth),
       );
     }
     final gap = AppPaddingHeight.p3;
     if (hole.height > size.height * 0.8) {
-      // The spotlight covers most of the picture (zoom steps): sit at the bottom.
-      return Positioned(left: left, bottom: margin, child: card);
+      // The spotlight covers most of the picture (zoom steps): sit at the
+      // bottom. The text is see-through to touches, so the picture stays
+      // pinchable under it. Only the buttons take touches.
+      return Positioned(
+        left: left,
+        bottom: margin,
+        child: _zoomCardBody(cardWidth),
+      );
     }
+    final card = _cardBody(cardWidth);
     if (hole.center.dy < size.height / 2) {
       return Positioned(left: left, top: hole.bottom + gap, child: card);
     }
@@ -171,101 +177,174 @@ class _PaintingTutorialState extends State<PaintingTutorial> {
     );
   }
 
+  BoxDecoration _boxDecoration() {
+    return BoxDecoration(
+      color: ColorManager.white,
+      borderRadius: BorderRadius.circular(AppSizeWidth.s3),
+      boxShadow: const [
+        BoxShadow(
+          color: Color(0x40000000),
+          blurRadius: 16,
+          offset: Offset(0, 6),
+        ),
+      ],
+    );
+  }
+
+  /// Title and explanation.
+  Widget _caption(TutorialStep step) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            if (step.icon != null) ...[
+              Icon(
+                step.icon,
+                color: ColorManager.darkPrimary,
+                size: AppSizeWidth.s4,
+              ),
+              SizedBox(width: AppSizeWidth.s2),
+            ],
+            Expanded(
+              child: Text(
+                tr(step.titleKey),
+                style: getBoldStyle(
+                  fontSize: FontSize.s16,
+                  color: ColorManager.darkPrimary,
+                ),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: AppSizeHeight.s2),
+        Text(
+          tr(step.bodyKey),
+          style: getRegularStyle(
+            fontSize: FontSize.s14,
+            color: ColorManager.darkGrey,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _stepCounter() {
+    return Text(
+      tr('tut_step_of', {
+        'current': '${_index + 1}',
+        'total': '${widget.steps.length}',
+      }),
+      style: getRegularStyle(
+        fontSize: FontSize.s12,
+        color: ColorManager.lightGrey,
+      ),
+    );
+  }
+
+  /// Skip and Next.
+  Widget _actions() {
+    return Material(
+      color: Colors.transparent,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextButton(
+            onPressed: widget.onFinished,
+            style: TextButton.styleFrom(minimumSize: const Size(44, 44)),
+            child: Text(
+              tr('tut_skip'),
+              style: getRegularStyle(
+                fontSize: FontSize.s14,
+                color: ColorManager.grey,
+              ),
+            ),
+          ),
+          SizedBox(width: AppSizeWidth.s2),
+          FilledButton(
+            onPressed: _next,
+            style: FilledButton.styleFrom(
+              backgroundColor: ColorManager.darkPrimary,
+              minimumSize: const Size(44, 44),
+            ),
+            child: Text(
+              tr(_isLast ? 'tut_done' : 'tut_next'),
+              style: getBoldStyle(
+                fontSize: FontSize.s14,
+                color: ColorManager.white,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Normal steps: one card with the text, the counter and the buttons.
+  /// Wrap moves the counter or buttons to a new line when text is large or
+  /// long, instead of overflowing the card.
   Widget _cardBody(double width) {
-    final step = _step;
     return Material(
       color: Colors.transparent,
       child: Container(
         width: width,
         padding: EdgeInsets.all(AppPaddingWidth.p3),
-        decoration: BoxDecoration(
-          color: ColorManager.white,
-          borderRadius: BorderRadius.circular(AppSizeWidth.s3),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x40000000),
-              blurRadius: 16,
-              offset: Offset(0, 6),
-            ),
-          ],
-        ),
+        decoration: _boxDecoration(),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                if (step.icon != null) ...[
-                  Icon(
-                    step.icon,
-                    color: ColorManager.darkPrimary,
-                    size: AppSizeWidth.s4,
-                  ),
-                  SizedBox(width: AppSizeWidth.s2),
-                ],
-                Expanded(
-                  child: Text(
-                    tr(step.titleKey),
-                    style: getBoldStyle(
-                      fontSize: FontSize.s16,
-                      color: ColorManager.darkPrimary,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: AppSizeHeight.s2),
-            Text(
-              tr(step.bodyKey),
-              style: getRegularStyle(
-                fontSize: FontSize.s14,
-                color: ColorManager.darkGrey,
-              ),
-            ),
+            _caption(_step),
             SizedBox(height: AppSizeHeight.s3),
-            Row(
-              children: [
-                Text(
-                  tr('tut_step_of', {
-                    'current': '${_index + 1}',
-                    'total': '${widget.steps.length}',
-                  }),
-                  style: getRegularStyle(
-                    fontSize: FontSize.s12,
-                    color: ColorManager.lightGrey,
-                  ),
-                ),
-                const Spacer(),
-                TextButton(
-                  onPressed: widget.onFinished,
-                  style: TextButton.styleFrom(minimumSize: const Size(44, 44)),
-                  child: Text(
-                    tr('tut_skip'),
-                    style: getRegularStyle(
-                      fontSize: FontSize.s14,
-                      color: ColorManager.grey,
-                    ),
-                  ),
-                ),
-                SizedBox(width: AppSizeWidth.s2),
-                FilledButton(
-                  onPressed: _next,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: ColorManager.darkPrimary,
-                    minimumSize: const Size(44, 44),
-                  ),
-                  child: Text(
-                    tr(_isLast ? 'tut_done' : 'tut_next'),
-                    style: getBoldStyle(
-                      fontSize: FontSize.s14,
-                      color: ColorManager.white,
-                    ),
-                  ),
-                ),
-              ],
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: AppSizeWidth.s2,
+              runSpacing: AppSizeHeight.s2,
+              children: [_stepCounter(), _actions()],
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// Zoom steps. The text is wrapped in IgnorePointer, so touches on it reach
+  /// the picture and both fingers can pinch anywhere on the picture. Only the
+  /// buttons, in their own small box, take touches.
+  Widget _zoomCardBody(double width) {
+    return SizedBox(
+      width: width,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          IgnorePointer(
+            child: Container(
+              padding: EdgeInsets.all(AppPaddingWidth.p3),
+              decoration: _boxDecoration(),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _caption(_step),
+                  SizedBox(height: AppSizeHeight.s2),
+                  _stepCounter(),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(height: AppSizeHeight.s2),
+          Align(
+            alignment: AlignmentDirectional.centerEnd,
+            child: Container(
+              padding: EdgeInsets.all(AppPaddingWidth.p3),
+              decoration: _boxDecoration(),
+              child: _actions(),
+            ),
+          ),
+        ],
       ),
     );
   }
