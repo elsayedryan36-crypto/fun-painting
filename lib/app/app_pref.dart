@@ -2,6 +2,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 const String kIsMute = 'IsMute';
 const String kOpenCount = 'OpenCount';
+const String kPaintingTutorialSeen = 'PaintingTutorialSeen';
 const String kSoundVolum = 'SoundVolum';
 // NEW: separate levels for background music and brush sounds
 const String kMusicVolume = 'MusicVolume';
@@ -26,6 +27,22 @@ class AppPreferences {
 
   Future<void> init() async {
     await _init();
+  }
+
+  /////////////////////////////////////////////////////////////////
+  // PAINTING TUTORIAL
+  /////////////////////////////////////////////////////////////////
+
+  /// True once the painting tutorial has been finished or skipped.
+  /// Before init() has run this returns false, so the tutorial shows.
+  bool getPaintingTutorialSeen() {
+    if (!_ready) return false;
+    return _prefs.getBool(kPaintingTutorialSeen) ?? false;
+  }
+
+  Future<void> setPaintingTutorialSeen(bool seen) {
+    if (!_ready) return Future.value();
+    return _prefs.setBool(kPaintingTutorialSeen, seen);
   }
 
   /////////////////////////////////////////////////////////////////
