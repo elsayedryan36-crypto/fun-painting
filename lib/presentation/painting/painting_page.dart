@@ -37,6 +37,7 @@ import 'widgets/stamp_palette_widget.dart';
 import 'widgets/vertical_action_tools_widget.dart' show SoundService;
 import 'package:fun_painting/app/app_pref.dart';
 import 'package:fun_painting/presentation/painting/widgets/painting_tutorial.dart';
+import 'package:fun_painting/presentation/painting/widgets/tools_menu.dart';
 
 /// What is covering the picture right now. One value, so two panels can never
 /// be open (or disagree) at the same time.
@@ -116,6 +117,7 @@ class _PaintingPageState extends State<PaintingPage> {
   final GlobalKey _tutUndoKey = GlobalKey();
   final GlobalKey _tutSaveKey = GlobalKey();
   bool _showTutorial = false;
+  bool _toolsMenuOpen = false;
 
   final List<ColoringAction> _actionHistory = [];
   final List<ColoringAction> _redoStack = [];
@@ -958,59 +960,57 @@ class _PaintingPageState extends State<PaintingPage> {
                   ),
                 ),
 
-                // 7. NEW (round 26): Sound levels, bottom left. Hidden while a
-                //    panel is open, like the colour circle, so it never sits on
-                //    a tool or a colour.
+                // 7. Tools (approved mockup): one tune button beside close.
+                //    It opens a small card with Sound levels and How to paint,
+                //    so the bottom-left corner stays free for painting.
+                if (_toolsMenuOpen && _panel == _KidPanel.none) ...[
+                  Positioned.fill(
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () => setState(() => _toolsMenuOpen = false),
+                    ),
+                  ),
+                  Positioned(
+                    left: margin + bubble * 0.76 + margin * 0.6,
+                    top: margin + bubble * 0.76 + margin * 0.5,
+                    child: ToolsMenuCard(
+                      width: bubble * 4.2,
+                      rowHeight: bubble * 0.8,
+                      onSound: () {
+                        setState(() => _toolsMenuOpen = false);
+                        SoundService.playClick();
+                        showSoundLevels(context);
+                      },
+                      onHelp: () {
+                        setState(() {
+                          _toolsMenuOpen = false;
+                          _showTutorial = true;
+                        });
+                      },
+                    ),
+                  ),
+                ],
                 Positioned(
-                  left: margin,
-                  bottom: margin,
+                  left: margin + bubble * 0.76 + margin * 0.6,
+                  top: margin,
                   child: IgnorePointer(
                     ignoring: _panel != _KidPanel.none,
                     child: AnimatedOpacity(
                       opacity: _panel == _KidPanel.none ? 1 : 0,
                       duration: const Duration(milliseconds: 150),
                       child: KidRoundBubble(
-                        key: const Key('kid_sound_bubble'),
-                        size: bubble * 0.75,
-                        faceColor: ColorManager.hexFFBBDEFB,
-                        tooltip: tr('sound_levels'),
+                        key: const Key('kid_tools_bubble'),
+                        size: bubble * 0.76,
+                        faceColor: _toolsMenuOpen
+                            ? ColorManager.hexFFFFD97A
+                            : ColorManager.hexFFFFE9B0,
+                        tooltip: tr('tools_menu'),
                         onTap: () {
                           SoundService.playClick();
-                          showSoundLevels(context);
+                          setState(() => _toolsMenuOpen = !_toolsMenuOpen);
                         },
                         child: Icon(
-                          Icons.volume_up_rounded,
-                          color: ColorManager.darkPrimary,
-                          size: bubble * 0.36,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                // (old) 7. Undo (and redo when there is something to redo).
-
-                // 7b. Help: show the painting tutorial again, above the sound bubble.
-                Positioned(
-                  left: margin,
-                  bottom: margin + bubble * 0.75 + margin * 0.6,
-                  child: IgnorePointer(
-                    ignoring: _panel != _KidPanel.none || _showTutorial,
-                    child: AnimatedOpacity(
-                      opacity: _panel == _KidPanel.none && !_showTutorial
-                          ? 1
-                          : 0,
-                      duration: const Duration(milliseconds: 150),
-                      child: KidRoundBubble(
-                        key: const Key('kid_help_bubble'),
-                        size: bubble * 0.75,
-                        faceColor: ColorManager.hexFFE1D5FF,
-                        tooltip: tr('tut_help'),
-                        onTap: () {
-                          SoundService.playClick();
-                          setState(() => _showTutorial = true);
-                        },
-                        child: Icon(
-                          Icons.help_outline_rounded,
+                          Icons.tune_rounded,
                           color: ColorManager.darkPrimary,
                           size: bubble * 0.36,
                         ),

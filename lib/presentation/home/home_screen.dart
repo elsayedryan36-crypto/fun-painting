@@ -207,10 +207,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const SettingWidget(),
-                  SizedBox(width: AppPx.p12),
+                  // Sound first (left), then the gear: moved left on request.
                   // Round 26: no player passed; the level is shared via MusicLevel
                   const SoundLevelButton(),
+                  SizedBox(width: AppPx.p12),
+                  const SettingWidget(),
                   // (old) SoundLevelButton(player: _player),
                 ],
               ),

@@ -184,4 +184,6 @@ class ColorManager {
   static const Color hexFFFFFDF8 = Color(0xFFFFFDF8);
   static const Color hexFFFFFF00 = Color(0xFFFFFF00);
   static const Color hexFFFFFF33 = Color(0xFFFFFF33);
+  static const Color hexFFFFE9B0 = Color(0xFFFFE9B0);
+  static const Color hexFFFFD97A = Color(0xFFFFD97A);
 }

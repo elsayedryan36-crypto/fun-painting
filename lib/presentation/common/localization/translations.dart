@@ -103,6 +103,10 @@ const Map<String, Map<String, String>> kTranslations = {
     'tut_save_title': 'Save your art',
     'tut_save_body': 'Tap the camera to save your picture to your phone.',
     'email': 'Email',
+    'tools_menu': 'Sound and help',
+    'how_to_paint': 'How to paint',
+    'ad_queued': 'The ad is loading. It will open as soon as it is ready.',
+    'ad_not_finished': 'Watch the whole ad to unlock this picture.',
   },
   'ar': {
     'pick_your_world': 'اختر عالمك!',
@@ -198,6 +202,10 @@ const Map<String, Map<String, String>> kTranslations = {
     'tut_save_title': 'احفظ رسمتك',
     'tut_save_body': 'اضغط الكاميرا لحفظ صورتك في هاتفك.',
     'email': 'البريد الإلكتروني',
+    'tools_menu': 'الصوت والمساعدة',
+    'how_to_paint': 'كيف ترسم',
+    'ad_queued': 'الإعلان يُحمَّل. سيفتح بمجرد جاهزيته.',
+    'ad_not_finished': 'شاهد الإعلان كاملاً لفتح هذه الصورة.',
   },
   'fr': {
     'pick_your_world': 'choisis ton monde !',
@@ -300,6 +308,11 @@ const Map<String, Map<String, String>> kTranslations = {
     'tut_save_body':
         'Touche l\'appareil photo pour enregistrer ton dessin sur ton téléphone.',
     'email': 'E-mail',
+    'tools_menu': 'Son et aide',
+    'how_to_paint': 'Comment peindre',
+    'ad_queued': 'La pub se charge. Elle s\'ouvrira dès qu\'elle sera prête.',
+    'ad_not_finished':
+        'Regarde la pub jusqu\'au bout pour débloquer ce dessin.',
   },
   'es': {
     'pick_your_world': '¡elige tu mundo!',
@@ -398,6 +411,10 @@ const Map<String, Map<String, String>> kTranslations = {
     'tut_save_title': 'Guarda tu dibujo',
     'tut_save_body': 'Toca la cámara para guardar tu dibujo en el teléfono.',
     'email': 'Correo',
+    'tools_menu': 'Sonido y ayuda',
+    'how_to_paint': 'Cómo pintar',
+    'ad_queued': 'El anuncio se está cargando. Se abrirá en cuanto esté listo.',
+    'ad_not_finished': 'Mira el anuncio completo para desbloquear este dibujo.',
   },
   'de': {
     'pick_your_world': 'Wähle deine Welt!',
@@ -502,6 +519,11 @@ const Map<String, Map<String, String>> kTranslations = {
     'tut_save_body':
         'Tippe auf die Kamera, um dein Bild auf dem Handy zu speichern.',
     'email': 'E-Mail',
+    'tools_menu': 'Ton und Hilfe',
+    'how_to_paint': 'So malst du',
+    'ad_queued': 'Die Werbung lädt. Sie öffnet sich, sobald sie bereit ist.',
+    'ad_not_finished':
+        'Schau die ganze Werbung, um dieses Bild freizuschalten.',
   },
   'pt': {
     'pick_your_world': 'escolha seu mundo!',
@@ -602,6 +624,10 @@ const Map<String, Map<String, String>> kTranslations = {
     'tut_save_title': 'Salve sua arte',
     'tut_save_body': 'Toque na câmera para salvar seu desenho no celular.',
     'email': 'E-mail',
+    'tools_menu': 'Som e ajuda',
+    'how_to_paint': 'Como pintar',
+    'ad_queued': 'O anúncio está a carregar. Abrirá assim que estiver pronto.',
+    'ad_not_finished': 'Veja o anúncio inteiro para desbloquear este desenho.',
   },
   'tr': {
     'pick_your_world': 'dünyanı seç!',
@@ -700,6 +726,10 @@ const Map<String, Map<String, String>> kTranslations = {
     'tut_save_title': 'Resmini kaydet',
     'tut_save_body': 'Resmini telefona kaydetmek için kameraya dokun.',
     'email': 'E-posta',
+    'tools_menu': 'Ses ve yardım',
+    'how_to_paint': 'Nasıl boyanır',
+    'ad_queued': 'Reklam yükleniyor. Hazır olunca açılacak.',
+    'ad_not_finished': 'Bu resmi açmak için reklamı sonuna kadar izle.',
   },
   'id': {
     'pick_your_world': 'pilih duniamu!',
@@ -798,6 +828,10 @@ const Map<String, Map<String, String>> kTranslations = {
     'tut_save_title': 'Simpan gambarmu',
     'tut_save_body': 'Ketuk kamera untuk menyimpan gambarmu ke ponsel.',
     'email': 'Email',
+    'tools_menu': 'Suara dan bantuan',
+    'how_to_paint': 'Cara mewarnai',
+    'ad_queued': 'Iklan sedang dimuat. Akan terbuka begitu siap.',
+    'ad_not_finished': 'Tonton iklan sampai habis untuk membuka gambar ini.',
   },
   'it': {
     'pick_your_world': 'scegli il tuo mondo!',
@@ -899,6 +933,10 @@ const Map<String, Map<String, String>> kTranslations = {
     'tut_save_title': 'Salva il tuo disegno',
     'tut_save_body': 'Tocca la fotocamera per salvare il disegno sul telefono.',
     'email': 'Email',
+    'tools_menu': 'Suono e aiuto',
+    'how_to_paint': 'Come colorare',
+    'ad_queued': 'L\'annuncio si sta caricando. Si aprirà appena è pronto.',
+    'ad_not_finished': 'Guarda tutto l\'annuncio per sbloccare questo disegno.',
   },
   'ru': {
     'pick_your_world': 'выбери свой мир!',
@@ -998,6 +1036,10 @@ const Map<String, Map<String, String>> kTranslations = {
     'tut_save_title': 'Сохрани рисунок',
     'tut_save_body': 'Нажми на камеру, чтобы сохранить рисунок в телефон.',
     'email': 'Эл. почта',
+    'tools_menu': 'Звук и помощь',
+    'how_to_paint': 'Как раскрасить',
+    'ad_queued': 'Реклама загружается. Она откроется, как только будет готова.',
+    'ad_not_finished': 'Посмотрите рекламу до конца, чтобы открыть рисунок.',
   },
   'hi': {
     'pick_your_world': 'अपनी दुनिया चुनो!',
@@ -1096,6 +1138,10 @@ const Map<String, Map<String, String>> kTranslations = {
     'tut_save_title': 'अपनी कला सेव करें',
     'tut_save_body': 'अपनी तस्वीर फ़ोन में सेव करने के लिए कैमरा छुएँ।',
     'email': 'ईमेल',
+    'tools_menu': 'आवाज़ और मदद',
+    'how_to_paint': 'कैसे रंगें',
+    'ad_queued': 'विज्ञापन लोड हो रहा है। तैयार होते ही खुल जाएगा।',
+    'ad_not_finished': 'इस चित्र को खोलने के लिए पूरा विज्ञापन देखें।',
   },
   'zh': {
     'pick_your_world': '选一个世界吧！',
@@ -1190,6 +1236,10 @@ const Map<String, Map<String, String>> kTranslations = {
     'tut_save_title': '保存你的作品',
     'tut_save_body': '点一下相机，把你的画保存到手机里。',
     'email': '电子邮件',
+    'tools_menu': '声音和帮助',
+    'how_to_paint': '怎么涂色',
+    'ad_queued': '广告正在加载，准备好后会自动打开。',
+    'ad_not_finished': '看完整个广告即可解锁这张图。',
   },
   'ja': {
     'pick_your_world': 'せかいをえらぼう！',
@@ -1284,6 +1334,10 @@ const Map<String, Map<String, String>> kTranslations = {
     'tut_save_title': 'えを保存',
     'tut_save_body': 'カメラをタップして、えをスマホに保存しよう。',
     'email': 'メール',
+    'tools_menu': 'おとと ヘルプ',
+    'how_to_paint': 'ぬりかたを みる',
+    'ad_queued': 'こうこくを よみこみ中です。じゅんびができたら ひらきます。',
+    'ad_not_finished': 'さいごまで みると この え が ひらきます。',
   },
   'ko': {
     'pick_your_world': '세상을 고르자!',
@@ -1378,5 +1432,9 @@ const Map<String, Map<String, String>> kTranslations = {
     'tut_save_title': '그림 저장',
     'tut_save_body': '카메라를 눌러서 그림을 휴대폰에 저장하세요.',
     'email': '이메일',
+    'tools_menu': '소리와 도움말',
+    'how_to_paint': '색칠하는 법',
+    'ad_queued': '광고를 불러오는 중이에요. 준비되면 바로 열려요.',
+    'ad_not_finished': '이 그림을 열려면 광고를 끝까지 보세요.',
   },
 };

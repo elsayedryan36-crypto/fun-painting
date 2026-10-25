@@ -43,18 +43,19 @@ class _LockedImageTileState extends State<LockedImageTile> {
 
     setState(() => _isShowingAd = true);
 
-    final success = await RewardedAdService.instance.showToUnlock(
+    final result = await RewardedAdService.instance.showToUnlock(
       imageId: widget.imageId,
       onUnlocked: widget.onImageUnlocked,
     );
 
     if (mounted) setState(() => _isShowingAd = false);
 
-    if (!success && mounted) {
+    if (result != UnlockResult.unlocked && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(tr('ad_not_ready')),
-          // content: Text('Ad not ready yet — try again in a moment.'),
+          content: Text(
+            tr(result == UnlockResult.queued ? 'ad_queued' : 'ad_not_finished'),
+          ),
         ),
       );
     }

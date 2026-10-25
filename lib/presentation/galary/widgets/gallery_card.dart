@@ -85,7 +85,7 @@ class _GalleryCardState extends State<GalleryCard> {
 
     setState(() => _isLoadingAd = true);
 
-    final success = await RewardedAdService.instance.showToUnlock(
+    final result = await RewardedAdService.instance.showToUnlock(
       imageId: _imageId,
       onUnlocked: () {
         if (mounted) setState(() => _isUnlocked = true);
@@ -95,13 +95,15 @@ class _GalleryCardState extends State<GalleryCard> {
     if (!mounted) return;
     setState(() => _isLoadingAd = false);
 
-    if (success) {
+    if (result == UnlockResult.unlocked) {
       _openPainting();
     } else {
+      // Queued: the ad opens by itself when ready. Not finished: say so.
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(tr('ad_not_ready')),
-          // content: Text('Ad not ready yet — try again in a moment.'),
+          content: Text(
+            tr(result == UnlockResult.queued ? 'ad_queued' : 'ad_not_finished'),
+          ),
         ),
       );
     }
@@ -113,7 +115,6 @@ class _GalleryCardState extends State<GalleryCard> {
     // rounded card edge to edge; locked = soft white veil + gift (never
     // grey); finished = a small white star chip inside the corner.
     final showLocked = _checkedUnlockState && !_isUnlocked;
-    final hasStar = widget.repository.box.containsKey(_imageId);
 
     return GestureDetector(
       onTap: _isLoadingAd ? null : _handleTap,
@@ -154,8 +155,6 @@ class _GalleryCardState extends State<GalleryCard> {
                   isLoading: _isLoadingAd,
                   pillColor: widget.accentColor,
                 ),
-              if (hasStar)
-                Positioned(top: AppPx.p6, right: AppPx.p6, child: StarBadge()),
             ],
           ),
         ),
