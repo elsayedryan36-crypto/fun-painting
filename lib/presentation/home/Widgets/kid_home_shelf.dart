@@ -67,21 +67,21 @@ const List<WorldMeta> kWorldMeta = [
   WorldMeta(
     'Zoo',
     '🦁',
-    Color(0xFF3D9142),
+    ColorManager.hexFF3D9142,
     lottie: CardAssets.jungle,
     frames: FrameRange(13, 72),
   ),
   WorldMeta(
     'Sea',
     '🌊',
-    Color(0xFF1976D2),
+    ColorManager.hexFF1976D2,
     lottie: CardAssets.sea,
     frames: FrameRange(0, 60),
   ),
   WorldMeta(
     'Dragons',
     '🐉',
-    Color(0xFF7B1FA2),
+    ColorManager.hexFF7B1FA2,
     lottie: CardAssets.dragons,
     frames: FrameRange(20, 130),
 
@@ -91,56 +91,56 @@ const List<WorldMeta> kWorldMeta = [
   WorldMeta(
     'Fairy',
     '🧚',
-    Color(0xFFE91E63),
+    ColorManager.hexFFE91E63,
     lottie: CardAssets.fairy,
     frames: FrameRange(0, 30),
   ),
   WorldMeta(
     'Space',
     '🚀',
-    Color(0xFF303F9F),
+    ColorManager.hexFF303F9F,
     lottie: CardAssets.space,
     frames: FrameRange(0, 70),
   ),
   WorldMeta(
     'Cars',
     '🚗',
-    Color(0xFFF57C00),
+    ColorManager.hexFFF57C00,
     lottie: CardAssets.cars,
     frames: FrameRange(0, 19),
   ),
   WorldMeta(
     'Circus',
     '🎪',
-    Color(0xFFE53935),
+    ColorManager.hexFFE53935,
     lottie: CardAssets.circus,
     frames: FrameRange(0, 95),
   ),
   WorldMeta(
     'Food',
     '🍓',
-    Color(0xFFEF6C00),
+    ColorManager.hexFFEF6C00,
     lottie: CardAssets.food,
     frames: FrameRange(0, 29),
   ),
   WorldMeta(
     'Flowers',
     '🌸',
-    Color(0xFFEC407A),
+    ColorManager.hexFFEC407A,
     lottie: CardAssets.flowers,
     frames: FrameRange(0, 133),
   ),
   WorldMeta(
     'Letters',
     '🔤',
-    Color(0xFF00897B),
+    ColorManager.hexFF00897B,
     lottie: CardAssets.letters,
     frames: FrameRange(0, 61),
   ),
   WorldMeta(
     'Numbers',
     '🔢',
-    Color(0xFF5D4037),
+    ColorManager.hexFF5D4037,
     lottie: CardAssets.numbers,
     frames: FrameRange(0, 72),
   ),
@@ -202,7 +202,7 @@ class WorldCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final radius = math.max(14.0, AppSizeHeight.s4);
+    final radius = math.max(AppPx.p14_0, AppSizeHeight.s4);
 
     return Semantics(
       button: true,
@@ -216,15 +216,15 @@ class WorldCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: ColorManager.white,
               borderRadius: BorderRadius.circular(radius),
-              boxShadow: const [
+              boxShadow: [
                 BoxShadow(
-                  color: Color(0x40142846),
-                  blurRadius: 12,
+                  color: ColorManager.hex40142846,
+                  blurRadius: AppPx.p12,
                   offset: Offset(0, 6),
                 ),
               ],
             ),
-            padding: EdgeInsets.all(math.max(5.0, AppSizeHeight.s1_5)),
+            padding: EdgeInsets.all(math.max(AppPx.p5_0, AppSizeHeight.s1_5)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -240,7 +240,7 @@ class WorldCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: math.max(4.0, AppSizeHeight.s1)),
+                SizedBox(height: math.max(AppPx.p4_0, AppSizeHeight.s1)),
                 _namePlate(),
               ],
             ),
@@ -257,7 +257,7 @@ class WorldCard extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0x14FFFFFF), Color(0xB8FF9800)],
+            colors: [ColorManager.hex14FFFFFF, ColorManager.hexB8FF9800],
           ),
         ),
       ),
@@ -267,16 +267,18 @@ class WorldCard extends StatelessWidget {
           children: [
             Text(
               '🖍️',
-              style: TextStyle(fontSize: math.max(30, AppSizeHeight.s9)),
+              style: TextStyle(fontSize: math.max(AppPx.p30, AppSizeHeight.s9)),
             ),
             Text(
               tr('free_draw_upper'),
               // 'FREE DRAW!',
               style: TextStyle(
-                fontSize: math.max(16, AppSizeHeight.s4),
+                fontSize: math.max(AppPx.p16, AppSizeHeight.s4),
                 fontWeight: FontWeight.w900,
-                color: const Color(0xFF7A4B00),
-                shadows: const [Shadow(color: Colors.white, blurRadius: 6)],
+                color: ColorManager.hexFF7A4B00,
+                shadows: [
+                  Shadow(color: ColorManager.white, blurRadius: AppPx.p6),
+                ],
               ),
             ),
           ],
@@ -292,20 +294,22 @@ class WorldCard extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: slot.isHero
             ? const LinearGradient(
-                colors: [Color(0xFFFFD400), Color(0xFFFF9800)],
+                colors: [ColorManager.hexFFFFD400, ColorManager.hexFFFF9800],
               )
             : null,
         color: slot.isHero ? null : meta!.color,
-        borderRadius: BorderRadius.circular(math.max(10.0, AppSizeHeight.s3)),
+        borderRadius: BorderRadius.circular(
+          math.max(AppPx.p10_0, AppSizeHeight.s3),
+        ),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
             slot.isHero ? '🖍️' : meta!.emoji,
-            style: TextStyle(fontSize: math.max(14, AppSizeHeight.s4)),
+            style: TextStyle(fontSize: math.max(AppPx.p14, AppSizeHeight.s4)),
           ),
-          const SizedBox(width: 6),
+          SizedBox(width: AppPx.p6),
           Flexible(
             child: Text(
               slot.isHero ? tr('free_draw_upper') : trName(meta!.name),
@@ -314,7 +318,7 @@ class WorldCard extends StatelessWidget {
               style: TextStyle(
                 color: ColorManager.white,
                 fontWeight: FontWeight.w900,
-                fontSize: math.max(13, AppSizeHeight.s4),
+                fontSize: math.max(AppPx.p13, AppSizeHeight.s4),
               ),
             ),
           ),

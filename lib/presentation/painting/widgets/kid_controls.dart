@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../common/resources/color_manager.dart';
 import '../models/brush_size.dart';
 import 'kid_layout.dart';
+import 'package:fun_painting/presentation/common/resources/values_manager.dart';
 
 /// ✅ NEW (kid-ui round 3): the size a rail has worked out for its buttons,
 /// handed down to the buttons themselves.
@@ -90,17 +91,17 @@ class KidRailButton extends StatelessWidget {
       height: size,
       margin: EdgeInsets.all(margin),
       decoration: BoxDecoration(
-        color: faceColor ?? Colors.white,
+        color: faceColor ?? ColorManager.white,
         borderRadius: BorderRadius.circular(radius),
         border: Border.all(
           color: selected
               ? (selectedColor ?? ColorManager.gold)
-              : Colors.black12,
+              : ColorManager.materialBlack12,
           width: selected ? size * 0.06 : size * 0.03,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.16),
+            color: ColorManager.black.withValues(alpha: 0.16),
             blurRadius: size * 0.08,
             offset: Offset(0, size * 0.03),
           ),
@@ -138,7 +139,7 @@ class KidRailButton extends StatelessWidget {
       child: Tooltip(
         message: label ?? '',
         child: Material(
-          color: Colors.transparent,
+          color: ColorManager.transparent,
           child: InkWell(
             onTap: onTap,
             borderRadius: BorderRadius.circular(radius),
@@ -229,16 +230,16 @@ class KidRail extends StatelessWidget {
           height: isHorizontal ? (thickness ?? KidLayout.railThickness) : null,
           margin: EdgeInsets.all(KidLayout.railPadding * 0.6),
           decoration: BoxDecoration(
-            color: background ?? Colors.white.withValues(alpha: 0.96),
+            color: background ?? ColorManager.white.withValues(alpha: 0.96),
             borderRadius: BorderRadius.circular(KidLayout.buttonRadius * 1.5),
             border: Border.all(
               color: ColorManager.darkPrimary.withValues(alpha: 0.25),
-              width: 2,
+              width: AppPx.p2,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.18),
-                blurRadius: 9,
+                color: ColorManager.black.withValues(alpha: 0.18),
+                blurRadius: AppPx.p9,
                 offset: const Offset(0, 4),
               ),
             ],
@@ -307,14 +308,17 @@ class KidBrushSizeControl extends StatelessWidget {
         onTap: () => onChanged(size),
         selected: size == selected,
         label: size.shortLabel,
-        inkColor: const Color(0xFF1565C0),
+        inkColor: ColorManager.hexFF1565C0,
         child: Container(
           width: size.dotDiameter,
           height: size.dotDiameter,
           decoration: BoxDecoration(
             color: previewColor,
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.black38, width: 2),
+            border: Border.all(
+              color: ColorManager.materialBlack38,
+              width: AppPx.p2,
+            ),
           ),
         ),
       );

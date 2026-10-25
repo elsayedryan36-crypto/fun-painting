@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import '../resources/assets_manager.dart';
 import 'Class.dart';
+import 'package:fun_painting/presentation/common/resources/color_manager.dart';
 
 List<String> junglePhotos = List.generate(
   89,
@@ -19,7 +20,7 @@ List<String> dragonsPhotos = List.generate(
 );
 
 List<String> fairyPhotos = List.generate(
- 57,
+  57,
   (index) => FairyAssets.asset(index + 1),
 );
 
@@ -28,12 +29,10 @@ List<String> spacePhotos = List.generate(
   (index) => SpaceAssets.asset(index + 1),
 );
 
-
 List<String> circisPhotos = List.generate(
   60,
   (index) => CirclesAssets.asset(index + 1),
 );
-
 
 List<String> transportationPhotos = List.generate(
   28,
@@ -50,136 +49,129 @@ List<String> flowersPhotos = List.generate(
   (index) => FlowersAssets.asset(index + 1),
 );
 
-
 List<String> lettersPhotos = List.generate(
   26,
   (index) => LettersAssets.asset(index + 1),
 );
 
-
 List<String> nummbersPhotos = List.generate(
- 10,
+  10,
   (index) => NumbersAssets.asset(index + 1),
 );
 
 List<String> Pattern = List.generate(
-79,
+  79,
   (index) => PatternAssets.asset(index + 1),
 );
 
-
 List<String> stamps = List.generate(
- 501,
+  501,
   (index) => StampsAssets.asset(index + 1),
 );
 
-
-
 final List<ColorGroup> groupedPalette = [
   ColorGroup("Red", [
-    Color(0xFFB71C1C),
-    Color(0xFFF44336),
-    Color(0xFFE57373),
-    Color(0xFFEF9A9A),
-    Color(0xFFFFCDD2),
-    Color(0xFFFFEBEE),
+    ColorManager.hexFFB71C1C,
+    ColorManager.hexFFF44336,
+    ColorManager.hexFFE57373,
+    ColorManager.hexFFEF9A9A,
+    ColorManager.hexFFFFCDD2,
+    ColorManager.hexFFFFEBEE,
   ]),
   ColorGroup("Orange", [
-    Color(0xFFE65100),
-    Color(0xFFF57C00),
-    Color(0xFFFB8C00),
-    Color(0xFFFFB74D),
-    Color(0xFFFFE0B2),
-    Color(0xFFFFF3E0),
+    ColorManager.hexFFE65100,
+    ColorManager.hexFFF57C00,
+    ColorManager.hexFFFB8C00,
+    ColorManager.hexFFFFB74D,
+    ColorManager.hexFFFFE0B2,
+    ColorManager.hexFFFFF3E0,
   ]),
   ColorGroup("Yellow", [
-    Color(0xFFF57F17),
-    Color(0xFFFBC02D),
-    Color(0xFFFFEB3B),
-    Color(0xFFFFF176),
-    Color(0xFFFFF9C4),
-    Color(0xFFFFFDE7),
+    ColorManager.hexFFF57F17,
+    ColorManager.hexFFFBC02D,
+    ColorManager.hexFFFFEB3B,
+    ColorManager.hexFFFFF176,
+    ColorManager.hexFFFFF9C4,
+    ColorManager.hexFFFFFDE7,
   ]),
   ColorGroup("Green", [
-    Color(0xFF1B5E20),
-    Color(0xFF388E3C),
-    Color(0xFF4CAF50),
-    Color(0xFF81C784),
-    Color(0xFFC8E6C9),
-    Color(0xFFE8F5E9),
+    ColorManager.hexFF1B5E20,
+    ColorManager.hexFF388E3C,
+    ColorManager.hexFF4CAF50,
+    ColorManager.hexFF81C784,
+    ColorManager.hexFFC8E6C9,
+    ColorManager.hexFFE8F5E9,
   ]),
   ColorGroup("Teal", [
-    Color(0xFF004D40),
-    Color(0xFF00796B),
-    Color(0xFF009688),
-    Color(0xFF4DB6AC),
-    Color(0xFFB2DFDB),
-    Color(0xFFE0F2F1),
+    ColorManager.hexFF004D40,
+    ColorManager.hexFF00796B,
+    ColorManager.hexFF009688,
+    ColorManager.hexFF4DB6AC,
+    ColorManager.hexFFB2DFDB,
+    ColorManager.hexFFE0F2F1,
   ]),
   ColorGroup("Blue", [
-    Color(0xFF0D47A1),
-    Color(0xFF2196F3),
-    Color(0xFF1976D2),
-    Color(0xFF64B5F6),
-    Color(0xFF90CAF9),
-    Color(0xFFE3F2FD),
+    ColorManager.hexFF0D47A1,
+    ColorManager.hexFF2196F3,
+    ColorManager.hexFF1976D2,
+    ColorManager.hexFF64B5F6,
+    ColorManager.hexFF90CAF9,
+    ColorManager.hexFFE3F2FD,
   ]),
   ColorGroup("Indigo", [
-    Color(0xFF1A237E),
-    Color(0xFF303F9F),
-    Color(0xFF3F51B5),
-    Color(0xFF7986CB),
-    Color(0xFF9FA8DA),
-    Color(0xFFE8EAF6),
+    ColorManager.hexFF1A237E,
+    ColorManager.hexFF303F9F,
+    ColorManager.hexFF3F51B5,
+    ColorManager.hexFF7986CB,
+    ColorManager.hexFF9FA8DA,
+    ColorManager.hexFFE8EAF6,
   ]),
   ColorGroup("Purple", [
-    Color(0xFF4A148C),
-    Color(0xFF7B1FA2),
-    Color(0xFF9C27B0),
-    Color(0xFFBA68C8),
-    Color(0xFFCE93D8),
-    Color(0xFFF3E5F5),
+    ColorManager.hexFF4A148C,
+    ColorManager.hexFF7B1FA2,
+    ColorManager.hexFF9C27B0,
+    ColorManager.hexFFBA68C8,
+    ColorManager.hexFFCE93D8,
+    ColorManager.hexFFF3E5F5,
   ]),
   ColorGroup("Pink", [
-    Color(0xFF880E4F),
-    Color(0xFFC2185B),
-    Color(0xFFE91E63),
-    Color(0xFFF48FB1),
-    Color(0xFFF8BBD0),
-    Color(0xFFFCE4EC),
+    ColorManager.hexFF880E4F,
+    ColorManager.hexFFC2185B,
+    ColorManager.hexFFE91E63,
+    ColorManager.hexFFF48FB1,
+    ColorManager.hexFFF8BBD0,
+    ColorManager.hexFFFCE4EC,
   ]),
   ColorGroup("Brown", [
-    Color(0xFF3E2723),
-    Color(0xFF5D4037),
-    Color(0xFF795548),
-    Color(0xFFA1887F),
-    Color(0xFFD7CCC8),
-    Color(0xFFEFEBE9),
+    ColorManager.hexFF3E2723,
+    ColorManager.hexFF5D4037,
+    ColorManager.hexFF795548,
+    ColorManager.hexFFA1887F,
+    ColorManager.hexFFD7CCC8,
+    ColorManager.hexFFEFEBE9,
   ]),
   ColorGroup("Gray", [
-    Color(0xFF212121),
-    Color(0xFF616161),
-    Color(0xFF9E9E9E),
-    Color(0xFFBDBDBD),
-    Color(0xFFE0E0E0),
-    Color(0xFFFAFAFA),
+    ColorManager.hexFF212121,
+    ColorManager.hexFF616161,
+    ColorManager.lightGrey,
+    ColorManager.hexFFBDBDBD,
+    ColorManager.hexFFE0E0E0,
+    ColorManager.hexFFFAFAFA,
   ]),
   ColorGroup("Black & White", [
-    Color(0xFF000000),
-    Color(0xFF333333),
-    Color(0xFF666666),
-    Color(0xFFCCCCCC),
-    Color(0xFFF5F5F5),
-    Color(0xFFFFFFFF),
+    ColorManager.black,
+    ColorManager.hexFF333333,
+    ColorManager.hexFF666666,
+    ColorManager.hexFFCCCCCC,
+    ColorManager.hexFFF5F5F5,
+    ColorManager.white,
   ]),
   ColorGroup("Neon", [
-    Color(0xFFFF6EC7), // Neon Pink
-    Color(0xFF39FF14), // Neon Green
-    Color(0xFF04D9FF), // Neon Blue
-    Color(0xFFFFFF33), // Neon Yellow
-    Color(0xFFFF5F1F), // Neon Orange
-    Color(0xFFBC13FE), // Neon Purple
+    ColorManager.hexFFFF6EC7, // Neon Pink
+    ColorManager.hexFF39FF14, // Neon Green
+    ColorManager.hexFF04D9FF, // Neon Blue
+    ColorManager.hexFFFFFF33, // Neon Yellow
+    ColorManager.hexFFFF5F1F, // Neon Orange
+    ColorManager.hexFFBC13FE, // Neon Purple
   ]),
 ];
-
-

@@ -2,6 +2,7 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:fun_painting/presentation/common/resources/color_manager.dart';
 
 /// StrokeStyle enum (added new styles)
 enum StrokeStyle {
@@ -107,7 +108,7 @@ class Region {
     required this.originalFillColor,
     Color? initialFillColor, // NEW: optional initial fill
   }) : currentFillColor =
-           initialFillColor ?? Colors.white, // start white by default
+           initialFillColor ?? ColorManager.white, // start white by default
        currentFillStyle = StrokeStyle.solid, // default fill style
        strokes = [];
 
@@ -134,7 +135,7 @@ class Region {
       return;
     }
 
-    currentFillColor = const Color(0xFFFFFFFF);
+    currentFillColor = ColorManager.white;
     currentFillStyle = StrokeStyle.solid;
     strokes.clear();
   }

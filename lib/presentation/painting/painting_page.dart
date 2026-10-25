@@ -95,9 +95,9 @@ class _PaintingPageState extends State<PaintingPage> {
   static const double _bubbleIconScale = 1.1;
 
   /// Popup backgrounds.
-  static const Color _colorSheetBg = Color(0xFFFFF8E1);
-  static const Color _stampSheetBg = Color(0xFFE3F2FD);
-  static const Color _patternSheetBg = Color(0xFFF3E5F5);
+  static const Color _colorSheetBg = ColorManager.hexFFFFF8E1;
+  static const Color _stampSheetBg = ColorManager.hexFFE3F2FD;
+  static const Color _patternSheetBg = ColorManager.hexFFF3E5F5;
 
   /// Tools that paint with the selected colour.
   static const Set<ToolType> _coloringTools = {
@@ -132,7 +132,7 @@ class _PaintingPageState extends State<PaintingPage> {
 
   BrushMode _mode = BrushMode.freehand;
   StrokeStyle _selectedStyle = StrokeStyle.solid;
-  Color _selectedColor = Colors.red;
+  Color _selectedColor = ColorManager.materialRed;
 
   SelectedTool _lastColoringTool = SelectedTool(
     mode: BrushMode.freehand,
@@ -344,7 +344,7 @@ class _PaintingPageState extends State<PaintingPage> {
       for (final region in _regions) {
         region.currentFillColor = region.keepOriginalColor
             ? region.originalFillColor
-            : Colors.white;
+            : ColorManager.white;
         region.currentFillStyle = StrokeStyle.solid;
         region.strokes.clear();
       }
@@ -606,23 +606,23 @@ class _PaintingPageState extends State<PaintingPage> {
       barrierDismissible: true,
       builder: (dialogContext) {
         return Dialog(
-          backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.symmetric(
-            horizontal: 28,
-            vertical: 24,
+          backgroundColor: ColorManager.transparent,
+          insetPadding: EdgeInsets.symmetric(
+            horizontal: AppPx.p28,
+            vertical: AppPx.p24,
           ),
           child: Container(
             width: double.infinity,
             padding: const EdgeInsets.fromLTRB(24, 22, 24, 20),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(28),
+              color: ColorManager.white,
+              borderRadius: BorderRadius.circular(AppPx.p28),
               boxShadow: [
                 BoxShadow(
-                  blurRadius: 25,
-                  spreadRadius: 2,
+                  blurRadius: AppPx.p25,
+                  spreadRadius: AppPx.p2,
                   offset: const Offset(0, 10),
-                  color: Colors.black.withValues(alpha: 0.15),
+                  color: ColorManager.black.withValues(alpha: 0.15),
                 ),
               ],
             ),
@@ -640,14 +640,18 @@ class _PaintingPageState extends State<PaintingPage> {
                   height: AppSizeHeight.s12,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: (success ? Colors.green : Colors.orange).withValues(
-                      alpha: 0.12,
-                    ),
+                    color:
+                        (success
+                                ? ColorManager.materialGreen
+                                : ColorManager.materialOrange)
+                            .withValues(alpha: 0.12),
                   ),
                   child: Icon(
                     icon,
                     size: AppSizeHeight.s12,
-                    color: success ? Colors.green : Colors.orange,
+                    color: success
+                        ? ColorManager.materialGreen
+                        : ColorManager.materialOrange,
                   ),
                 ),
                 SizedBox(height: AppSizeHeight.s2),
@@ -657,7 +661,7 @@ class _PaintingPageState extends State<PaintingPage> {
                   style: TextStyle(
                     fontSize: FontSize.s18,
                     fontWeight: FontWeight.w700,
-                    color: Colors.black87,
+                    color: ColorManager.materialBlack87,
                   ),
                 ),
                 SizedBox(height: AppSizeHeight.s2),
@@ -667,7 +671,7 @@ class _PaintingPageState extends State<PaintingPage> {
                   style: TextStyle(
                     fontSize: FontSize.s15,
                     height: 1.4,
-                    color: Colors.black54,
+                    color: ColorManager.materialBlack54,
                   ),
                 ),
                 SizedBox(height: AppSizeHeight.s2),
@@ -692,7 +696,7 @@ class _PaintingPageState extends State<PaintingPage> {
                       ),
                       style: ElevatedButton.styleFrom(
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(AppPx.p16),
                         ),
                       ),
                     ),
@@ -706,7 +710,7 @@ class _PaintingPageState extends State<PaintingPage> {
                     onPressed: () => Navigator.of(dialogContext).pop(),
                     style: TextButton.styleFrom(
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(AppPx.p16),
                       ),
                     ),
                     child: Text(
@@ -921,7 +925,7 @@ class _PaintingPageState extends State<PaintingPage> {
                       selected: fanOpen,
                       tooltip: tr('tools'),
                       // tooltip: 'Tools',
-                      faceColor: const Color(0xFFFFE082),
+                      faceColor: ColorManager.hexFFFFE082,
                       onTap: () {
                         SoundService.playClick();
                         _togglePanel(_KidPanel.toolFan);
@@ -963,7 +967,7 @@ class _PaintingPageState extends State<PaintingPage> {
                       child: KidRoundBubble(
                         key: const Key('kid_sound_bubble'),
                         size: bubble * 0.75,
-                        faceColor: const Color(0xFFBBDEFB),
+                        faceColor: ColorManager.hexFFBBDEFB,
                         tooltip: tr('sound_levels'),
                         onTap: () {
                           SoundService.playClick();
@@ -994,7 +998,7 @@ class _PaintingPageState extends State<PaintingPage> {
                       child: KidRoundBubble(
                         key: const Key('kid_help_bubble'),
                         size: bubble * 0.75,
-                        faceColor: const Color(0xFFE1D5FF),
+                        faceColor: ColorManager.hexFFE1D5FF,
                         tooltip: tr('tut_help'),
                         onTap: () {
                           SoundService.playClick();
@@ -1017,7 +1021,7 @@ class _PaintingPageState extends State<PaintingPage> {
                   child: KidRoundBubble(
                     key: const Key('kid_home_bubble'),
                     size: bubble * 0.76,
-                    faceColor: const Color(0xFFDCE3E9),
+                    faceColor: ColorManager.hexFFDCE3E9,
                     tooltip: tr('leave_drawing'),
                     // tooltip: 'Leave the drawing',
                     onTap: () {
@@ -1041,7 +1045,7 @@ class _PaintingPageState extends State<PaintingPage> {
                         KidRoundBubble(
                           key: const Key('kid_redo_bubble'),
                           size: bubble * 0.75,
-                          faceColor: const Color(0xFFFFD9B0),
+                          faceColor: ColorManager.hexFFFFD9B0,
                           tooltip: tr('redo'),
                           // tooltip: 'Redo',
                           onTap: () {
@@ -1067,7 +1071,7 @@ class _PaintingPageState extends State<PaintingPage> {
                             child: KidRoundBubble(
                               key: const Key('kid_undo_bubble'),
                               size: bubble * 0.75,
-                              faceColor: const Color(0xFFFFD9B0),
+                              faceColor: ColorManager.hexFFFFD9B0,
                               tooltip: tr('undo'),
                               // tooltip: 'Undo',
                               onTap: () {
@@ -1088,7 +1092,7 @@ class _PaintingPageState extends State<PaintingPage> {
                         child: KidRoundBubble(
                           key: const Key('kid_save_bubble'),
                           size: bubble * 0.75,
-                          faceColor: const Color(0xFFC8E6C9),
+                          faceColor: ColorManager.hexFFC8E6C9,
                           tooltip: tr('save_to_phone'),
                           // tooltip: 'Save to the phone',
                           onTap: () {
@@ -1175,14 +1179,14 @@ class _PaintingPageState extends State<PaintingPage> {
       backgroundColor: ColorManager.lightPrimary,
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(AppPx.p24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 Icons.image_not_supported_outlined,
-                size: 64,
-                color: Colors.orange,
+                size: AppPx.p64,
+                color: ColorManager.materialOrange,
               ),
               SizedBox(height: AppSizeHeight.s3),
               Text(
@@ -1192,7 +1196,7 @@ class _PaintingPageState extends State<PaintingPage> {
                 style: TextStyle(
                   fontSize: FontSize.s18,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black87,
+                  color: ColorManager.materialBlack87,
                 ),
               ),
               SizedBox(height: AppSizeHeight.s2),
@@ -1200,7 +1204,10 @@ class _PaintingPageState extends State<PaintingPage> {
                 tr('try_again_or_pick'),
                 // 'Please try again or pick another drawing.',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: FontSize.s15, color: Colors.black54),
+                style: TextStyle(
+                  fontSize: FontSize.s15,
+                  color: ColorManager.materialBlack54,
+                ),
               ),
               SizedBox(height: AppSizeHeight.s3),
               ElevatedButton(
@@ -1252,11 +1259,14 @@ class _PaintingPageState extends State<PaintingPage> {
                     decoration: BoxDecoration(
                       color: _selectedColor,
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 4),
+                      border: Border.all(
+                        color: ColorManager.white,
+                        width: AppPx.p4,
+                      ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.25),
-                          blurRadius: 8,
+                          color: ColorManager.black.withValues(alpha: 0.25),
+                          blurRadius: AppPx.p8,
                           offset: const Offset(0, 3),
                         ),
                       ],
@@ -1272,12 +1282,12 @@ class _PaintingPageState extends State<PaintingPage> {
                     width: badge,
                     height: badge,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: ColorManager.white,
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.2),
-                          blurRadius: 4,
+                          color: ColorManager.black.withValues(alpha: 0.2),
+                          blurRadius: AppPx.p4,
                         ),
                       ],
                     ),
@@ -1376,8 +1386,8 @@ class _PaintingPageState extends State<PaintingPage> {
     final square = FittedBox(
       fit: BoxFit.contain,
       child: SizedBox(
-        width: 100,
-        height: 100,
+        width: AppPx.p100,
+        height: AppPx.p100,
         child: FittedBox(fit: BoxFit.contain, child: icon),
       ),
     );
@@ -1392,7 +1402,9 @@ class _PaintingPageState extends State<PaintingPage> {
             child: DecoratedBox(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: selected ? const Color(0xFFFFE082) : Colors.transparent,
+                color: selected
+                    ? ColorManager.hexFFFFE082
+                    : ColorManager.transparent,
                 border: Border.all(
                   color: selected
                       ? ColorManager.darkPrimary
@@ -1519,7 +1531,7 @@ class _PaintingPageState extends State<PaintingPage> {
       case _KidPanel.patternGrid:
         return _patternSheetBg;
       default:
-        return Colors.white;
+        return ColorManager.white;
     }
   }
 
@@ -1540,7 +1552,7 @@ class _PaintingPageState extends State<PaintingPage> {
 
       case _KidPanel.stampGrid:
         content = DefaultTextStyle.merge(
-          style: const TextStyle(color: Colors.black), // your text colour
+          style: const TextStyle(color: ColorManager.black), // your text colour
           child: StampPaletteWidget(
             selectedImage:
                 _selectedStampAsset ?? (stamps.isNotEmpty ? stamps[0] : ''),
@@ -1588,8 +1600,8 @@ class _PaintingPageState extends State<PaintingPage> {
         borderRadius: BorderRadius.circular(KidLayout.buttonRadius * 1.4),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.24),
-            blurRadius: 18,
+            color: ColorManager.black.withValues(alpha: 0.24),
+            blurRadius: AppPx.p18,
             offset: const Offset(0, 6),
           ),
         ],
@@ -1605,10 +1617,10 @@ class _PaintingPageState extends State<PaintingPage> {
               alignment: Alignment.center,
               child: Container(
                 width: KidLayout.fanMargin * 3,
-                height: 5,
+                height: AppPx.p5,
                 decoration: BoxDecoration(
-                  color: Colors.black26,
-                  borderRadius: BorderRadius.circular(4),
+                  color: ColorManager.materialBlack26,
+                  borderRadius: BorderRadius.circular(AppPx.p4),
                 ),
               ),
             ),

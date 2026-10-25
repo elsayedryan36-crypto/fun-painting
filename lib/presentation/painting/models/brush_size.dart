@@ -1,3 +1,5 @@
+import 'package:fun_painting/presentation/common/resources/values_manager.dart';
+
 /// Kid-facing brush thickness presets.
 ///
 /// The brush width used to be hard-coded in the painter (15.0 / 14.0 / 12.0 /
@@ -6,15 +8,14 @@
 /// each new stroke remembers the factor it was drawn with, so changing the
 /// preset never re-sizes a line that is already on the page.
 enum BrushSize {
-  small(factor: 0.6, shortLabel: 'S', label: 'Thin brush', dotDiameter: 12),
-  medium(factor: 1.0, shortLabel: 'M', label: 'Medium brush', dotDiameter: 20),
-  large(factor: 1.8, shortLabel: 'L', label: 'Thick brush', dotDiameter: 30);
+  small(factor: 0.6, shortLabel: 'S', label: 'Thin brush'),
+  medium(factor: 1.0, shortLabel: 'M', label: 'Medium brush'),
+  large(factor: 1.8, shortLabel: 'L', label: 'Thick brush');
 
   const BrushSize({
     required this.factor,
     required this.shortLabel,
     required this.label,
-    required this.dotDiameter,
   });
 
   /// Multiplier applied to the base stroke width of every drawn style.
@@ -28,6 +29,10 @@ enum BrushSize {
   final String label;
 
   /// Diameter of the preview dot on the button. Shows the child the size
-  /// without words.
-  final double dotDiameter;
+  /// without words. Responsive, so it is a getter rather than a constant.
+  double get dotDiameter => switch (this) {
+    BrushSize.small => AppPx.p12,
+    BrushSize.medium => AppPx.p20,
+    BrushSize.large => AppPx.p30,
+  };
 }

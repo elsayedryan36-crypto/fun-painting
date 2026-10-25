@@ -3,6 +3,7 @@ import 'dart:ui' show Offset, Rect, Size;
 
 import 'package:flutter/painting.dart' show Alignment;
 import 'package:sizer/sizer.dart';
+import 'package:fun_painting/presentation/common/resources/values_manager.dart';
 
 /// Layout maths for the kid-friendly painting screen.
 ///
@@ -318,16 +319,16 @@ class KidLayout {
     math.min(pctH(buttonH), math.min(pctW(buttonW), maxButton)),
   );
 
-  static double get buttonGap => math.max(2, pctH(buttonGapH));
-  static double get buttonMargin => math.max(1, pctH(buttonMarginH));
-  static double get railPadding => math.max(3, pctH(railPaddingH));
+  static double get buttonGap => math.max(AppPx.p2, pctH(buttonGapH));
+  static double get buttonMargin => math.max(AppPx.p1, pctH(buttonMarginH));
+  static double get railPadding => math.max(AppPx.p3, pctH(railPaddingH));
 
   /// Thickness of a docked rail: a button plus the padding on both sides.
   static double get railThickness => buttonSize + 2 * railPadding;
 
   /// The radius of a button face — rounded, kid-friendly, scales with the
   /// screen like everything else.
-  static double get buttonRadius => math.max(12, buttonSize * 0.30);
+  static double get buttonRadius => math.max(AppPx.p12, buttonSize * 0.30);
 
   /// ✅ NEW: the size to really use inside a rail that has [railExtent] dp
   /// along its axis and must hold [count] buttons. It never scrolls: when the

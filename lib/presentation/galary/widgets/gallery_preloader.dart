@@ -6,6 +6,7 @@ import '../../common/resources/color_manager.dart';
 import '../services/gallery_thumbnail_loader.dart';
 import '../services/svg_cache.dart';
 import '../services/svg_modifier.dart';
+import 'package:fun_painting/presentation/common/resources/values_manager.dart';
 
 class GalleryPreloader {
   GalleryPreloader._();
@@ -35,7 +36,7 @@ class GalleryPreloader {
               svg: raw,
               save: save,
               fillColor: ColorManager.white,
-              strokeWidth: 5,
+              strokeWidth: AppPx.p5,
             );
 
             GalleryCache.svgs[imageId] = svg;

@@ -77,7 +77,7 @@ class _RateAppWidgetState extends State<RateAppWidget>
             tr('enjoying_the_app'),
             // 'Enjoying The App?',
             style: TextStyle(
-              fontSize: 19,
+              fontSize: AppPx.p19,
               fontWeight: FontWeight.bold,
               color: ColorManager.darkBluPrimary,
             ),
@@ -100,7 +100,7 @@ class _RateAppWidgetState extends State<RateAppWidget>
                     color: ColorManager.gold,
                   ),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: AppPx.p16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: List.generate(_starCount, (index) {
@@ -113,21 +113,21 @@ class _RateAppWidgetState extends State<RateAppWidget>
                         );
                       },
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 2),
+                        padding: EdgeInsets.symmetric(horizontal: AppPx.p2),
                         child: ShaderMask(
                           shaderCallback: (bounds) => const LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: [
-                              Color(0xFFFFF176),
-                              Color(0xFFFFC107),
-                              Color(0xFFFF8F00),
+                              ColorManager.hexFFFFF176,
+                              ColorManager.hexFFFFC107,
+                              ColorManager.hexFFFF8F00,
                             ],
                           ).createShader(bounds),
-                          child: const Icon(
+                          child: Icon(
                             Icons.star_rounded,
-                            size: 42,
-                            color: Colors.white,
+                            size: AppPx.p42,
+                            color: ColorManager.white,
                           ),
                         ),
                       ),

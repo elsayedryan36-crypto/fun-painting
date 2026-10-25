@@ -20,7 +20,7 @@ class PatternPaletteWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GridView.builder(
-      padding: const EdgeInsets.all(8),
+      padding: EdgeInsets.all(AppPx.p8),
       itemCount: Pattern.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 6,
@@ -37,14 +37,14 @@ class PatternPaletteWidget extends StatelessWidget {
           child: Container(
             height: AppSizeHeight.s18,
             width: AppSizeWidth.s20,
-            padding: const EdgeInsets.all(3),
+            padding: EdgeInsets.all(AppPx.p3),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
                 color: selectedImage == imagePath
                     ? ColorManager.gold
-                    : Colors.transparent,
-                width: 2,
+                    : ColorManager.transparent,
+                width: AppPx.p2,
               ),
             ),
             child: ClipOval(

@@ -71,7 +71,7 @@ class _SoundLevelsDialogState extends State<SoundLevelsDialog> {
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: AppPx.p8),
 
               // ---- BACKGROUND MUSIC ----
               _levelRow(
@@ -85,7 +85,7 @@ class _SoundLevelsDialogState extends State<SoundLevelsDialog> {
                   widget.onMusicChanged(value);
                 },
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: AppPx.p16),
 
               // ---- BRUSH SOUNDS (preview click on release) ----
               _levelRow(
@@ -120,7 +120,7 @@ class _SoundLevelsDialogState extends State<SoundLevelsDialog> {
         Row(
           children: [
             Icon(icon, color: ColorManager.darkBluPrimary),
-            const SizedBox(width: 8),
+            SizedBox(width: AppPx.p8),
             Expanded(
               child: Text(
                 label,
@@ -142,7 +142,7 @@ class _SoundLevelsDialogState extends State<SoundLevelsDialog> {
         ),
         Slider(
           activeColor: ColorManager.gold,
-          inactiveColor: Colors.grey.shade300,
+          inactiveColor: ColorManager.materialGreyShade300,
           value: value,
           min: 0,
           max: 1,

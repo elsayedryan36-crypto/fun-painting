@@ -102,6 +102,7 @@ const Map<String, Map<String, String>> kTranslations = {
     'tut_undo_body': 'Made a mistake? Tap here to go back one step.',
     'tut_save_title': 'Save your art',
     'tut_save_body': 'Tap the camera to save your picture to your phone.',
+    'email': 'Email',
   },
   'ar': {
     'pick_your_world': 'اختر عالمك!',
@@ -196,6 +197,7 @@ const Map<String, Map<String, String>> kTranslations = {
     'tut_undo_body': 'أخطأت؟ اضغط هنا للعودة خطوة إلى الوراء.',
     'tut_save_title': 'احفظ رسمتك',
     'tut_save_body': 'اضغط الكاميرا لحفظ صورتك في هاتفك.',
+    'email': 'البريد الإلكتروني',
   },
   'fr': {
     'pick_your_world': 'choisis ton monde !',
@@ -297,6 +299,7 @@ const Map<String, Map<String, String>> kTranslations = {
     'tut_save_title': 'Enregistre ton dessin',
     'tut_save_body':
         'Touche l\'appareil photo pour enregistrer ton dessin sur ton téléphone.',
+    'email': 'E-mail',
   },
   'es': {
     'pick_your_world': '¡elige tu mundo!',
@@ -394,6 +397,7 @@ const Map<String, Map<String, String>> kTranslations = {
     'tut_undo_body': '¿Te equivocaste? Toca aquí para volver un paso atrás.',
     'tut_save_title': 'Guarda tu dibujo',
     'tut_save_body': 'Toca la cámara para guardar tu dibujo en el teléfono.',
+    'email': 'Correo',
   },
   'de': {
     'pick_your_world': 'Wähle deine Welt!',
@@ -497,6 +501,7 @@ const Map<String, Map<String, String>> kTranslations = {
     'tut_save_title': 'Speichere dein Bild',
     'tut_save_body':
         'Tippe auf die Kamera, um dein Bild auf dem Handy zu speichern.',
+    'email': 'E-Mail',
   },
   'pt': {
     'pick_your_world': 'escolha seu mundo!',
@@ -596,6 +601,7 @@ const Map<String, Map<String, String>> kTranslations = {
     'tut_undo_body': 'Errou? Toque aqui para voltar um passo.',
     'tut_save_title': 'Salve sua arte',
     'tut_save_body': 'Toque na câmera para salvar seu desenho no celular.',
+    'email': 'E-mail',
   },
   'tr': {
     'pick_your_world': 'dünyanı seç!',
@@ -693,6 +699,7 @@ const Map<String, Map<String, String>> kTranslations = {
     'tut_undo_body': 'Hata mı yaptın? Bir adım geri gitmek için buraya dokun.',
     'tut_save_title': 'Resmini kaydet',
     'tut_save_body': 'Resmini telefona kaydetmek için kameraya dokun.',
+    'email': 'E-posta',
   },
   'id': {
     'pick_your_world': 'pilih duniamu!',
@@ -790,6 +797,7 @@ const Map<String, Map<String, String>> kTranslations = {
     'tut_undo_body': 'Salah? Ketuk di sini untuk kembali satu langkah.',
     'tut_save_title': 'Simpan gambarmu',
     'tut_save_body': 'Ketuk kamera untuk menyimpan gambarmu ke ponsel.',
+    'email': 'Email',
   },
   'it': {
     'pick_your_world': 'scegli il tuo mondo!',
@@ -890,6 +898,7 @@ const Map<String, Map<String, String>> kTranslations = {
         'Hai sbagliato? Tocca qui per tornare indietro di un passo.',
     'tut_save_title': 'Salva il tuo disegno',
     'tut_save_body': 'Tocca la fotocamera per salvare il disegno sul telefono.',
+    'email': 'Email',
   },
   'ru': {
     'pick_your_world': 'выбери свой мир!',
@@ -988,6 +997,7 @@ const Map<String, Map<String, String>> kTranslations = {
     'tut_undo_body': 'Ошибся? Нажми здесь, чтобы вернуться на шаг назад.',
     'tut_save_title': 'Сохрани рисунок',
     'tut_save_body': 'Нажми на камеру, чтобы сохранить рисунок в телефон.',
+    'email': 'Эл. почта',
   },
   'hi': {
     'pick_your_world': 'अपनी दुनिया चुनो!',
@@ -1085,6 +1095,7 @@ const Map<String, Map<String, String>> kTranslations = {
     'tut_undo_body': 'गलती हो गई? एक कदम पीछे जाने के लिए यहाँ छुएँ।',
     'tut_save_title': 'अपनी कला सेव करें',
     'tut_save_body': 'अपनी तस्वीर फ़ोन में सेव करने के लिए कैमरा छुएँ।',
+    'email': 'ईमेल',
   },
   'zh': {
     'pick_your_world': '选一个世界吧！',
@@ -1178,6 +1189,7 @@ const Map<String, Map<String, String>> kTranslations = {
     'tut_undo_body': '画错了？点这里退回一步。',
     'tut_save_title': '保存你的作品',
     'tut_save_body': '点一下相机，把你的画保存到手机里。',
+    'email': '电子邮件',
   },
   'ja': {
     'pick_your_world': 'せかいをえらぼう！',
@@ -1271,6 +1283,7 @@ const Map<String, Map<String, String>> kTranslations = {
     'tut_undo_body': 'まちがえたら、ここをタップして1つ前にもどろう。',
     'tut_save_title': 'えを保存',
     'tut_save_body': 'カメラをタップして、えをスマホに保存しよう。',
+    'email': 'メール',
   },
   'ko': {
     'pick_your_world': '세상을 고르자!',
@@ -1364,5 +1377,6 @@ const Map<String, Map<String, String>> kTranslations = {
     'tut_undo_body': '실수했나요? 여기를 눌러서 한 단계 되돌리세요.',
     'tut_save_title': '그림 저장',
     'tut_save_body': '카메라를 눌러서 그림을 휴대폰에 저장하세요.',
+    'email': '이메일',
   },
 };

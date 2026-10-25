@@ -3,6 +3,7 @@ import 'package:path_drawing/path_drawing.dart';
 import 'package:xml/xml.dart';
 
 import 'region.dart';
+import 'package:fun_painting/presentation/common/resources/color_manager.dart';
 
 List<Region> parseSvgToRegions(String svgContent) {
   final doc = XmlDocument.parse(svgContent);
@@ -109,14 +110,14 @@ List<Region> parseSvgToRegions(String svgContent) {
     // stroke) it must not become a white paintable region here either.
     final bool hidden = hiddenGeometry || (!hasFill && !hasStroke);
 
-    Color originalFill = const Color(0xFFFFFFFF);
+    Color originalFill = ColorManager.white;
     if (fillAttr != null && fillAttr.toLowerCase() != 'none') {
       try {
         originalFill = _parseColor(fillAttr);
       } catch (_) {}
     }
 
-    Color strokeColor = const Color(0xFF000000);
+    Color strokeColor = ColorManager.black;
     if (strokeAttr != null && strokeAttr.toLowerCase() != 'none') {
       try {
         strokeColor = _parseColor(strokeAttr);
@@ -135,13 +136,11 @@ List<Region> parseSvgToRegions(String svgContent) {
     // ⭐ NEW LOGIC: read custom "keepcolor" attribute
     // ----------------------------------------------------
     // final bool keepColor = node.getAttribute('keepcolor') == 'true';
-    final regionId =
-    node.getAttribute('id') ??
-    '${tag}_${regions.length}';
+    final regionId = node.getAttribute('id') ?? '${tag}_${regions.length}';
 
     regions.add(
       Region(
-          id: regionId,
+        id: regionId,
         path: path,
         strokeColor: strokeColor,
         strokeWidth: strokeWidth,
@@ -150,7 +149,7 @@ List<Region> parseSvgToRegions(String svgContent) {
         hidden: hidden, // ✅ NEW: never painted, never tappable
         initialFillColor: keepColor
             ? originalFill
-            : Colors.white, // ✅ visible start color
+            : ColorManager.white, // ✅ visible start color
       ),
     );
     // ----- old version (kept for reference) -----
@@ -186,15 +185,16 @@ bool _isInsideHiddenContainer(XmlElement node) {
     'marker',
   };
 
-  for (XmlElement? parent = node.parentElement;
-      parent != null;
-      parent = parent.parentElement) {
+  for (
+    XmlElement? parent = node.parentElement;
+    parent != null;
+    parent = parent.parentElement
+  ) {
     if (hiddenTags.contains(parent.name.local.toLowerCase())) return true;
   }
 
   return false;
 }
-
 
 Color _parseColor(String s) {
   final str = s.trim().toLowerCase();
@@ -211,18 +211,18 @@ Color _parseColor(String s) {
 
   switch (str) {
     case 'black':
-      return const Color(0xFF000000);
+      return ColorManager.black;
     case 'white':
-      return const Color(0xFFFFFFFF);
+      return ColorManager.white;
     case 'red':
-      return const Color(0xFFFF0000);
+      return ColorManager.hexFFFF0000;
     case 'green':
-      return const Color(0xFF00FF00);
+      return ColorManager.hexFF00FF00;
     case 'blue':
-      return const Color(0xFF0000FF);
+      return ColorManager.hexFF0000FF;
     case 'yellow':
-      return const Color(0xFFFFFF00);
+      return ColorManager.hexFFFFFF00;
     default:
-      return const Color(0xFF000000);
+      return ColorManager.black;
   }
 }

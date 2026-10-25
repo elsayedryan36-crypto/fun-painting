@@ -43,7 +43,7 @@ class PaintingTutorial extends StatefulWidget {
 }
 
 class _PaintingTutorialState extends State<PaintingTutorial> {
-  static const Color _dim = Color(0xB3201A2E);
+  static const Color _dim = ColorManager.hexB3201A2E;
   static const double _spotPadding = 8;
 
   int _index = 0;
@@ -181,10 +181,10 @@ class _PaintingTutorialState extends State<PaintingTutorial> {
     return BoxDecoration(
       color: ColorManager.white,
       borderRadius: BorderRadius.circular(AppSizeWidth.s3),
-      boxShadow: const [
+      boxShadow: [
         BoxShadow(
-          color: Color(0x40000000),
-          blurRadius: 16,
+          color: ColorManager.hex40000000,
+          blurRadius: AppPx.p16,
           offset: Offset(0, 6),
         ),
       ],
@@ -246,13 +246,15 @@ class _PaintingTutorialState extends State<PaintingTutorial> {
   /// Skip and Next.
   Widget _actions() {
     return Material(
-      color: Colors.transparent,
+      color: ColorManager.transparent,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           TextButton(
             onPressed: widget.onFinished,
-            style: TextButton.styleFrom(minimumSize: const Size(44, 44)),
+            style: TextButton.styleFrom(
+              minimumSize: Size(AppPx.p44, AppPx.p44),
+            ),
             child: Text(
               tr('tut_skip'),
               style: getRegularStyle(
@@ -266,7 +268,7 @@ class _PaintingTutorialState extends State<PaintingTutorial> {
             onPressed: _next,
             style: FilledButton.styleFrom(
               backgroundColor: ColorManager.darkPrimary,
-              minimumSize: const Size(44, 44),
+              minimumSize: Size(AppPx.p44, AppPx.p44),
             ),
             child: Text(
               tr(_isLast ? 'tut_done' : 'tut_next'),
@@ -286,7 +288,7 @@ class _PaintingTutorialState extends State<PaintingTutorial> {
   /// long, instead of overflowing the card.
   Widget _cardBody(double width) {
     return Material(
-      color: Colors.transparent,
+      color: ColorManager.transparent,
       child: Container(
         width: width,
         padding: EdgeInsets.all(AppPaddingWidth.p3),

@@ -4,6 +4,8 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:fun_painting/presentation/painting/region.dart';
+import 'package:fun_painting/presentation/common/resources/values_manager.dart';
+import 'package:fun_painting/presentation/common/resources/color_manager.dart';
 
 /// Painter: applies translate/scale then draws regions & strokes.
 class ColoringPainter extends CustomPainter {
@@ -151,7 +153,7 @@ class ColoringPainter extends CustomPainter {
           [
             region.currentFillColor,
             region.currentFillColor.withOpacity(0.6),
-            Colors.white,
+            ColorManager.white,
           ],
           const [0.0, 0.6, 1.0],
         );
@@ -160,12 +162,12 @@ class ColoringPainter extends CustomPainter {
           region.path.getBounds().topLeft,
           region.path.getBounds().bottomRight,
           [
-            Colors.red,
-            Colors.orange,
-            Colors.yellow,
-            Colors.green,
-            Colors.blue,
-            Colors.purple,
+            ColorManager.materialRed,
+            ColorManager.materialOrange,
+            ColorManager.materialYellow,
+            ColorManager.materialGreen,
+            ColorManager.materialBlue,
+            ColorManager.materialPurple,
           ],
         );
       } else if (region.currentFillStyle
@@ -237,7 +239,7 @@ class ColoringPainter extends CustomPainter {
     final textPainter = TextPainter(
       text: TextSpan(
         text: emoji,
-        style: TextStyle(fontSize: 18, color: region.currentFillColor),
+        style: TextStyle(fontSize: AppPx.p18, color: region.currentFillColor),
       ),
       textDirection: TextDirection.ltr,
     );
@@ -341,7 +343,7 @@ class ColoringPainter extends CustomPainter {
 
       canvas.saveLayer(
         null,
-        Paint()..color = Colors.white.withOpacity(glitterOpacity),
+        Paint()..color = ColorManager.white.withOpacity(glitterOpacity),
       );
 
       final glitterPaint = Paint()
@@ -377,12 +379,12 @@ class ColoringPainter extends CustomPainter {
       return;
     }
     final rainbow = [
-      Colors.red,
-      Colors.orange,
-      Colors.yellow,
-      Colors.green,
-      Colors.blue,
-      Colors.purple,
+      ColorManager.materialRed,
+      ColorManager.materialOrange,
+      ColorManager.materialYellow,
+      ColorManager.materialGreen,
+      ColorManager.materialBlue,
+      ColorManager.materialPurple,
     ];
     for (int i = 1; i < stroke.points.length; i++) {
       final paint = Paint()
@@ -406,7 +408,7 @@ class ColoringPainter extends CustomPainter {
         text: emoji,
         // ✅ NEW (kid-ui): the emoji pattern follows the brush preset.
         style: TextStyle(
-          fontSize: 16 * _strokeBrush(stroke),
+          fontSize: AppPx.p16 * _strokeBrush(stroke),
           color: stroke.color,
         ),
         // ----- old version (kept for reference) -----
@@ -461,13 +463,13 @@ class ColoringPainter extends CustomPainter {
 
     final outerColor = Color.lerp(
       baseColor,
-      Colors.white,
+      ColorManager.white,
       0.45,
     )!.withOpacity(0.30);
     final midColor = baseColor.withOpacity(0.64);
     final coreColor = Color.lerp(
       baseColor,
-      Colors.black,
+      ColorManager.black,
       0.06,
     )!.withOpacity(0.50);
 
@@ -580,7 +582,7 @@ class ColoringPainter extends CustomPainter {
         text: '🌟',
         // ✅ NEW (kid-ui): sticker size follows the brush preset.
         style: TextStyle(
-          fontSize: 40 * _strokeBrush(stroke),
+          fontSize: AppPx.p40 * _strokeBrush(stroke),
           color: stroke.color,
         ),
         // ----- old version (kept for reference) -----
