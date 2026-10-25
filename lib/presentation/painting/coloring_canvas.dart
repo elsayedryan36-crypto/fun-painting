@@ -14,6 +14,8 @@ import '../common/resources/assets_manager.dart';
 import 'widgets/kid_layout.dart';
 import 'coloring_painter.dart';
 import 'region.dart';
+import 'package:fun_painting/presentation/common/resources/color_manager.dart';
+import 'package:fun_painting/presentation/common/resources/values_manager.dart';
 
 // class StarAnimation {
 //   final int id;
@@ -859,9 +861,13 @@ class _LockedPulsePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 6 * (1 - t)
-      ..color = const Color(0xFFE53935).withValues(alpha: 1 - t);
-    canvas.drawCircle(size.center(Offset.zero), 12 + 18 * t, paint);
+      ..strokeWidth = AppPx.p6 * (1 - t)
+      ..color = ColorManager.hexFFE53935.withValues(alpha: 1 - t);
+    canvas.drawCircle(
+      size.center(Offset.zero),
+      AppPx.p12 + AppPx.p18 * t,
+      paint,
+    );
   }
 
   @override
@@ -1294,7 +1300,7 @@ class ColoringCanvasState extends State<ColoringCanvas> {
           );
           final stamp = Stroke(
             points: [p],
-            color: Colors.transparent,
+            color: ColorManager.transparent,
             style: StrokeStyle.stampSvg,
             stampSize: widget.stampSize,
             svgPicture: _selectedSvgPicture,
@@ -1409,7 +1415,7 @@ class ColoringCanvasState extends State<ColoringCanvas> {
               // ✅ NEW (kid-ui): remember this stroke's S/M/L width.
               brushScale: widget.brushScale,
               color: widget.brushMode == BrushMode.eraser
-                  ? Colors.white
+                  ? ColorManager.white
                   : widget.selectedColor,
               style: widget.brushMode == BrushMode.eraser
                   ? StrokeStyle.solid
@@ -1491,7 +1497,7 @@ class ColoringCanvasState extends State<ColoringCanvas> {
           // ✅ NEW (kid-ui): remember this stroke's S/M/L width.
           brushScale: widget.brushScale,
           color: widget.brushMode == BrushMode.eraser
-              ? Colors.white
+              ? ColorManager.white
               : widget.selectedColor,
           style: widget.brushMode == BrushMode.eraser
               ? StrokeStyle.solid

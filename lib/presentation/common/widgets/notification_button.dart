@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:fun_painting/presentation/common/resources/values_manager.dart';
+import 'package:fun_painting/presentation/common/resources/color_manager.dart';
 
 class NotificationButton extends StatelessWidget {
   const NotificationButton({
@@ -13,22 +15,22 @@ class NotificationButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(
-        left: 30.0,
-        right: 30.0,
-        top: 10,
-        bottom: 10,
+      padding: EdgeInsets.only(
+        left: AppPx.p30_0,
+        right: AppPx.p30_0,
+        top: AppPx.p10,
+        bottom: AppPx.p10,
       ),
       child: SizedBox(
         width: MediaQuery.of(context).size.width,
-        height: 50,
+        height: AppPx.p50,
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
             shadowColor: Theme.of(context).shadowColor,
             backgroundColor: Theme.of(context).primaryColor,
           ),
           onPressed: onPressed,
-          child: Text(text, style: const TextStyle(color: Colors.white)),
+          child: Text(text, style: const TextStyle(color: ColorManager.white)),
         ),
       ),
     );

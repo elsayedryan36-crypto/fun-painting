@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:sizer/sizer.dart';
 
 class AppMarginHeight {
@@ -323,4 +324,83 @@ class DurationConstant {
 
   static int d300 = 300;
   static int d700 = 700;
+}
+
+/// Responsive pixel sizes. Each value is the number the widget used before,
+/// multiplied by AppScale.factor: 1.0 on the 640x360 reference screen, up to
+/// 1.3 on bigger phones, never smaller, so tap targets keep their size.
+
+class AppScale {
+  AppScale._();
+  static const double refWidth = 640;
+  static const double refHeight = 360;
+
+  static double get factor {
+    final views = WidgetsBinding.instance.platformDispatcher.views;
+    if (views.isEmpty) return 1.0;
+    final view = views.first;
+    final size = view.physicalSize / view.devicePixelRatio;
+    final byWidth = size.width / refWidth;
+    final byHeight = size.height / refHeight;
+    final f = byWidth < byHeight ? byWidth : byHeight;
+    return f.clamp(1.0, 1.3).toDouble();
+  }
+}
+
+class AppPx {
+  AppPx._();
+  static double get p1 => 1 * AppScale.factor;
+  static double get p1_5 => 1.5 * AppScale.factor;
+  static double get p2 => 2 * AppScale.factor;
+  static double get p3 => 3 * AppScale.factor;
+  static double get p4 => 4 * AppScale.factor;
+  static double get p4_0 => 4.0 * AppScale.factor;
+  static double get p5 => 5 * AppScale.factor;
+  static double get p5_0 => 5.0 * AppScale.factor;
+  static double get p6 => 6 * AppScale.factor;
+  static double get p8 => 8 * AppScale.factor;
+  static double get p8_0 => 8.0 * AppScale.factor;
+  static double get p9 => 9 * AppScale.factor;
+  static double get p10 => 10 * AppScale.factor;
+  static double get p10_0 => 10.0 * AppScale.factor;
+  static double get p11 => 11 * AppScale.factor;
+  static double get p12 => 12 * AppScale.factor;
+  static double get p13 => 13 * AppScale.factor;
+  static double get p14 => 14 * AppScale.factor;
+  static double get p14_0 => 14.0 * AppScale.factor;
+  static double get p15 => 15 * AppScale.factor;
+  static double get p16 => 16 * AppScale.factor;
+  static double get p17 => 17 * AppScale.factor;
+  static double get p18 => 18 * AppScale.factor;
+  static double get p19 => 19 * AppScale.factor;
+  static double get p20 => 20 * AppScale.factor;
+  static double get p22 => 22 * AppScale.factor;
+  static double get p24 => 24 * AppScale.factor;
+  static double get p25 => 25 * AppScale.factor;
+  static double get p26 => 26 * AppScale.factor;
+  static double get p28 => 28 * AppScale.factor;
+  static double get p29 => 29 * AppScale.factor;
+  static double get p30 => 30 * AppScale.factor;
+  static double get p30_0 => 30.0 * AppScale.factor;
+  static double get p34 => 34 * AppScale.factor;
+  static double get p40 => 40 * AppScale.factor;
+  static double get p42 => 42 * AppScale.factor;
+  static double get p44 => 44 * AppScale.factor;
+  static double get p48 => 48 * AppScale.factor;
+  static double get p50 => 50 * AppScale.factor;
+  static double get p52 => 52 * AppScale.factor;
+  static double get p55 => 55 * AppScale.factor;
+  static double get p56 => 56 * AppScale.factor;
+  static double get p60 => 60 * AppScale.factor;
+  static double get p64 => 64 * AppScale.factor;
+  static double get p68 => 68 * AppScale.factor;
+  static double get p70 => 70 * AppScale.factor;
+  static double get p99 => 99 * AppScale.factor;
+  static double get p100 => 100 * AppScale.factor;
+  static double get p140 => 140 * AppScale.factor;
+  static double get p150 => 150 * AppScale.factor;
+  static double get p170 => 170 * AppScale.factor;
+  static double get p200 => 200 * AppScale.factor;
+  static double get p250 => 250 * AppScale.factor;
+  static double get p7 => 7 * AppScale.factor;
 }

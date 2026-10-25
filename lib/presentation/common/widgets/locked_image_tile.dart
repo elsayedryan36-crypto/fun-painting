@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:fun_painting/presentation/common/localization/app_language.dart';
 
 import '../../../data/services/rewarded_ad_service.dart';
+import 'package:fun_painting/presentation/common/resources/values_manager.dart';
+import 'package:fun_painting/presentation/common/resources/color_manager.dart';
 
 /// A gallery tile for a single coloring image. If [isUnlocked] is false,
 /// shows a dimmed thumbnail with a lock badge; tapping triggers the
@@ -67,7 +69,10 @@ class _LockedImageTileState extends State<LockedImageTile> {
         children: [
           ColorFiltered(
             colorFilter: widget.isUnlocked
-                ? const ColorFilter.mode(Colors.transparent, BlendMode.multiply)
+                ? const ColorFilter.mode(
+                    ColorManager.transparent,
+                    BlendMode.multiply,
+                  )
                 : const ColorFilter.matrix(<double>[
                     0.2126,
                     0.7152,
@@ -95,19 +100,26 @@ class _LockedImageTileState extends State<LockedImageTile> {
           if (!widget.isUnlocked)
             Positioned.fill(
               child: Container(
-                color: Colors.black26,
+                color: ColorManager.materialBlack26,
                 alignment: Alignment.center,
                 child: _isShowingAd
-                    ? const CircularProgressIndicator(color: Colors.white)
+                    ? const CircularProgressIndicator(color: ColorManager.white)
                     : Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.lock, color: Colors.white, size: 28),
-                          SizedBox(height: 4),
+                          Icon(
+                            Icons.lock,
+                            color: ColorManager.white,
+                            size: AppPx.p28,
+                          ),
+                          SizedBox(height: AppPx.p4),
                           Text(
                             tr('watch_to_unlock'),
                             // 'Watch to unlock',
-                            style: TextStyle(color: Colors.white, fontSize: 12),
+                            style: TextStyle(
+                              color: ColorManager.white,
+                              fontSize: AppPx.p12,
+                            ),
                           ),
                         ],
                       ),

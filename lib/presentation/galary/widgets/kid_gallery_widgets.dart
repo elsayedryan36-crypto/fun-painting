@@ -36,19 +36,21 @@ class WorldBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: math.max(52, AppSizeHeight.s12),
+      height: math.max(AppPx.p52, AppSizeHeight.s12),
       margin: EdgeInsets.symmetric(
         horizontal: AppPaddingWidth.p2,
         vertical: AppPaddingHeight.p1,
       ),
       decoration: BoxDecoration(
         color: ColorManager.white,
-        borderRadius: BorderRadius.circular(math.max(14, AppSizeHeight.s4)),
-        boxShadow: const [
+        borderRadius: BorderRadius.circular(
+          math.max(AppPx.p14, AppSizeHeight.s4),
+        ),
+        boxShadow: [
           BoxShadow(
-            color: Color(0x2B142846),
-            blurRadius: 8,
-            offset: Offset(0, 4),
+            color: ColorManager.hex2B142846,
+            blurRadius: AppPx.p8,
+            offset: Offset(0, AppPx.p4),
           ),
         ],
       ),
@@ -57,7 +59,7 @@ class WorldBanner extends StatelessWidget {
           SizedBox(width: AppPaddingWidth.p3),
           Text(
             emoji,
-            style: TextStyle(fontSize: math.max(18, AppSizeHeight.s5)),
+            style: TextStyle(fontSize: math.max(AppPx.p18, AppSizeHeight.s5)),
           ),
           SizedBox(width: AppPaddingWidth.p2),
           Flexible(
@@ -67,15 +69,15 @@ class WorldBanner extends StatelessWidget {
               style: TextStyle(
                 color: color,
                 fontWeight: FontWeight.w900,
-                fontSize: math.max(14, AppSizeHeight.s4),
+                fontSize: math.max(AppPx.p14, AppSizeHeight.s4),
               ),
             ),
           ),
           GestureDetector(
             onTap: onHome,
             child: Container(
-              width: math.max(44, AppSizeWidth.s8),
-              height: math.max(44, AppSizeHeight.s10),
+              width: math.max(AppPx.p44, AppSizeWidth.s8),
+              height: math.max(AppPx.p44, AppSizeHeight.s10),
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
@@ -83,7 +85,9 @@ class WorldBanner extends StatelessWidget {
               child: Center(
                 child: Text(
                   '🏠',
-                  style: TextStyle(fontSize: math.max(16, AppSizeHeight.s4)),
+                  style: TextStyle(
+                    fontSize: math.max(AppPx.p16, AppSizeHeight.s4),
+                  ),
                 ),
               ),
             ),
@@ -130,23 +134,25 @@ class GalleryTopBar extends StatelessWidget {
           GestureDetector(
             onTap: onHome,
             child: Container(
-              width: math.max(44, AppSizeHeight.s11),
-              height: math.max(44, AppSizeHeight.s11),
+              width: math.max(AppPx.p44, AppSizeHeight.s11),
+              height: math.max(AppPx.p44, AppSizeHeight.s11),
               decoration: BoxDecoration(
                 color: ColorManager.white,
                 shape: BoxShape.circle,
-                boxShadow: const [
+                boxShadow: [
                   BoxShadow(
-                    color: Color(0x24142846),
-                    blurRadius: 8,
-                    offset: Offset(0, 3),
+                    color: ColorManager.hex24142846,
+                    blurRadius: AppPx.p8,
+                    offset: Offset(0, AppPx.p3),
                   ),
                 ],
               ),
               child: Center(
                 child: Text(
                   '🏠',
-                  style: TextStyle(fontSize: math.max(18, AppSizeHeight.s5)),
+                  style: TextStyle(
+                    fontSize: math.max(AppPx.p18, AppSizeHeight.s5),
+                  ),
                 ),
               ),
             ),
@@ -155,17 +161,17 @@ class GalleryTopBar extends StatelessWidget {
           // the world chip: emoji + name + count pill
           Expanded(
             child: Container(
-              height: math.max(44, AppSizeHeight.s11),
+              height: math.max(AppPx.p44, AppSizeHeight.s11),
               decoration: BoxDecoration(
                 color: ColorManager.white,
                 borderRadius: BorderRadius.circular(
-                  math.max(14, AppSizeHeight.s4),
+                  math.max(AppPx.p14, AppSizeHeight.s4),
                 ),
-                boxShadow: const [
+                boxShadow: [
                   BoxShadow(
-                    color: Color(0x1F142846),
-                    blurRadius: 8,
-                    offset: Offset(0, 3),
+                    color: ColorManager.hex1F142846,
+                    blurRadius: AppPx.p8,
+                    offset: Offset(0, AppPx.p3),
                   ),
                 ],
               ),
@@ -174,7 +180,9 @@ class GalleryTopBar extends StatelessWidget {
                 children: [
                   Text(
                     emoji,
-                    style: TextStyle(fontSize: math.max(17, AppSizeHeight.s5)),
+                    style: TextStyle(
+                      fontSize: math.max(AppPx.p17, AppSizeHeight.s5),
+                    ),
                   ),
                   SizedBox(width: AppPaddingWidth.p2),
                   Flexible(
@@ -183,8 +191,8 @@ class GalleryTopBar extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontWeight: FontWeight.w900,
-                        fontSize: math.max(14, AppSizeHeight.s4),
-                        color: const Color(0xFF2E3A46),
+                        fontSize: math.max(AppPx.p14, AppSizeHeight.s4),
+                        color: ColorManager.hexFF2E3A46,
                       ),
                     ),
                   ),
@@ -197,7 +205,7 @@ class GalleryTopBar extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: color.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(
-                        math.max(9, AppSizeHeight.s2),
+                        math.max(AppPx.p9, AppSizeHeight.s2),
                       ),
                     ),
                     child: Text(
@@ -205,7 +213,7 @@ class GalleryTopBar extends StatelessWidget {
                       style: TextStyle(
                         color: color,
                         fontWeight: FontWeight.w900,
-                        fontSize: math.max(11, AppSizeHeight.s3),
+                        fontSize: math.max(AppPx.p11, AppSizeHeight.s3),
                       ),
                     ),
                   ),
@@ -237,22 +245,22 @@ class GiftOverlay extends StatelessWidget {
   const GiftOverlay({
     super.key,
     this.isLoading = false,
-    this.pillColor = const Color(0xFF344D67),
+    this.pillColor = ColorManager.darkPrimary,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0x9EFFFFFF),
+      color: ColorManager.hex9EFFFFFF,
       child: Center(
         child: isLoading
-            ? const CircularProgressIndicator(strokeWidth: 3)
+            ? CircularProgressIndicator(strokeWidth: AppPx.p3)
             : Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   SizedBox(
-                    width: math.max(52, AppSizeWidth.s11),
-                    height: math.max(52, AppSizeHeight.s13),
+                    width: math.max(AppPx.p52, AppSizeWidth.s11),
+                    height: math.max(AppPx.p52, AppSizeHeight.s13),
                     child: Lottie.asset(JsonAssets.giftBox, repeat: true),
                   ),
                   Container(
@@ -262,12 +270,12 @@ class GiftOverlay extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: pillColor,
-                      borderRadius: BorderRadius.circular(99),
-                      boxShadow: const [
+                      borderRadius: BorderRadius.circular(AppPx.p99),
+                      boxShadow: [
                         BoxShadow(
-                          color: Color(0x33000000),
-                          blurRadius: 6,
-                          offset: Offset(0, 2),
+                          color: ColorManager.hex33000000,
+                          blurRadius: AppPx.p6,
+                          offset: Offset(0, AppPx.p2),
                         ),
                       ],
                     ),
@@ -277,7 +285,7 @@ class GiftOverlay extends StatelessWidget {
                       style: TextStyle(
                         color: ColorManager.white,
                         fontWeight: FontWeight.w900,
-                        fontSize: math.max(11, AppSizeHeight.s3),
+                        fontSize: math.max(AppPx.p11, AppSizeHeight.s3),
                       ),
                     ),
                   ),
@@ -304,23 +312,23 @@ class StarBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: math.max(26, AppSizeWidth.s5),
-      height: math.max(26, AppSizeHeight.s7),
+      width: math.max(AppPx.p26, AppSizeWidth.s5),
+      height: math.max(AppPx.p26, AppSizeHeight.s7),
       decoration: BoxDecoration(
         color: ColorManager.white,
         shape: BoxShape.circle,
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x2E000000),
-            blurRadius: 5,
-            offset: Offset(0, 2),
+            color: ColorManager.hex2E000000,
+            blurRadius: AppPx.p5,
+            offset: Offset(0, AppPx.p2),
           ),
         ],
       ),
       child: Center(
         child: Text(
           '⭐',
-          style: TextStyle(fontSize: math.max(12, AppSizeHeight.s3)),
+          style: TextStyle(fontSize: math.max(AppPx.p12, AppSizeHeight.s3)),
         ),
       ),
     );

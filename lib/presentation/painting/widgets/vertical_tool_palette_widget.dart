@@ -248,7 +248,7 @@ class VerticalToolPaletteWidget extends StatelessWidget {
                         tr('stamp'),
                         // 'Stamp',
                         style: TextStyle(
-                          fontSize: 10,
+                          fontSize: AppPx.p10,
                           color: ColorManager.darkPrimary,
                         ),
                       ),

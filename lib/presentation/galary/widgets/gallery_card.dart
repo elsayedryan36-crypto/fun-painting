@@ -33,7 +33,7 @@ class GalleryCard extends StatefulWidget {
     required this.refreshId,
     required this.isFree,
     required this.onReturn,
-    this.accentColor = const Color(0xFF344D67),
+    this.accentColor = ColorManager.darkPrimary,
   });
 
   @override
@@ -120,17 +120,21 @@ class _GalleryCardState extends State<GalleryCard> {
       child: Container(
         decoration: BoxDecoration(
           color: ColorManager.white,
-          borderRadius: BorderRadius.circular(math.max(16, AppSizeHeight.s4)),
-          boxShadow: const [
+          borderRadius: BorderRadius.circular(
+            math.max(AppPx.p16, AppSizeHeight.s4),
+          ),
+          boxShadow: [
             BoxShadow(
-              color: Color(0x26142846),
-              blurRadius: 11,
-              offset: Offset(0, 5),
+              color: ColorManager.hex26142846,
+              blurRadius: AppPx.p11,
+              offset: Offset(0, AppPx.p5),
             ),
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(math.max(16, AppSizeHeight.s4)),
+          borderRadius: BorderRadius.circular(
+            math.max(AppPx.p16, AppSizeHeight.s4),
+          ),
           child: Stack(
             fit: StackFit.expand,
             children: [
@@ -142,7 +146,7 @@ class _GalleryCardState extends State<GalleryCard> {
                   imageId: widget.item.imagePath,
                   repository: widget.repository,
                   fillColor: ColorManager.white,
-                  strokeWidth: 5,
+                  strokeWidth: AppPx.p5,
                 ),
               ),
               if (showLocked)
@@ -151,7 +155,7 @@ class _GalleryCardState extends State<GalleryCard> {
                   pillColor: widget.accentColor,
                 ),
               if (hasStar)
-                const Positioned(top: 6, right: 6, child: StarBadge()),
+                Positioned(top: AppPx.p6, right: AppPx.p6, child: StarBadge()),
             ],
           ),
         ),

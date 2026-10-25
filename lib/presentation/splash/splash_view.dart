@@ -420,7 +420,7 @@ class _SplashScreenState extends State<SplashScreen>
     // dragon above a bubbly pink PLAY drop at the right. Tapping PLAY bursts
     // confetti before home opens.
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFDF8),
+      backgroundColor: ColorManager.hexFFFFFDF8,
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -446,24 +446,24 @@ class _SplashScreenState extends State<SplashScreen>
 
           // paint splats in the four corners
           Positioned(
-            left: -40,
-            top: -40,
-            child: _splat(const Color(0xFFFFB020), 190, 170),
+            left: -AppPx.p40,
+            top: -AppPx.p40,
+            child: _splat(ColorManager.hexFFFFB020, 190, 170),
           ),
           Positioned(
-            right: -30,
-            top: -30,
-            child: _splat(const Color(0xFF3EC6E0), 180, 160),
+            right: -AppPx.p30,
+            top: -AppPx.p30,
+            child: _splat(ColorManager.hexFF3EC6E0, 180, 160),
           ),
           Positioned(
-            left: -30,
-            bottom: -40,
-            child: _splat(const Color(0xFF7ED957), 220, 170),
+            left: -AppPx.p30,
+            bottom: -AppPx.p40,
+            child: _splat(ColorManager.hexFF7ED957, 220, 170),
           ),
           Positioned(
-            right: -20,
-            bottom: -30,
-            child: _splat(const Color(0xFFB983FF), 180, 150),
+            right: -AppPx.p20,
+            bottom: -AppPx.p30,
+            child: _splat(ColorManager.hexFFB983FF, 180, 150),
           ),
 
           // the mascot card, the dragon and the PLAY drop
@@ -478,13 +478,13 @@ class _SplashScreenState extends State<SplashScreen>
                     child: _mascotCard(),
                   ),
                 ),
-                const SizedBox(width: 48),
+                SizedBox(width: AppPx.p48),
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     SizedBox(
-                      width: math.max(140, AppSizeWidth.s26),
-                      height: math.max(150, AppSizeHeight.s38),
+                      width: math.max(AppPx.p140, AppSizeWidth.s26),
+                      height: math.max(AppPx.p150, AppSizeHeight.s38),
                       child:
                           widget.dragonOverride ??
                           RiveAnimation.asset(
@@ -493,21 +493,21 @@ class _SplashScreenState extends State<SplashScreen>
                             controllers: _controllers,
                           ),
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: AppPx.p12),
                     GestureDetector(
                       onTap: _playAndGo,
                       child: _Bouncy(
                         child: Container(
-                          width: math.max(200, AppSizeWidth.s26),
-                          height: math.max(64, AppSizeHeight.s12),
+                          width: math.max(AppPx.p200, AppSizeWidth.s26),
+                          height: math.max(AppPx.p64, AppSizeHeight.s12),
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFF4F8B),
-                            borderRadius: BorderRadius.circular(50),
-                            boxShadow: const [
+                            color: ColorManager.hexFFFF4F8B,
+                            borderRadius: BorderRadius.circular(AppPx.p50),
+                            boxShadow: [
                               BoxShadow(
-                                color: Color(0xFFC2295F),
-                                offset: Offset(0, 7),
+                                color: ColorManager.hexFFC2295F,
+                                offset: Offset(0, AppPx.p7),
                               ),
                             ],
                           ),
@@ -516,7 +516,7 @@ class _SplashScreenState extends State<SplashScreen>
                             style: TextStyle(
                               color: ColorManager.white,
                               fontWeight: FontWeight.w900,
-                              fontSize: math.max(22, AppSizeHeight.s5),
+                              fontSize: math.max(AppPx.p22, AppSizeHeight.s5),
                               letterSpacing: 2,
                             ),
                           ),
@@ -544,23 +544,25 @@ class _SplashScreenState extends State<SplashScreen>
             child: GestureDetector(
               onTap: _toggleMute,
               child: Container(
-                width: math.max(48, AppSizeWidth.s9),
-                height: math.max(48, AppSizeHeight.s12),
+                width: math.max(AppPx.p48, AppSizeWidth.s9),
+                height: math.max(AppPx.p48, AppSizeHeight.s12),
                 decoration: BoxDecoration(
                   color: ColorManager.white,
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Color(0x33000000),
-                      blurRadius: 8,
-                      offset: Offset(0, 3),
+                      color: ColorManager.hex33000000,
+                      blurRadius: AppPx.p8,
+                      offset: Offset(0, AppPx.p3),
                     ),
                   ],
                 ),
                 child: Center(
                   child: Text(
                     _muted ? '🔇' : '🔊',
-                    style: TextStyle(fontSize: math.max(18, AppSizeHeight.s5)),
+                    style: TextStyle(
+                      fontSize: math.max(AppPx.p18, AppSizeHeight.s5),
+                    ),
                   ),
                 ),
               ),
@@ -576,22 +578,30 @@ class _SplashScreenState extends State<SplashScreen>
     return Transform.rotate(
       angle: -0.035,
       child: Container(
-        padding: const EdgeInsets.fromLTRB(26, 18, 26, 14),
+        padding: EdgeInsets.fromLTRB(
+          AppPx.p26,
+          AppPx.p18,
+          AppPx.p26,
+          AppPx.p14,
+        ),
         decoration: BoxDecoration(
           color: ColorManager.white,
-          borderRadius: BorderRadius.circular(34),
-          boxShadow: const [
-            BoxShadow(color: Color(0xFFE9E2D2), offset: Offset(0, 10)),
+          borderRadius: BorderRadius.circular(AppPx.p34),
+          boxShadow: [
             BoxShadow(
-              color: Color(0x2E3C321E),
-              blurRadius: 26,
-              offset: Offset(0, 16),
+              color: ColorManager.hexFFE9E2D2,
+              offset: Offset(0, AppPx.p10),
+            ),
+            BoxShadow(
+              color: ColorManager.hex2E3C321E,
+              blurRadius: AppPx.p26,
+              offset: Offset(0, AppPx.p16),
             ),
           ],
         ),
         child: Image.asset(
           ImageAssets.appIcon,
-          height: math.max(170, AppSizeHeight.s38),
+          height: math.max(AppPx.p170, AppSizeHeight.s38),
         ),
       ),
     );
@@ -602,16 +612,16 @@ class _SplashScreenState extends State<SplashScreen>
   /// two palettes below, blended by [t] (0 = palette 1, 1 = palette 2).
   List<Color> _washColors(double t) {
     const from = [
-      Color(0xFFFFF1DC),
-      Color(0xFFDDF6FA),
-      Color(0xFFE4F7DD),
-      Color(0xFFF1E4FD),
+      ColorManager.hexFFFFF1DC,
+      ColorManager.hexFFDDF6FA,
+      ColorManager.hexFFE4F7DD,
+      ColorManager.hexFFF1E4FD,
     ];
     const to = [
-      Color(0xFFDDF6FA),
-      Color(0xFFE4F7DD),
-      Color(0xFFF1E4FD),
-      Color(0xFFFFF1DC),
+      ColorManager.hexFFDDF6FA,
+      ColorManager.hexFFE4F7DD,
+      ColorManager.hexFFF1E4FD,
+      ColorManager.hexFFFFF1DC,
     ];
     return [
       for (var i = 0; i < from.length; i++) Color.lerp(from[i], to[i], t)!,

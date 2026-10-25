@@ -43,18 +43,15 @@ class DefaultButton extends StatelessWidget {
       ),
       child: ElevatedButton(
         style: ButtonStyle(
-          padding: WidgetStateProperty.all(
-            EdgeInsets.all(
-              AppSizeHeight.s1_5,
-            ),
-          ),
+          padding: WidgetStateProperty.all(EdgeInsets.all(AppSizeHeight.s1_5)),
         ),
         onPressed: function,
-        child: Text(isUpperCase ? text.toUpperCase() : text,
-            style: Theme.of(context)
-                .textTheme
-                .displayMedium
-                ?.copyWith(color: textColor)),
+        child: Text(
+          isUpperCase ? text.toUpperCase() : text,
+          style: Theme.of(
+            context,
+          ).textTheme.displayMedium?.copyWith(color: textColor),
+        ),
       ),
     );
   }
@@ -103,7 +100,7 @@ class DefaultFormFiled extends StatelessWidget {
       child: Container(
         alignment: Alignment.centerLeft,
         decoration: BoxDecoration(
-          color: Colors.transparent,
+          color: ColorManager.transparent,
           borderRadius: BorderRadius.circular(AppSizeHeight.s1),
           // boxShadow: [
           //   BoxShadow(
@@ -130,8 +127,8 @@ class DefaultFormFiled extends StatelessWidget {
                 errorText: errorText,
                 hintText: hintText,
                 hintStyle: const TextStyle(
-                    // color: Colors.black38,
-                    ),
+                  // color: Colors.black38,
+                ),
                 prefixIcon: prefixIcon,
                 suffixIcon: suffixIcon != null
                     ? IconButton(
@@ -165,13 +162,11 @@ class DefaultSeparator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsetsDirectional.only(
-        start: 0.0,
-      ),
+      padding: const EdgeInsetsDirectional.only(start: 0.0),
       child: Container(
         width: double.infinity,
         height: 1.0,
-        color: Colors.grey[300],
+        color: ColorManager.materialGreyShade300,
       ),
     );
   }
@@ -199,25 +194,23 @@ class DefaultIcon extends StatelessWidget {
       child: Column(
         children: [
           CircleAvatar(
-            radius: 30,
+            radius: AppPx.p30,
             backgroundColor: color,
             child: Icon(
               icons,
               // semanticLabel: "Help",
-              size: 29,
-              color: Colors.white,
+              size: AppPx.p29,
+              color: ColorManager.white,
             ),
           ),
-          const SizedBox(
-            height: 5,
-          ),
+          SizedBox(height: AppPx.p5),
           Text(
             text,
-            style: const TextStyle(
-              fontSize: 12,
+            style: TextStyle(
+              fontSize: AppPx.p12,
               // fontWeight: FontWeight.w100,
             ),
-          )
+          ),
         ],
       ),
     );
@@ -277,13 +270,14 @@ class DefaultIcon extends StatelessWidget {
 
 /////////////////////////
 class DefaultLAlertDialog extends StatelessWidget {
-  const DefaultLAlertDialog(
-      {super.key,
-      required this.title,
-      required this.content,
-      required this.widgets,
-      required this.bordersShape,
-      required this.backGroundColor});
+  const DefaultLAlertDialog({
+    super.key,
+    required this.title,
+    required this.content,
+    required this.widgets,
+    required this.bordersShape,
+    required this.backGroundColor,
+  });
   final String title;
   final String content;
   final List<Widget> widgets;
@@ -362,12 +356,13 @@ class DefaultLAlertDialog extends StatelessWidget {
 // }
 
 class DefaultTextButton extends StatelessWidget {
-  DefaultTextButton(
-      {super.key,
-      this.style,
-      required this.function,
-      required this.text,
-      this.textAlign});
+  DefaultTextButton({
+    super.key,
+    this.style,
+    required this.function,
+    required this.text,
+    this.textAlign,
+  });
 
   final Color? textColor = ColorManager.white;
   final VoidCallback function;
@@ -382,11 +377,12 @@ class DefaultTextButton extends StatelessWidget {
       child: Text(
         text,
         textAlign: textAlign,
-        style: style ??
-            Theme.of(context)
-                .textTheme
-                .titleSmall!
-                .copyWith(color: ColorManager.white, fontSize: FontSize.s12),
+        style:
+            style ??
+            Theme.of(context).textTheme.titleSmall!.copyWith(
+              color: ColorManager.white,
+              fontSize: FontSize.s12,
+            ),
       ),
     );
   }

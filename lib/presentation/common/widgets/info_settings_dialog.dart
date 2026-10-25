@@ -57,7 +57,12 @@ class _InfoSettingsDialogState extends State<InfoSettingsDialog> {
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 640),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 8, 16),
+          padding: EdgeInsets.fromLTRB(
+            AppPx.p16,
+            AppPx.p8,
+            AppPx.p8,
+            AppPx.p16,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -88,7 +93,7 @@ class _InfoSettingsDialogState extends State<InfoSettingsDialog> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SizedBox(width: menuWidth, child: _menu()),
-                    const SizedBox(width: 12),
+                    SizedBox(width: AppPx.p12),
                     Expanded(
                       child: SingleChildScrollView(child: _panel(context)),
                     ),
@@ -111,9 +116,9 @@ class _InfoSettingsDialogState extends State<InfoSettingsDialog> {
           Icons.language_rounded,
           tr('language'),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: AppPx.p8),
         _menuItem(_SettingsTab.contact, Icons.email_rounded, tr('contact_us')),
-        const SizedBox(height: 8),
+        SizedBox(height: AppPx.p8),
         _menuItem(_SettingsTab.rate, Icons.star_rounded, tr('rate_app')),
       ],
     );
@@ -122,19 +127,19 @@ class _InfoSettingsDialogState extends State<InfoSettingsDialog> {
   Widget _menuItem(_SettingsTab tab, IconData icon, String label) {
     final on = _selected == tab;
     return Material(
-      color: on ? ColorManager.gold : Colors.white.withValues(alpha: 0.6),
-      borderRadius: BorderRadius.circular(14),
+      color: on ? ColorManager.gold : ColorManager.white.withValues(alpha: 0.6),
+      borderRadius: BorderRadius.circular(AppPx.p14),
       child: InkWell(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppPx.p14),
         onTap: () => setState(() => _selected = tab),
         child: SizedBox(
-          height: 52,
+          height: AppPx.p52,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
+            padding: EdgeInsets.symmetric(horizontal: AppPx.p10),
             child: Row(
               children: [
-                Icon(icon, color: ColorManager.darkPrimary, size: 22),
-                const SizedBox(width: 8),
+                Icon(icon, color: ColorManager.darkPrimary, size: AppPx.p22),
+                SizedBox(width: AppPx.p8),
                 Expanded(
                   child: Text(
                     label,
@@ -169,10 +174,10 @@ class _InfoSettingsDialogState extends State<InfoSettingsDialog> {
             children: [
               _ContactButton(
                 icon: Icons.email_rounded,
-                label: 'Email',
+                label: tr('email'),
                 onTap: () => _launchEmail(context, 'elsayedryan36@gmail.com'),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: AppPx.p8),
               _ContactButton(
                 faIcon: FontAwesomeIcons.whatsapp,
                 label: 'WhatsApp',
@@ -201,8 +206,8 @@ class _InfoSettingsDialogState extends State<InfoSettingsDialog> {
       valueListenable: AppLanguage.current,
       builder: (context, selected, _) {
         return Wrap(
-          spacing: 8,
-          runSpacing: 8,
+          spacing: AppPx.p8,
+          runSpacing: AppPx.p8,
           children: [
             for (final option in AppLanguage.options)
               ChoiceChip(
@@ -453,10 +458,10 @@ class _SettingsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(AppPx.p12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        color: ColorManager.white,
+        borderRadius: BorderRadius.circular(AppPx.p16),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -469,7 +474,7 @@ class _SettingsSection extends StatelessWidget {
               color: ColorManager.darkPrimary,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: AppPx.p8),
           child,
         ],
       ),
@@ -498,19 +503,22 @@ class _ContactButton extends StatelessWidget {
         : FaIcon(faIcon, color: ColorManager.gold, size: AppSizeHeight.s8);
     return Material(
       color: ColorManager.lightPrimary,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(AppPx.p12),
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppPx.p12),
         onTap: onTap,
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: 48),
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+            padding: EdgeInsets.symmetric(
+              vertical: AppPx.p8,
+              horizontal: AppPx.p8,
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 glyph,
-                const SizedBox(width: 8),
+                SizedBox(width: AppPx.p8),
                 Flexible(
                   child: Text(
                     label,

@@ -4,6 +4,7 @@ import '../../common/local_data/list.dart';
 import '../../common/resources/assets_manager.dart';
 import '../../common/resources/color_manager.dart';
 import '../models/tool_type.dart';
+import 'package:fun_painting/presentation/common/resources/values_manager.dart';
 
 /// Grid of selectable colors, grouped into palette rows. When [toolType]
 /// is [ToolType.glitter], each swatch is overlaid with a glitter texture.
@@ -40,7 +41,7 @@ class ColorPaletteWidget extends StatelessWidget {
               crossAxisCount: 6,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(8),
+              padding: EdgeInsets.all(AppPx.p8),
               children: group.colors.asMap().entries.map((entry) {
                 final c = entry.value;
                 // ✅ ADDED (tests only): a stable key per swatch.
@@ -56,7 +57,7 @@ class ColorPaletteWidget extends StatelessWidget {
                     onColorSelected(c);
                   },
                   child: Container(
-                    margin: const EdgeInsets.all(6),
+                    margin: EdgeInsets.all(AppPx.p6),
                     child: Stack(
                       children: [
                         // Background color circle
@@ -67,8 +68,8 @@ class ColorPaletteWidget extends StatelessWidget {
                             border: Border.all(
                               color: selectedColor == c
                                   ? ColorManager.gold
-                                  : Colors.transparent,
-                              width: 2,
+                                  : ColorManager.transparent,
+                              width: AppPx.p2,
                             ),
                           ),
                         ),

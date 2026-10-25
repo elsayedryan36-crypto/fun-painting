@@ -20,6 +20,7 @@ import '../common/widgets/banner_ad_widget.dart';
 import '../common/services/music_level.dart';
 import '../common/widgets/setting_Widget.dart';
 import 'package:fun_painting/presentation/common/resources/assets_manager.dart';
+import 'package:fun_painting/presentation/common/resources/color_manager.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -61,12 +62,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         context: context,
         builder: (dialogContext) => Dialog(
           backgroundColor: ColorManager.lightPrimary,
-          insetPadding: const EdgeInsets.symmetric(
-            horizontal: 40,
-            vertical: 24,
+          insetPadding: EdgeInsets.symmetric(
+            horizontal: AppPx.p40,
+            vertical: AppPx.p24,
           ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(AppPx.p20),
           ),
           child: SizedBox(
             width: AppSizeWidth.s55,
@@ -207,7 +208,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const SettingWidget(),
-                  const SizedBox(width: 12),
+                  SizedBox(width: AppPx.p12),
                   // Round 26: no player passed; the level is shared via MusicLevel
                   const SoundLevelButton(),
                   // (old) SoundLevelButton(player: _player),
@@ -263,19 +264,21 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       child: FractionallySizedBox(
         widthFactor: 0.8, // 0.6 = 60% of the screen width
         child: Container(
-          height: math.max(56, AppSizeHeight.s14),
+          height: math.max(AppPx.p56, AppSizeHeight.s14),
           margin: EdgeInsets.symmetric(
             horizontal: AppPaddingWidth.p2,
             vertical: AppPaddingHeight.p1,
           ),
           decoration: BoxDecoration(
             color: ColorManager.white,
-            borderRadius: BorderRadius.circular(math.max(14, AppSizeHeight.s4)),
-            boxShadow: const [
+            borderRadius: BorderRadius.circular(
+              math.max(AppPx.p14, AppSizeHeight.s4),
+            ),
+            boxShadow: [
               BoxShadow(
-                color: Color(0x2B142846),
-                blurRadius: 8,
-                offset: Offset(0, 4),
+                color: ColorManager.hex2B142846,
+                blurRadius: AppPx.p8,
+                offset: Offset(0, AppPx.p4),
               ),
             ],
           ),
@@ -284,7 +287,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             children: [
               Image.asset(
                 ImageAssets.appIcon,
-                height: math.max(40, AppSizeHeight.s11),
+                height: math.max(AppPx.p40, AppSizeHeight.s11),
               ),
               SizedBox(width: AppPaddingWidth.p2),
               Text(
@@ -293,7 +296,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 style: TextStyle(
                   color: ColorManager.darkPrimary,
                   fontWeight: FontWeight.w900,
-                  fontSize: math.max(15, AppSizeHeight.s4),
+                  fontSize: math.max(AppPx.p15, AppSizeHeight.s4),
                 ),
               ),
             ],
@@ -306,7 +309,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   Widget _buildShelfArrow({required bool backward, required int pageCount}) {
     final atEnd = backward ? _currentPage == 0 : _currentPage >= pageCount - 1;
     return SizedBox(
-      width: math.max(56, AppSizeWidth.s10),
+      width: math.max(AppPx.p56, AppSizeWidth.s10),
       child: Center(
         child: Opacity(
           opacity: atEnd ? 0.35 : 1,
@@ -327,23 +330,25 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     }
                   },
             child: Container(
-              width: math.max(48, AppSizeWidth.s9),
-              height: math.max(48, AppSizeHeight.s12),
+              width: math.max(AppPx.p48, AppSizeWidth.s9),
+              height: math.max(AppPx.p48, AppSizeHeight.s12),
               decoration: BoxDecoration(
                 color: ColorManager.white,
                 shape: BoxShape.circle,
-                boxShadow: const [
+                boxShadow: [
                   BoxShadow(
-                    color: Color(0x33142846),
-                    blurRadius: 8,
-                    offset: Offset(0, 3),
+                    color: ColorManager.hex33142846,
+                    blurRadius: AppPx.p8,
+                    offset: Offset(0, AppPx.p3),
                   ),
                 ],
               ),
               child: Center(
                 child: Text(
                   backward ? '👈' : '👉',
-                  style: TextStyle(fontSize: math.max(22, AppSizeHeight.s6)),
+                  style: TextStyle(
+                    fontSize: math.max(AppPx.p22, AppSizeHeight.s6),
+                  ),
                 ),
               ),
             ),
@@ -395,35 +400,35 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   Widget _buildCrayonDots(int count) {
     return SizedBox(
-      height: math.max(20, AppSizeHeight.s6),
+      height: math.max(AppPx.p20, AppSizeHeight.s6),
       child: SmoothPageIndicator(
         controller: _pageController,
         count: count,
         effect: CustomizableEffect(
-          spacing: math.max(8, AppSizeWidth.s1_5),
+          spacing: math.max(AppPx.p8, AppSizeWidth.s1_5),
           activeDotDecoration: DotDecoration(
-            width: math.max(26, AppSizeWidth.s4),
-            height: math.max(10, AppSizeHeight.s3),
+            width: math.max(AppPx.p26, AppSizeWidth.s4),
+            height: math.max(AppPx.p10, AppSizeHeight.s3),
             color: ColorManager.gold,
-            borderRadius: BorderRadius.circular(6),
-            dotBorder: const DotBorder(
-              color: Color(0xFF2E3A8C),
-              width: 2,
-              padding: 2,
+            borderRadius: BorderRadius.circular(AppPx.p6),
+            dotBorder: DotBorder(
+              color: ColorManager.hexFF2E3A8C,
+              width: AppPx.p2,
+              padding: AppPx.p2,
             ),
           ),
           dotDecoration: DotDecoration(
-            width: math.max(14, AppSizeWidth.s2),
-            height: math.max(14, AppSizeHeight.s4),
-            borderRadius: BorderRadius.circular(14),
+            width: math.max(AppPx.p14, AppSizeWidth.s2),
+            height: math.max(AppPx.p14, AppSizeHeight.s4),
+            borderRadius: BorderRadius.circular(AppPx.p14),
           ),
           inActiveColorOverride: (index) {
             const palette = [
-              Color(0xFF4CAF50),
-              Color(0xFF69F0AE),
-              Color(0xFFFFCA28),
-              Color(0xFF42A5F5),
-              Color(0xFFFFC107),
+              ColorManager.hexFF4CAF50,
+              ColorManager.hexFF69F0AE,
+              ColorManager.hexFFFFCA28,
+              ColorManager.hexFF42A5F5,
+              ColorManager.hexFFFFC107,
             ];
             return palette[index % palette.length];
           },
@@ -436,12 +441,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFFA06A44), Color(0xFF8A5A38)],
+          colors: [ColorManager.hexFFA06A44, ColorManager.hexFF8A5A38],
         ),
       ),
-      padding: EdgeInsets.all(math.max(4, AppSizeHeight.s1)),
+      padding: EdgeInsets.all(math.max(AppPx.p4, AppSizeHeight.s1)),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(math.max(8, AppSizeHeight.s2)),
+        borderRadius: BorderRadius.circular(
+          math.max(AppPx.p8, AppSizeHeight.s2),
+        ),
         child: BannerAdWidget(adUnitId: AdUnitIds.galleryBanner),
       ),
     );

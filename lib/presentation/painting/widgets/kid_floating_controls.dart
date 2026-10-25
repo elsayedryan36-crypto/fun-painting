@@ -4,6 +4,7 @@ import 'package:fun_painting/presentation/common/localization/app_language.dart'
 import '../../common/resources/color_manager.dart';
 import '../models/brush_size.dart';
 import 'kid_layout.dart';
+import 'package:fun_painting/presentation/common/resources/values_manager.dart';
 
 /// ✅ NEW (kid-ui round 4): the "nothing reserved" controls.
 ///
@@ -52,7 +53,7 @@ class KidFloatButton extends StatelessWidget {
       child: Tooltip(
         message: tooltip ?? label ?? '',
         child: Material(
-          color: Colors.transparent,
+          color: ColorManager.transparent,
           child: InkWell(
             onTap: onTap,
             customBorder: RoundedRectangleBorder(
@@ -64,17 +65,17 @@ class KidFloatButton extends StatelessWidget {
               height: size,
               padding: EdgeInsets.all(size * 0.16),
               decoration: BoxDecoration(
-                color: faceColor ?? Colors.white.withValues(alpha: 0.94),
+                color: faceColor ?? ColorManager.white.withValues(alpha: 0.94),
                 borderRadius: BorderRadius.circular(radius),
                 border: Border.all(
                   color: selected
                       ? ColorManager.gold
-                      : Colors.black.withValues(alpha: 0.10),
+                      : ColorManager.black.withValues(alpha: 0.10),
                   width: selected ? size * 0.075 : 2,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.22),
+                    color: ColorManager.black.withValues(alpha: 0.22),
                     blurRadius: size * 0.16,
                     offset: Offset(0, size * 0.05),
                   ),
@@ -128,17 +129,17 @@ class KidFloatCluster extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(pad),
       decoration: BoxDecoration(
-        color: background ?? Colors.white.withValues(alpha: 0.55),
+        color: background ?? ColorManager.white.withValues(alpha: 0.55),
         borderRadius: BorderRadius.circular(KidLayout.buttonRadius * 1.6),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.55),
-          width: 1.5,
+          color: ColorManager.white.withValues(alpha: 0.55),
+          width: AppPx.p1_5,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.12),
-            blurRadius: 14,
-            offset: const Offset(0, 5),
+            color: ColorManager.black.withValues(alpha: 0.12),
+            blurRadius: AppPx.p14,
+            offset: Offset(0, AppPx.p5),
           ),
         ],
       ),
@@ -193,17 +194,17 @@ class KidColorStrip extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: gap, vertical: gap * 0.8),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.62),
+        color: ColorManager.white.withValues(alpha: 0.62),
         borderRadius: BorderRadius.circular(dot),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.6),
-          width: 1.5,
+          color: ColorManager.white.withValues(alpha: 0.6),
+          width: AppPx.p1_5,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.14),
-            blurRadius: 14,
-            offset: const Offset(0, 5),
+            color: ColorManager.black.withValues(alpha: 0.14),
+            blurRadius: AppPx.p14,
+            offset: Offset(0, AppPx.p5),
           ),
         ],
       ),
@@ -236,7 +237,7 @@ class KidColorStrip extends StatelessWidget {
               key: const Key('kid_more_colors'),
               onTap: onMore,
               selected: moreOpen,
-              faceColor: const Color(0xFFFFE082),
+              faceColor: ColorManager.hexFFFFE082,
               tooltip: tr('all_colours'),
               // tooltip: 'All colours',
               child: Icon(
@@ -278,13 +279,13 @@ class _Dot extends StatelessWidget {
             color: color,
             shape: BoxShape.circle,
             border: Border.all(
-              color: selected ? ColorManager.darkPrimary : Colors.white,
+              color: selected ? ColorManager.darkPrimary : ColorManager.white,
               width: selected ? size * 0.14 : size * 0.08,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.20),
-                blurRadius: 3,
+                color: ColorManager.black.withValues(alpha: 0.20),
+                blurRadius: AppPx.p3,
                 offset: const Offset(0, 1),
               ),
             ],
@@ -324,7 +325,10 @@ class KidSizeChips extends StatelessWidget {
           decoration: BoxDecoration(
             color: previewColor,
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.black38, width: 2),
+            border: Border.all(
+              color: ColorManager.materialBlack38,
+              width: AppPx.p2,
+            ),
           ),
         ),
       );

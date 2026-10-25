@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fun_painting/presentation/common/localization/app_language.dart';
 
 import '../../common/resources/color_manager.dart';
+import 'package:fun_painting/presentation/common/resources/values_manager.dart';
 
 /// ✅ NEW (kid-ui): the "erase everything?" confirmation.
 ///
@@ -18,32 +19,34 @@ Future<bool> showClearAllDialog(BuildContext context) async {
     barrierDismissible: true,
     builder: (dialogContext) {
       return Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppPx.p28),
+        ),
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.all(AppPx.p20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('🧽', style: TextStyle(fontSize: 44)),
-              const SizedBox(height: 6),
+              Text('🧽', style: TextStyle(fontSize: AppPx.p44)),
+              SizedBox(height: AppPx.p6),
               Text(
                 tr('erase_everything_q'),
                 // 'Erase everything?',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 26,
+                  fontSize: AppPx.p26,
                   fontWeight: FontWeight.w800,
                   color: ColorManager.darkPrimary,
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: AppPx.p8),
               Text(
                 tr('erase_body'),
                 // 'All the colours and drawings on this page will be gone.',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 18, height: 1.3),
+                style: TextStyle(fontSize: AppPx.p18, height: 1.3),
               ),
-              const SizedBox(height: 18),
+              SizedBox(height: AppPx.p18),
               Row(
                 children: [
                   Expanded(
@@ -54,7 +57,7 @@ Future<bool> showClearAllDialog(BuildContext context) async {
                       onTap: () => Navigator.of(dialogContext).pop(false),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: AppPx.p12),
                   Expanded(
                     child: _KidDialogButton(
                       label: tr('erase_all'),
@@ -92,33 +95,33 @@ class _KidDialogButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final background = danger ? const Color(0xFFE53935) : ColorManager.gold;
-    final foreground = danger ? Colors.white : ColorManager.darkPrimary;
+    final background = danger ? ColorManager.hexFFE53935 : ColorManager.gold;
+    final foreground = danger ? ColorManager.white : ColorManager.darkPrimary;
 
     return Semantics(
       button: true,
       label: label,
       child: Material(
         color: background,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppPx.p20),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(AppPx.p20),
           child: Container(
-            height: 68,
+            height: AppPx.p68,
             alignment: Alignment.center,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
+            padding: EdgeInsets.symmetric(horizontal: AppPx.p8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(icon, color: foreground, size: 22),
-                const SizedBox(width: 6),
+                Icon(icon, color: foreground, size: AppPx.p22),
+                SizedBox(width: AppPx.p6),
                 Flexible(
                   child: Text(
                     label,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 19,
+                      fontSize: AppPx.p19,
                       fontWeight: FontWeight.w800,
                       color: foreground,
                     ),

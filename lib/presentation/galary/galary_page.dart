@@ -98,7 +98,11 @@ class _GalleryPageState extends State<GalleryPage> with RouteAware {
       return Scaffold(
         backgroundColor: ColorManager.lightPrimary,
         body: Center(
-          child: Lottie.asset(JsonAssets.loader, width: 250, height: 250),
+          child: Lottie.asset(
+            JsonAssets.loader,
+            width: AppPx.p250,
+            height: AppPx.p250,
+          ),
         ),
       );
     }
@@ -126,13 +130,21 @@ class _GalleryPageState extends State<GalleryPage> with RouteAware {
               child: ColoredBox(
                 color: Color.alphaBlend(
                   worldColor.withValues(alpha: 0.07),
-                  const Color(0xFFF7FAF6),
+                  ColorManager.hexFFF7FAF6,
                 ),
               ),
             ),
             // two soft blobs, barely there
-            Positioned(top: -70, right: -60, child: _blob(worldColor, 210)),
-            Positioned(bottom: 20, left: -55, child: _blob(worldColor, 160)),
+            Positioned(
+              top: -AppPx.p70,
+              right: -AppPx.p60,
+              child: _blob(worldColor, 210),
+            ),
+            Positioned(
+              bottom: AppPx.p20,
+              left: -AppPx.p55,
+              child: _blob(worldColor, 160),
+            ),
             // OLD (Lottie wallpaper round — too busy behind the cards,
             // kept commented per the release rule):
             // Container(
@@ -157,7 +169,7 @@ class _GalleryPageState extends State<GalleryPage> with RouteAware {
                   onHome: () => Navigator.pop(context),
                   // NEW (round 26): Sound button at the right end of the bar
                   trailing: SoundLevelButton(
-                    size: math.max(44, AppSizeHeight.s11),
+                    size: math.max(AppPx.p44, AppSizeHeight.s11),
                   ),
                 ),
                 // OLD (sticker-book banner, kept per the rule):
@@ -247,35 +259,35 @@ class _GalleryPageState extends State<GalleryPage> with RouteAware {
                   ),
                 ),
                 SizedBox(
-                  height: math.max(20, AppSizeHeight.s6),
+                  height: math.max(AppPx.p20, AppSizeHeight.s6),
                   child: SmoothPageIndicator(
                     controller: _pageController,
                     count: totalPages,
                     effect: CustomizableEffect(
-                      spacing: math.max(8, AppSizeWidth.s1_5),
+                      spacing: math.max(AppPx.p8, AppSizeWidth.s1_5),
                       activeDotDecoration: DotDecoration(
-                        width: math.max(26, AppSizeWidth.s4),
-                        height: math.max(10, AppSizeHeight.s3),
+                        width: math.max(AppPx.p26, AppSizeWidth.s4),
+                        height: math.max(AppPx.p10, AppSizeHeight.s3),
                         color: ColorManager.gold,
-                        borderRadius: BorderRadius.circular(6),
-                        dotBorder: const DotBorder(
-                          color: Color(0xFF2E3A8C),
-                          width: 2,
-                          padding: 2,
+                        borderRadius: BorderRadius.circular(AppPx.p6),
+                        dotBorder: DotBorder(
+                          color: ColorManager.hexFF2E3A8C,
+                          width: AppPx.p2,
+                          padding: AppPx.p2,
                         ),
                       ),
                       dotDecoration: DotDecoration(
-                        width: math.max(14, AppSizeWidth.s2),
-                        height: math.max(14, AppSizeHeight.s4),
-                        borderRadius: BorderRadius.circular(14),
+                        width: math.max(AppPx.p14, AppSizeWidth.s2),
+                        height: math.max(AppPx.p14, AppSizeHeight.s4),
+                        borderRadius: BorderRadius.circular(AppPx.p14),
                       ),
                       inActiveColorOverride: (index) {
                         const palette = [
-                          Color(0xFF4CAF50),
-                          Color(0xFF69F0AE),
-                          Color(0xFFFFCA28),
-                          Color(0xFF42A5F5),
-                          Color(0xFFFFC107),
+                          ColorManager.hexFF4CAF50,
+                          ColorManager.hexFF69F0AE,
+                          ColorManager.hexFFFFCA28,
+                          ColorManager.hexFF42A5F5,
+                          ColorManager.hexFFFFC107,
                         ];
                         return palette[index % palette.length];
                       },
@@ -314,12 +326,14 @@ class _GalleryPageState extends State<GalleryPage> with RouteAware {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFFA06A44), Color(0xFF8A5A38)],
+          colors: [ColorManager.hexFFA06A44, ColorManager.hexFF8A5A38],
         ),
       ),
-      padding: EdgeInsets.all(math.max(4, AppSizeHeight.s1)),
+      padding: EdgeInsets.all(math.max(AppPx.p4, AppSizeHeight.s1)),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(math.max(8, AppSizeHeight.s2)),
+        borderRadius: BorderRadius.circular(
+          math.max(AppPx.p8, AppSizeHeight.s2),
+        ),
         child: BannerAdWidget(adUnitId: AdUnitIds.selectImageBanner),
       ),
     );

@@ -92,13 +92,13 @@ class StateRenderer extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppSizeHeight.s4),
       ),
       elevation: AppSizeHeight.s1_5,
-      backgroundColor: Colors.transparent,
+      backgroundColor: ColorManager.transparent,
       child: Container(
         decoration: BoxDecoration(
           color: ColorManager.primary,
           shape: BoxShape.rectangle,
           borderRadius: BorderRadius.circular(AppSizeHeight.s4),
-          boxShadow: const [BoxShadow(color: Colors.black26)],
+          boxShadow: const [BoxShadow(color: ColorManager.materialBlack26)],
         ),
         child: _getDialogContent(context, children),
       ),
@@ -145,7 +145,11 @@ class StateRenderer extends StatelessWidget {
     );
   }
 
-  Center _getRetryButton(String buttonTitle, BuildContext context, Function function) {
+  Center _getRetryButton(
+    String buttonTitle,
+    BuildContext context,
+    Function function,
+  ) {
     return Center(
       child: Padding(
         padding: EdgeInsets.all(AppPaddingHeight.p3),

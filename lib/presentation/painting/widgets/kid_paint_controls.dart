@@ -5,6 +5,7 @@ import 'package:fun_painting/presentation/common/localization/app_language.dart'
 
 import '../../common/resources/color_manager.dart';
 import 'kid_layout.dart';
+import 'package:fun_painting/presentation/common/resources/values_manager.dart';
 
 /// ✅ NEW (kid-ui round 6 — "Coloring Book" / Option C): the whole control
 /// surface of the painting page.
@@ -60,7 +61,7 @@ class KidRoundBubble extends StatelessWidget {
       child: Tooltip(
         message: tooltip ?? '',
         child: Material(
-          color: Colors.transparent,
+          color: ColorManager.transparent,
           child: InkWell(
             onTap: onTap,
             customBorder: const CircleBorder(),
@@ -71,17 +72,17 @@ class KidRoundBubble extends StatelessWidget {
               height: side,
               padding: EdgeInsets.all(side * 0.15),
               decoration: BoxDecoration(
-                color: faceColor ?? Colors.white.withValues(alpha: 0.92),
+                color: faceColor ?? ColorManager.white.withValues(alpha: 0.92),
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: selected
                       ? ColorManager.gold
-                      : Colors.black.withValues(alpha: 0.10),
+                      : ColorManager.black.withValues(alpha: 0.10),
                   width: selected ? side * 0.09 : 2,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.25),
+                    color: ColorManager.black.withValues(alpha: 0.25),
                     blurRadius: side * 0.18,
                     offset: Offset(0, side * 0.06),
                   ),
@@ -125,12 +126,12 @@ class KidCrayonBubble extends StatelessWidget {
         decoration: BoxDecoration(
           color: color,
           shape: BoxShape.circle,
-          border: Border.all(color: Colors.white, width: 4),
+          border: Border.all(color: ColorManager.white, width: AppPx.p4),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.30),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
+              color: ColorManager.black.withValues(alpha: 0.30),
+              blurRadius: AppPx.p6,
+              offset: Offset(0, AppPx.p2),
             ),
           ],
         ),
@@ -141,7 +142,7 @@ class KidCrayonBubble extends StatelessWidget {
             width: side * 0.28,
             height: side * 0.28,
             decoration: const BoxDecoration(
-              color: Colors.white,
+              color: ColorManager.white,
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -182,7 +183,7 @@ class KidPill extends StatelessWidget {
       enabled: enabled,
       label: label,
       child: Material(
-        color: Colors.transparent,
+        color: ColorManager.transparent,
         child: InkWell(
           onTap: enabled ? onTap : null,
           borderRadius: BorderRadius.circular(height / 2),
@@ -194,15 +195,15 @@ class KidPill extends StatelessWidget {
               height: height,
               padding: EdgeInsets.symmetric(horizontal: height * 0.42),
               decoration: BoxDecoration(
-                color: faceColor ?? Colors.white.withValues(alpha: 0.92),
+                color: faceColor ?? ColorManager.white.withValues(alpha: 0.92),
                 borderRadius: BorderRadius.circular(height / 2),
                 border: Border.all(
-                  color: Colors.black.withValues(alpha: 0.10),
-                  width: 2,
+                  color: ColorManager.black.withValues(alpha: 0.10),
+                  width: AppPx.p2,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.22),
+                    color: ColorManager.black.withValues(alpha: 0.22),
                     blurRadius: height * 0.22,
                     offset: Offset(0, height * 0.08),
                   ),
@@ -258,7 +259,7 @@ class KidFanItem {
     required this.child,
     required this.label,
     required this.onTap,
-  }) : color = Colors.transparent,
+  }) : color = ColorManager.transparent,
        selected = false;
 
   bool get isColor => child == null;
@@ -356,7 +357,7 @@ class KidFan extends StatelessWidget {
                     behavior: HitTestBehavior.opaque,
                     onTap: () {},
                     child: Container(
-                      color: Colors.black.withValues(alpha: 0.18),
+                      color: ColorManager.black.withValues(alpha: 0.18),
                     ),
                   ),
                 ),
@@ -395,7 +396,7 @@ class _FanDot extends StatelessWidget {
         selected: item.selected,
         label: item.label,
         child: Material(
-          color: Colors.transparent,
+          color: ColorManager.transparent,
           child: InkWell(
             onTap: item.onTap,
             customBorder: const CircleBorder(),
@@ -403,17 +404,17 @@ class _FanDot extends StatelessWidget {
               width: size,
               height: size,
               decoration: BoxDecoration(
-                color: item.isColor ? item.color : Colors.white,
+                color: item.isColor ? item.color : ColorManager.white,
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: item.selected
                       ? ColorManager.darkPrimary
-                      : Colors.white,
+                      : ColorManager.white,
                   width: item.selected ? size * 0.13 : size * 0.09,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.28),
+                    color: ColorManager.black.withValues(alpha: 0.28),
                     blurRadius: size * 0.16,
                     offset: Offset(0, size * 0.05),
                   ),

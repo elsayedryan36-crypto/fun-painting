@@ -286,8 +286,8 @@ class _CollectionWidgetState extends State<CollectionWidget> {
       return Center(
         child: Lottie.asset(
           JsonAssets.loader,
-          width: math.max(60, AppSizeWidth.s20),
-          height: math.max(60, AppSizeWidth.s20),
+          width: math.max(AppPx.p60, AppSizeWidth.s20),
+          height: math.max(AppPx.p60, AppSizeWidth.s20),
         ),
       );
     }
