@@ -21,7 +21,7 @@ class TopBar extends StatelessWidget {
         ),
       ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 50, 20, 0),
+        padding: EdgeInsets.fromLTRB(AppPx.p20, AppPx.p50, AppPx.p20, 0),
         child: Text(
           title,
           style: TextStyle(

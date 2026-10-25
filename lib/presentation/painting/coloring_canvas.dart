@@ -15,6 +15,7 @@ import 'widgets/kid_layout.dart';
 import 'coloring_painter.dart';
 import 'region.dart';
 import 'package:fun_painting/presentation/common/resources/color_manager.dart';
+import 'package:fun_painting/presentation/common/resources/values_manager.dart';
 
 // class StarAnimation {
 //   final int id;
@@ -860,9 +861,13 @@ class _LockedPulsePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 6 * (1 - t)
+      ..strokeWidth = AppPx.p6 * (1 - t)
       ..color = ColorManager.hexFFE53935.withValues(alpha: 1 - t);
-    canvas.drawCircle(size.center(Offset.zero), 12 + 18 * t, paint);
+    canvas.drawCircle(
+      size.center(Offset.zero),
+      AppPx.p12 + AppPx.p18 * t,
+      paint,
+    );
   }
 
   @override

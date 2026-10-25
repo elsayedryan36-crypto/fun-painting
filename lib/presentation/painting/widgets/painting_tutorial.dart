@@ -185,7 +185,7 @@ class _PaintingTutorialState extends State<PaintingTutorial> {
         BoxShadow(
           color: ColorManager.hex40000000,
           blurRadius: AppPx.p16,
-          offset: Offset(0, 6),
+          offset: Offset(0, AppPx.p6),
         ),
       ],
     );

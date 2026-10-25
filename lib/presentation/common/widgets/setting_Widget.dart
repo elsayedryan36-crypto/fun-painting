@@ -55,7 +55,7 @@ class SoundLevelButton extends StatelessWidget {
             BoxShadow(
               color: ColorManager.materialBlack26,
               blurRadius: AppPx.p4,
-              offset: Offset(0, 2),
+              offset: Offset(0, AppPx.p2),
             ),
           ],
         ),

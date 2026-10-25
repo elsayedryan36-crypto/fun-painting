@@ -57,7 +57,12 @@ class _InfoSettingsDialogState extends State<InfoSettingsDialog> {
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 640),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 8, 16),
+          padding: EdgeInsets.fromLTRB(
+            AppPx.p16,
+            AppPx.p8,
+            AppPx.p8,
+            AppPx.p16,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,

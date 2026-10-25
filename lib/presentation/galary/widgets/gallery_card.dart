@@ -127,7 +127,7 @@ class _GalleryCardState extends State<GalleryCard> {
             BoxShadow(
               color: ColorManager.hex26142846,
               blurRadius: AppPx.p11,
-              offset: Offset(0, 5),
+              offset: Offset(0, AppPx.p5),
             ),
           ],
         ),

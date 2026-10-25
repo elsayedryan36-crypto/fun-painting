@@ -139,7 +139,7 @@ class KidFloatCluster extends StatelessWidget {
           BoxShadow(
             color: ColorManager.black.withValues(alpha: 0.12),
             blurRadius: AppPx.p14,
-            offset: const Offset(0, 5),
+            offset: Offset(0, AppPx.p5),
           ),
         ],
       ),
@@ -204,7 +204,7 @@ class KidColorStrip extends StatelessWidget {
           BoxShadow(
             color: ColorManager.black.withValues(alpha: 0.14),
             blurRadius: AppPx.p14,
-            offset: const Offset(0, 5),
+            offset: Offset(0, AppPx.p5),
           ),
         ],
       ),

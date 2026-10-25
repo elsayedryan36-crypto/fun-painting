@@ -278,7 +278,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               BoxShadow(
                 color: ColorManager.hex2B142846,
                 blurRadius: AppPx.p8,
-                offset: Offset(0, 4),
+                offset: Offset(0, AppPx.p4),
               ),
             ],
           ),
@@ -339,7 +339,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   BoxShadow(
                     color: ColorManager.hex33142846,
                     blurRadius: AppPx.p8,
-                    offset: Offset(0, 3),
+                    offset: Offset(0, AppPx.p3),
                   ),
                 ],
               ),

@@ -504,10 +504,10 @@ class _SplashScreenState extends State<SplashScreen>
                           decoration: BoxDecoration(
                             color: ColorManager.hexFFFF4F8B,
                             borderRadius: BorderRadius.circular(AppPx.p50),
-                            boxShadow: const [
+                            boxShadow: [
                               BoxShadow(
                                 color: ColorManager.hexFFC2295F,
-                                offset: Offset(0, 7),
+                                offset: Offset(0, AppPx.p7),
                               ),
                             ],
                           ),
@@ -553,7 +553,7 @@ class _SplashScreenState extends State<SplashScreen>
                     BoxShadow(
                       color: ColorManager.hex33000000,
                       blurRadius: AppPx.p8,
-                      offset: Offset(0, 3),
+                      offset: Offset(0, AppPx.p3),
                     ),
                   ],
                 ),
@@ -578,16 +578,24 @@ class _SplashScreenState extends State<SplashScreen>
     return Transform.rotate(
       angle: -0.035,
       child: Container(
-        padding: const EdgeInsets.fromLTRB(26, 18, 26, 14),
+        padding: EdgeInsets.fromLTRB(
+          AppPx.p26,
+          AppPx.p18,
+          AppPx.p26,
+          AppPx.p14,
+        ),
         decoration: BoxDecoration(
           color: ColorManager.white,
           borderRadius: BorderRadius.circular(AppPx.p34),
           boxShadow: [
-            BoxShadow(color: ColorManager.hexFFE9E2D2, offset: Offset(0, 10)),
+            BoxShadow(
+              color: ColorManager.hexFFE9E2D2,
+              offset: Offset(0, AppPx.p10),
+            ),
             BoxShadow(
               color: ColorManager.hex2E3C321E,
               blurRadius: AppPx.p26,
-              offset: Offset(0, 16),
+              offset: Offset(0, AppPx.p16),
             ),
           ],
         ),

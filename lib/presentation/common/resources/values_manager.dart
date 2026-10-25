@@ -402,4 +402,5 @@ class AppPx {
   static double get p170 => 170 * AppScale.factor;
   static double get p200 => 200 * AppScale.factor;
   static double get p250 => 250 * AppScale.factor;
+  static double get p7 => 7 * AppScale.factor;
 }

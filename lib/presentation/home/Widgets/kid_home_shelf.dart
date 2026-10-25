@@ -220,7 +220,7 @@ class WorldCard extends StatelessWidget {
                 BoxShadow(
                   color: ColorManager.hex40142846,
                   blurRadius: AppPx.p12,
-                  offset: Offset(0, 6),
+                  offset: Offset(0, AppPx.p6),
                 ),
               ],
             ),

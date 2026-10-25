@@ -240,7 +240,7 @@ class KidRail extends StatelessWidget {
               BoxShadow(
                 color: ColorManager.black.withValues(alpha: 0.18),
                 blurRadius: AppPx.p9,
-                offset: const Offset(0, 4),
+                offset: Offset(0, AppPx.p4),
               ),
             ],
           ),

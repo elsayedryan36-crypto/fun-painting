@@ -50,7 +50,7 @@ class WorldBanner extends StatelessWidget {
           BoxShadow(
             color: ColorManager.hex2B142846,
             blurRadius: AppPx.p8,
-            offset: Offset(0, 4),
+            offset: Offset(0, AppPx.p4),
           ),
         ],
       ),
@@ -143,7 +143,7 @@ class GalleryTopBar extends StatelessWidget {
                   BoxShadow(
                     color: ColorManager.hex24142846,
                     blurRadius: AppPx.p8,
-                    offset: Offset(0, 3),
+                    offset: Offset(0, AppPx.p3),
                   ),
                 ],
               ),
@@ -171,7 +171,7 @@ class GalleryTopBar extends StatelessWidget {
                   BoxShadow(
                     color: ColorManager.hex1F142846,
                     blurRadius: AppPx.p8,
-                    offset: Offset(0, 3),
+                    offset: Offset(0, AppPx.p3),
                   ),
                 ],
               ),
@@ -275,7 +275,7 @@ class GiftOverlay extends StatelessWidget {
                         BoxShadow(
                           color: ColorManager.hex33000000,
                           blurRadius: AppPx.p6,
-                          offset: Offset(0, 2),
+                          offset: Offset(0, AppPx.p2),
                         ),
                       ],
                     ),
@@ -321,7 +321,7 @@ class StarBadge extends StatelessWidget {
           BoxShadow(
             color: ColorManager.hex2E000000,
             blurRadius: AppPx.p5,
-            offset: Offset(0, 2),
+            offset: Offset(0, AppPx.p2),
           ),
         ],
       ),

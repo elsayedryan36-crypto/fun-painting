@@ -131,7 +131,7 @@ class KidCrayonBubble extends StatelessWidget {
             BoxShadow(
               color: ColorManager.black.withValues(alpha: 0.30),
               blurRadius: AppPx.p6,
-              offset: const Offset(0, 2),
+              offset: Offset(0, AppPx.p2),
             ),
           ],
         ),

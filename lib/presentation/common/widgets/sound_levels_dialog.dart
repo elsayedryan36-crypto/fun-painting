@@ -47,7 +47,12 @@ class _SoundLevelsDialogState extends State<SoundLevelsDialog> {
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 440),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 8, 8, 20),
+          padding: EdgeInsets.fromLTRB(
+            AppPx.p20,
+            AppPx.p8,
+            AppPx.p8,
+            AppPx.p20,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,

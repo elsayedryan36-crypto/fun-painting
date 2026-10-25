@@ -613,7 +613,12 @@ class _PaintingPageState extends State<PaintingPage> {
           ),
           child: Container(
             width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(24, 22, 24, 20),
+            padding: EdgeInsets.fromLTRB(
+              AppPx.p24,
+              AppPx.p22,
+              AppPx.p24,
+              AppPx.p20,
+            ),
             decoration: BoxDecoration(
               color: ColorManager.white,
               borderRadius: BorderRadius.circular(AppPx.p28),
@@ -621,7 +626,7 @@ class _PaintingPageState extends State<PaintingPage> {
                 BoxShadow(
                   blurRadius: AppPx.p25,
                   spreadRadius: AppPx.p2,
-                  offset: const Offset(0, 10),
+                  offset: Offset(0, AppPx.p10),
                   color: ColorManager.black.withValues(alpha: 0.15),
                 ),
               ],
@@ -1267,7 +1272,7 @@ class _PaintingPageState extends State<PaintingPage> {
                         BoxShadow(
                           color: ColorManager.black.withValues(alpha: 0.25),
                           blurRadius: AppPx.p8,
-                          offset: const Offset(0, 3),
+                          offset: Offset(0, AppPx.p3),
                         ),
                       ],
                     ),
@@ -1602,7 +1607,7 @@ class _PaintingPageState extends State<PaintingPage> {
           BoxShadow(
             color: ColorManager.black.withValues(alpha: 0.24),
             blurRadius: AppPx.p18,
-            offset: const Offset(0, 6),
+            offset: Offset(0, AppPx.p6),
           ),
         ],
       ),
