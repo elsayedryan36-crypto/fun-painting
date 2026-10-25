@@ -21,6 +21,7 @@ import '../common/services/music_level.dart';
 import '../common/widgets/setting_Widget.dart';
 import 'package:fun_painting/presentation/common/resources/assets_manager.dart';
 import 'package:fun_painting/presentation/common/resources/color_manager.dart';
+import 'package:fun_painting/data/services/rewarded_ad_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -45,6 +46,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     MusicLevel.level.addListener(_onMusicLevelChanged);
     _playBackgroundMusic();
     _registerOpenAndMaybeShowRating();
+    // Load the unlock ad early, so a tap on a locked picture opens it at once.
+    RewardedAdService.instance.preload();
   }
 
   Future<void> _registerOpenAndMaybeShowRating() async {

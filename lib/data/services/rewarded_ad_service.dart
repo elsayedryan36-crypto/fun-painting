@@ -31,9 +31,6 @@ class RewardedAdService {
   RewardedAdService._();
   static final RewardedAdService instance = RewardedAdService._();
 
-  /// How long a tap waits for the ad to load before it is queued.
-  static const Duration waitForAd = Duration(seconds: 10);
-
   /// How long a queued request stays alive.
   static const Duration queueLife = Duration(seconds: 90);
 
@@ -43,6 +40,9 @@ class RewardedAdService {
   RewardedAd? _ad;
   bool _isLoading = false;
   _QueuedUnlock? _queued;
+
+  /// When the child last tapped a locked picture (for timing logs).
+  DateTime? _tapAt;
 
   void preload() {
     if (_isLoading || _ad != null) return;
@@ -76,41 +76,28 @@ class RewardedAdService {
     );
   }
 
-  /// Called when a child taps a locked picture.
+  /// Called when a child taps a locked picture. Never waits: if the ad is
+  /// ready it opens now; if not, the request is queued and the ad opens by
+  /// itself as soon as it loads.
   Future<UnlockResult> showToUnlock({
     required String imageId,
     VoidCallback? onUnlocked,
-  }) async {
-    if (_ad == null) {
-      // Keep the request, then wait a little for the ad to arrive.
-      final queued = _QueuedUnlock(imageId, onUnlocked);
-      _queued = queued;
-      queued.waiting = true;
+  }) {
+    _tapAt = DateTime.now();
+    final ad = _ad;
+    if (ad == null) {
+      debugPrint('unlock tap: ad not ready, queued');
+      _queued = _QueuedUnlock(imageId, onUnlocked);
       preload();
-      final ready = await _waitForAd(waitForAd);
-      queued.waiting = false;
-      if (!ready) {
-        // Still queued: the ad opens by itself when it is ready.
-        return UnlockResult.queued;
-      }
-      _queued = null;
+      return Future.value(UnlockResult.queued);
     }
     _queued = null;
     return _show(imageId: imageId, onUnlocked: onUnlocked);
   }
 
-  Future<bool> _waitForAd(Duration limit) async {
-    final deadline = DateTime.now().add(limit);
-    while (_ad == null && DateTime.now().isBefore(deadline)) {
-      await Future<void>.delayed(const Duration(milliseconds: 250));
-    }
-    return _ad != null;
-  }
-
   void _showQueuedIfAny() {
     final queued = _queued;
-    // A tap that is still waiting handles its own ad.
-    if (queued == null || queued.waiting) return;
+    if (queued == null) return;
     _queued = null;
     if (queued.expired) return;
     _show(imageId: queued.imageId, onUnlocked: queued.onUnlocked);
@@ -127,6 +114,15 @@ class RewardedAdService {
     var earnedReward = false;
 
     ad.fullScreenContentCallback = FullScreenContentCallback(
+      onAdShowedFullScreenContent: (ad) {
+        final tapAt = _tapAt;
+        if (tapAt != null) {
+          debugPrint(
+            'rewarded ad shown '
+            '${DateTime.now().difference(tapAt).inMilliseconds} ms after tap',
+          );
+        }
+      },
       onAdDismissedFullScreenContent: (ad) {
         ad.dispose();
         _ad = null;
@@ -164,7 +160,6 @@ class _QueuedUnlock {
   final String imageId;
   final VoidCallback? onUnlocked;
   final DateTime since = DateTime.now();
-  bool waiting = false;
 
   _QueuedUnlock(this.imageId, this.onUnlocked);
 
