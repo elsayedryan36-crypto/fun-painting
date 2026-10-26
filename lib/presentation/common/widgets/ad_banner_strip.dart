@@ -13,58 +13,35 @@ class AdBannerStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      color: ColorManager.hexFFF2F2F2,
-      padding: EdgeInsets.fromLTRB(AppPx.p8, AppPx.p4, AppPx.p8, AppPx.p6),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            tr('advertisement'),
-            style: TextStyle(
-              color: ColorManager.hexFF555555,
-              fontSize: AppPx.p10,
+    // The grey panel wraps the banner, so its size follows the ad.
+    return Center(
+      child: Container(
+        color: ColorManager.hexFFF2F2F2,
+        padding: EdgeInsets.all(AppPx.p4),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              tr('advertisement'),
+              style: TextStyle(
+                color: ColorManager.hexFF555555,
+                fontSize: AppPx.p10,
+              ),
             ),
-          ),
-          SizedBox(height: AppPx.p3),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: ColorManager.white,
-              borderRadius: BorderRadius.circular(AppPx.p6),
-              border: Border.all(color: ColorManager.hexFFCFCFCF),
+            SizedBox(height: AppPx.p2),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: ColorManager.white,
+                borderRadius: BorderRadius.circular(AppPx.p6),
+                border: Border.all(color: ColorManager.hexFFCFCFCF),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(AppPx.p6),
+                child: BannerAdWidget(adUnitId: adUnitId),
+              ),
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(AppPx.p6),
-              child: BannerAdWidget(adUnitId: adUnitId),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// The small "AD" tag on locked pictures and gift boxes.
-class AdBadge extends StatelessWidget {
-  const AdBadge({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: AppPx.p6, vertical: AppPx.p2),
-      decoration: BoxDecoration(
-        color: ColorManager.white,
-        borderRadius: BorderRadius.circular(AppPx.p5),
-        border: Border.all(color: ColorManager.hexFF888888),
-      ),
-      child: Text(
-        tr('ad_badge'),
-        style: TextStyle(
-          color: ColorManager.hexFF333333,
-          fontSize: AppPx.p10,
-          fontWeight: FontWeight.w900,
+          ],
         ),
       ),
     );

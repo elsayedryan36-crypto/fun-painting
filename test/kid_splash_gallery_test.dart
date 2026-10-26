@@ -94,7 +94,6 @@ void main() {
       );
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.text('Watch an ad to open'), findsOneWidget);
-      expect(find.text('AD'), findsOneWidget);
     });
 
     testWidgets('finished pictures wear a gold star', (tester) async {
