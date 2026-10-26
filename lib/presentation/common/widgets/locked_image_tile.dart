@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fun_painting/presentation/common/localization/app_language.dart';
 
 import '../../../data/services/rewarded_ad_service.dart';
+import 'package:fun_painting/presentation/common/widgets/ad_banner_strip.dart';
 import 'package:fun_painting/presentation/common/resources/values_manager.dart';
 import 'package:fun_painting/presentation/common/resources/color_manager.dart';
 
@@ -115,8 +116,8 @@ class _LockedImageTileState extends State<LockedImageTile> {
                           ),
                           SizedBox(height: AppPx.p4),
                           Text(
-                            tr('watch_to_unlock'),
-                            // 'Watch to unlock',
+                            tr('watch_ad_to_unlock'),
+                            // 'Watch an ad to unlock',
                             style: TextStyle(
                               color: ColorManager.white,
                               fontSize: AppPx.p12,
@@ -126,6 +127,8 @@ class _LockedImageTileState extends State<LockedImageTile> {
                       ),
               ),
             ),
+          if (!widget.isUnlocked)
+            Positioned(top: AppPx.p6, left: AppPx.p6, child: const AdBadge()),
         ],
       ),
     );

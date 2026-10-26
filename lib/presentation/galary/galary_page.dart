@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:fun_painting/presentation/common/localization/app_language.dart';
 import 'package:fun_painting/presentation/common/resources/color_manager.dart';
+import 'package:fun_painting/presentation/common/widgets/ad_banner_strip.dart';
 import 'package:fun_painting/presentation/galary/helpers/gallery_collection_helper.dart';
 import 'package:fun_painting/presentation/galary/widgets/gallery_card.dart';
 import 'package:hive/hive.dart';
@@ -12,7 +13,6 @@ import '../../data/local data/painting_save_model.dart';
 import '../../data/services/ad_unit_ids.dart';
 import '../common/resources/assets_manager.dart' show JsonAssets;
 import '../common/resources/values_manager.dart';
-import '../common/widgets/banner_ad_widget.dart' show BannerAdWidget;
 import '../common/widgets/setting_Widget.dart' show SoundLevelButton;
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
@@ -294,7 +294,7 @@ class _GalleryPageState extends State<GalleryPage> with RouteAware {
                     ),
                   ),
                 ),
-                _buildWoodShelfAd(),
+                _buildAdBanner(),
               ],
             ),
           ],
@@ -322,21 +322,8 @@ class _GalleryPageState extends State<GalleryPage> with RouteAware {
     );
   }
 
-  Widget _buildWoodShelfAd() {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [ColorManager.hexFFA06A44, ColorManager.hexFF8A5A38],
-        ),
-      ),
-      padding: EdgeInsets.all(math.max(AppPx.p4, AppSizeHeight.s1)),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(
-          math.max(AppPx.p8, AppSizeHeight.s2),
-        ),
-        child: BannerAdWidget(adUnitId: AdUnitIds.selectImageBanner),
-      ),
-    );
+  Widget _buildAdBanner() {
+    return AdBannerStrip(adUnitId: AdUnitIds.selectImageBanner);
   }
 }
 

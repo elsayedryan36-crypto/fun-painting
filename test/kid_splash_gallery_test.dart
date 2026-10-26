@@ -93,7 +93,8 @@ void main() {
         _harness(const SizedBox(width: 200, height: 200, child: GiftOverlay())),
       );
       await tester.pump(const Duration(milliseconds: 300));
-      expect(find.text('Watch to open'), findsOneWidget);
+      expect(find.text('Watch an ad to open'), findsOneWidget);
+      expect(find.text('AD'), findsOneWidget);
     });
 
     testWidgets('finished pictures wear a gold star', (tester) async {

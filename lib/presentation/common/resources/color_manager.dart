@@ -185,5 +185,10 @@ class ColorManager {
   static const Color hexFFFFFF00 = Color(0xFFFFFF00);
   static const Color hexFFFFFF33 = Color(0xFFFFFF33);
   static const Color hexFFFFE9B0 = Color(0xFFFFE9B0);
+  // Ad labelling (Families policy): plain strip and badge colours
+  static const Color hexFFF2F2F2 = Color(0xFFF2F2F2);
+  static const Color hexFFCFCFCF = Color(0xFFCFCFCF);
+  static const Color hexFF888888 = Color(0xFF888888);
+  static const Color hexFF555555 = Color(0xFF555555);
   static const Color hexFFFFD97A = Color(0xFFFFD97A);
 }

@@ -5,6 +5,7 @@ import 'package:fun_painting/presentation/common/localization/app_language.dart'
 import 'package:lottie/lottie.dart';
 
 import '../../common/resources/color_manager.dart';
+import 'package:fun_painting/presentation/common/widgets/ad_banner_strip.dart';
 import '../../common/resources/values_manager.dart';
 import 'package:fun_painting/presentation/common/resources/assets_manager.dart';
 
@@ -250,48 +251,53 @@ class GiftOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: ColorManager.hex9EFFFFFF,
-      child: Center(
-        child: isLoading
-            ? CircularProgressIndicator(strokeWidth: AppPx.p3)
-            : Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(
-                    width: math.max(AppPx.p52, AppSizeWidth.s11),
-                    height: math.max(AppPx.p52, AppSizeHeight.s13),
-                    child: Lottie.asset(JsonAssets.giftBox, repeat: true),
-                  ),
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: AppPaddingWidth.p2,
-                      vertical: AppPaddingHeight.p_5,
-                    ),
-                    decoration: BoxDecoration(
-                      color: pillColor,
-                      borderRadius: BorderRadius.circular(AppPx.p99),
-                      boxShadow: [
-                        BoxShadow(
-                          color: ColorManager.hex33000000,
-                          blurRadius: AppPx.p6,
-                          offset: Offset(0, AppPx.p2),
-                        ),
-                      ],
-                    ),
-                    child: Text(
-                      tr('watch_to_open'),
-                      // 'Watch to open',
-                      style: TextStyle(
-                        color: ColorManager.white,
-                        fontWeight: FontWeight.w900,
-                        fontSize: math.max(AppPx.p11, AppSizeHeight.s3),
+    return Stack(
+      children: [
+        Container(
+          color: ColorManager.hex9EFFFFFF,
+          child: Center(
+            child: isLoading
+                ? CircularProgressIndicator(strokeWidth: AppPx.p3)
+                : Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: math.max(AppPx.p52, AppSizeWidth.s11),
+                        height: math.max(AppPx.p52, AppSizeHeight.s13),
+                        child: Lottie.asset(JsonAssets.giftBox, repeat: true),
                       ),
-                    ),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: AppPaddingWidth.p2,
+                          vertical: AppPaddingHeight.p_5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: pillColor,
+                          borderRadius: BorderRadius.circular(AppPx.p99),
+                          boxShadow: [
+                            BoxShadow(
+                              color: ColorManager.hex33000000,
+                              blurRadius: AppPx.p6,
+                              offset: Offset(0, AppPx.p2),
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          tr('watch_ad_to_open'),
+                          // 'Watch an ad to open',
+                          style: TextStyle(
+                            color: ColorManager.white,
+                            fontWeight: FontWeight.w900,
+                            fontSize: math.max(AppPx.p11, AppSizeHeight.s3),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-      ),
+          ),
+        ),
+        Positioned(top: AppPx.p6, left: AppPx.p6, child: const AdBadge()),
+      ],
     );
 
     // OLD (sticker-book gold pill, kept commented per the release rule):
